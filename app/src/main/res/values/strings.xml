@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">Legal Alerts</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="alert_hint">Enter text here</string>
+    <string name="button_add_alert">Add</string>
+    <string name="button_delete_alert">Delete</string>
+    <string name="text_alert_list_item">Alert Item</string>
+    <string name="text_delete">Delete</string>
+    <string name="test_string">Test</string>
+</resources>
