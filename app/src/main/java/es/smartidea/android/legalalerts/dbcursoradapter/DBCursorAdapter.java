@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.ResourceCursorAdapter;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,7 +15,7 @@ import es.smartidea.android.legalalerts.R;
 import es.smartidea.android.legalalerts.dbhelper.DBContract;
 
 public class DBCursorAdapter extends ResourceCursorAdapter {
-    public DBCursorAdapter(Context context,int layout, Cursor c, int flags) {
+    public DBCursorAdapter(AppCompatActivity context,int layout, Cursor c, int flags) {
         super(context,layout, c, flags);
     }
 

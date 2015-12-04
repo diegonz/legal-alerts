@@ -11,6 +11,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -83,7 +84,8 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
                 @Override
                 public void onClick(View view) {
                     if (editTextAlert.getText().length() > 0) {
-                        String SELECTION = DBContract.Alerts.COL_ALERT_NAME + "='" + editTextAlert.getText().toString() + "'";
+                        String SELECTION = DBContract.Alerts.COL_ALERT_NAME +
+                                "='" + editTextAlert.getText().toString() + "'";
                         int hits = getActivity().getContentResolver().delete(ALERTS_URI, SELECTION, null);
                         if (hits > 0) {
                             Snackbar.make(view, hits + " Alerts deleted from DB", Snackbar.LENGTH_SHORT)
@@ -99,33 +101,34 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
                 }
             });
 
-            FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.fab);
-            // TODO: Check fab button NPE (Null Pointer Eception)
-            if (fab != null){
-                fab.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        if (editTextAlert.getText().length() > 0) {
-                            String SELECTION = DBContract.Alerts.COL_ALERT_NAME + "='" + editTextAlert.getText().toString() + "'";
-                            Cursor queryCursor = getActivity().getContentResolver().query(ALERTS_URI,
-                                    new String[]{DBContract.Alerts.COL_ALERT_NAME},
-                                    SELECTION, null, null);
-                            if (queryCursor != null && queryCursor.getCount() > 0) {
-                                Snackbar.make(view, "Query returned " + queryCursor.getCount() + " results!.", Snackbar.LENGTH_LONG)
-                                        .setAction("Action", null).show();
-                                queryCursor.moveToFirst();
-                                queryCursor.close();
-                            } else {
-                                Snackbar.make(view, "Query returned no results!!!!.", Snackbar.LENGTH_LONG)
-                                        .setAction("Action", null).show();
-                            }
+            // Get FAB reference with getActivity() to access MainActivity's FAB in CoordinatorLayout
+            FloatingActionButton fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (editTextAlert.getText().length() > 0) {
+                        String SELECTION = DBContract.Alerts.COL_ALERT_NAME +
+                                "='" + editTextAlert.getText().toString() + "'";
+
+                        Cursor queryCursor = getActivity().getContentResolver().query(ALERTS_URI,
+                                new String[]{DBContract.Alerts.COL_ALERT_NAME},
+                                SELECTION, null, null);
+
+                        if (queryCursor != null && queryCursor.getCount() > 0) {
+                            Snackbar.make(view, "Query returned " + queryCursor.getCount() + " results!.", Snackbar.LENGTH_LONG)
+                                    .setAction("Action", null).show();
+                            queryCursor.moveToFirst();
+                            queryCursor.close();
                         } else {
-                            Snackbar.make(view, "Insert at least one character!!!", Snackbar.LENGTH_LONG)
+                            Snackbar.make(view, "Query returned no results!!!!.", Snackbar.LENGTH_LONG)
                                     .setAction("Action", null).show();
                         }
+                    } else {
+                        Snackbar.make(view, "Insert at least one character!!!", Snackbar.LENGTH_LONG)
+                                .setAction("Action", null).show();
                     }
-                });
-            }
+                }
+            });
             // Assign listViewAlerts, setup of adapter and onClick methods are attached on initAlertsLoader()
             listViewAlerts = (ListView) view.findViewById(R.id.listViewAlerts);
         }
@@ -136,7 +139,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     private void initAlertsLoader() {
         alertsCursor = getActivity().getContentResolver().query(ALERTS_URI, PROJECTION, SELECTION_NOTNULL, null, ORDER_ASC_BY_NAME);
         // TODO: Check CONTEXT
-        alertsAdapter = new DBCursorAdapter(getActivity(), R.layout.alert_list_item, alertsCursor, 0);
+        alertsAdapter = new DBCursorAdapter(((AppCompatActivity) getActivity()), R.layout.alert_list_item, alertsCursor, 0);
         listViewAlerts.setAdapter(alertsAdapter);
         // Prepare the loader.  Either re-connect with an existing one or start a new one.
         getActivity().getSupportLoaderManager().initLoader(0, null, this);

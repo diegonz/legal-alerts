@@ -103,7 +103,6 @@ public class DBContentProvider extends ContentProvider {
         int rowsDeleted;
 
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        Log.d("DB", "Row(s) deleted!");
         switch (uriType) {
             case ALERTS:
                 rowsDeleted = db.delete(DBContract.Alerts.TABLE_NAME, selection, selectionArgs);
@@ -112,6 +111,7 @@ public class DBContentProvider extends ContentProvider {
                 throw new IllegalArgumentException("Wrong URI: " + uri);
         }
         getContext().getContentResolver().notifyChange(uri, null);
+        Log.d("DB", rowsDeleted + "Row(s) deleted!");
         return rowsDeleted;
     }
 
