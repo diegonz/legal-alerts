@@ -6,6 +6,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -44,6 +45,14 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        // If not savedInstanceState (start from scratch) set main fragment
+        if (savedInstanceState == null){
+            FragmentTransaction initFragment = getSupportFragmentManager().beginTransaction();
+            initFragment.replace(R.id.fragmentMainPlaceholder, new AlertsFragment(), "Fragment Alerts");
+            initFragment.commit();
+            setTitle(R.string.app_name);
+        }
     }
 
     @Override

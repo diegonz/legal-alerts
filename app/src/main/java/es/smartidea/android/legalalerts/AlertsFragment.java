@@ -53,7 +53,6 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     // Required empty public constructor
     public AlertsFragment() {}
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
@@ -129,7 +128,6 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
             }
             // Assign listViewAlerts, setup of adapter and onClick methods are attached on initAlertsLoader()
             listViewAlerts = (ListView) view.findViewById(R.id.listViewAlerts);
-            initAlertsLoader();
         }
         return view;
     }
@@ -154,8 +152,6 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        // Launch LoaderManager when onAttach() Fragment;
-//        initAlertsLoader();
         if (context instanceof OnFragmentInteractionListener) {
             mListener = (OnFragmentInteractionListener) context;
         } else {
@@ -165,13 +161,33 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     }
 
     @Override
-    public void onDetach() {
-        super.onDetach();
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        // Attach alertsAdapter to ListViewAlerts
+        initAlertsLoader();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Launch LoaderManager when onAttach() Fragment;
+        initAlertsLoader();
+
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
         if (alertsCursor != null) {
             // Close Cursor and destroy LoaderManager when onDetach()
             alertsCursor.close();
             getActivity().getSupportLoaderManager().destroyLoader(0);
         }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
         mListener = null;
     }
 
