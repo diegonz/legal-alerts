@@ -12,17 +12,37 @@ import android.util.Log;
 
 public class DBHelper extends SQLiteOpenHelper {
 
-    // Create and delete table sentences
+    // String query "tokens"
     private static final String TEXT_TYPE = " TEXT";
-//    private static final String INT_TYPE = " INT";
-//    private static final String COMMA_SEP = ",";
+    private static final String INT_TYPE = " INT";
+    private static final String NOT_NULL = " NOT NULL";
+    private static final String DEFAULT_0 = " DEFAULT 0";
+    private static final String COMMA_SEP = ",";
+
+    // Create and delete table sentences
+
+    /* Start ALERTS table */
     public static final String SQL_CREATE_ALERTS =
             "CREATE TABLE " + DBContract.Alerts.TABLE_NAME + " (" +
                     DBContract.Alerts._ID + " INTEGER PRIMARY KEY," +
-                    DBContract.Alerts.COL_ALERT_NAME + TEXT_TYPE + " );";
+                    DBContract.Alerts.COL_ALERT_NAME + TEXT_TYPE + NOT_NULL + COMMA_SEP +
+                    DBContract.Alerts.COL_ALERT_SEARCH_LITERAL + INT_TYPE + DEFAULT_0 + " );";
 
     public static final String SQL_DELETE_ALERTS =
             "DROP TABLE IF EXISTS " + DBContract.Alerts.TABLE_NAME + ";";
+    /* End ALERTS table */
+
+    /* Start HISTORY table */
+    public static final String SQL_CREATE_HISTORY =
+            "CREATE TABLE " + DBContract.History.TABLE_NAME + " (" +
+            DBContract.History._ID + " INTEGER PRIMARY KEY," +
+            DBContract.History.COL_HISTORY_RELATED_ALERT_NAME + TEXT_TYPE + NOT_NULL + COMMA_SEP +
+            DBContract.History.COL_HISTORY_DOCUMENT_NAME + TEXT_TYPE + NOT_NULL + COMMA_SEP +
+            DBContract.History.COL_HISTORY_DOCUMENT_URL + TEXT_TYPE + NOT_NULL + " );";
+
+    public static final String SQL_DELETE_HISTORY =
+            "DROP TABLE IF EXISTS " + DBContract.History.TABLE_NAME + ";";
+    /* End HISTORY table */
 
     public DBHelper(Context context) {
         super(context, DBContract.DATABASE_NAME, null, DBContract.DATABASE_VERSION);
@@ -30,14 +50,17 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        Log.v("si", "Creating Database...");
+        Log.d("DB", "Creating Database...");
         db.execSQL(SQL_CREATE_ALERTS);
+        db.execSQL(SQL_CREATE_HISTORY);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Method to handle DB upgrade
+        Log.d("DB", "Dumping Database on upgrade...");
         db.execSQL(SQL_DELETE_ALERTS);
+        db.execSQL(SQL_DELETE_HISTORY);
         onCreate(db);
     }
 

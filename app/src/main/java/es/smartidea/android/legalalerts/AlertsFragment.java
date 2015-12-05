@@ -20,7 +20,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 
 import es.smartidea.android.legalalerts.dbcontentprovider.DBContentProvider;
-import es.smartidea.android.legalalerts.dbcursoradapter.DBCursorAdapter;
+import es.smartidea.android.legalalerts.dbcursoradapter.DBAlertsCursorAdapter;
 import es.smartidea.android.legalalerts.dbhelper.DBContract;
 
 /**
@@ -47,7 +47,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     private ListView listViewAlerts;
     private Cursor alertsCursor;
     // Declare DBAdapter
-    private DBCursorAdapter alertsAdapter;
+    private DBAlertsCursorAdapter alertsAdapter;
 
     private OnFragmentInteractionListener mListener;
 
@@ -139,7 +139,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     private void initAlertsLoader() {
         alertsCursor = getActivity().getContentResolver().query(ALERTS_URI, PROJECTION, SELECTION_NOTNULL, null, ORDER_ASC_BY_NAME);
         // TODO: Check CONTEXT
-        alertsAdapter = new DBCursorAdapter(((AppCompatActivity) getActivity()), R.layout.alert_list_item, alertsCursor, 0);
+        alertsAdapter = new DBAlertsCursorAdapter(((AppCompatActivity) getActivity()), R.layout.alert_list_item, alertsCursor, 0);
         listViewAlerts.setAdapter(alertsAdapter);
         // Prepare the loader.  Either re-connect with an existing one or start a new one.
         getActivity().getSupportLoaderManager().initLoader(0, null, this);

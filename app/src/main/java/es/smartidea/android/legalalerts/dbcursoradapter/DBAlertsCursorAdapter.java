@@ -14,8 +14,8 @@ import android.widget.TextView;
 import es.smartidea.android.legalalerts.R;
 import es.smartidea.android.legalalerts.dbhelper.DBContract;
 
-public class DBCursorAdapter extends ResourceCursorAdapter {
-    public DBCursorAdapter(AppCompatActivity context,int layout, Cursor c, int flags) {
+public class DBAlertsCursorAdapter extends ResourceCursorAdapter {
+    public DBAlertsCursorAdapter(AppCompatActivity context, int layout, Cursor c, int flags) {
         super(context,layout, c, flags);
     }
 
