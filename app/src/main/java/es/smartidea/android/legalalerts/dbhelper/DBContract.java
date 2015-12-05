@@ -23,9 +23,9 @@ public final class DBContract {
     // Subclass to define "alerts_table" table
     public static abstract class Alerts implements BaseColumns {
         public static final String TABLE_NAME = "alerts_table";
-        public static final String _ID = "_id";                                         // _id of Alert
-        public static final String COL_ALERT_NAME = "alert_name";                       // Name of Alert
-        public static final String COL_ALERT_SEARCH_LITERAL = "alert_search_literal";   // Search literally or not
+        public static final String _ID = "_id";                                                 // _id of Alert
+        public static final String COL_ALERT_NAME = "alert_name";                               // Name of Alert
+        public static final String COL_ALERT_SEARCH_NOT_LITERAL = "alert_search_not_literal";   // Search literally or not
     }
 
     public static abstract class History implements BaseColumns {

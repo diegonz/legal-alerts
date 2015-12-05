@@ -69,6 +69,8 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
                     if (editTextAlert.getText().length() > 0) {
                         ContentValues values = new ContentValues();
                         values.put(DBContract.Alerts.COL_ALERT_NAME, editTextAlert.getText().toString());
+                        // TODO: Implement not-literal checkbox, now defaults to YES (0)
+                        values.put(DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL, 0);
                         getActivity().getContentResolver().insert(ALERTS_URI, values);
                         Snackbar.make(view, "Alert inserted into DB", Snackbar.LENGTH_SHORT)
                                 .setAction("Action", null).show();

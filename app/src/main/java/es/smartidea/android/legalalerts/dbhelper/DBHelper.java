@@ -22,25 +22,25 @@ public class DBHelper extends SQLiteOpenHelper {
     // Create and delete table sentences
 
     /* Start ALERTS table */
-    public static final String SQL_CREATE_ALERTS =
+    public static final String SQL_CREATE_ALERTS_TABLE =
             "CREATE TABLE " + DBContract.Alerts.TABLE_NAME + " (" +
                     DBContract.Alerts._ID + " INTEGER PRIMARY KEY," +
                     DBContract.Alerts.COL_ALERT_NAME + TEXT_TYPE + NOT_NULL + COMMA_SEP +
-                    DBContract.Alerts.COL_ALERT_SEARCH_LITERAL + INT_TYPE + DEFAULT_0 + " );";
+                    DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL + INT_TYPE + DEFAULT_0 + " );";
 
-    public static final String SQL_DELETE_ALERTS =
+    public static final String SQL_DELETE_ALERTS_TABLE =
             "DROP TABLE IF EXISTS " + DBContract.Alerts.TABLE_NAME + ";";
     /* End ALERTS table */
 
     /* Start HISTORY table */
-    public static final String SQL_CREATE_HISTORY =
+    public static final String SQL_CREATE_HISTORY_TABLE =
             "CREATE TABLE " + DBContract.History.TABLE_NAME + " (" +
             DBContract.History._ID + " INTEGER PRIMARY KEY," +
             DBContract.History.COL_HISTORY_RELATED_ALERT_NAME + TEXT_TYPE + NOT_NULL + COMMA_SEP +
             DBContract.History.COL_HISTORY_DOCUMENT_NAME + TEXT_TYPE + NOT_NULL + COMMA_SEP +
             DBContract.History.COL_HISTORY_DOCUMENT_URL + TEXT_TYPE + NOT_NULL + " );";
 
-    public static final String SQL_DELETE_HISTORY =
+    public static final String SQL_DELETE_HISTORY_TABLE =
             "DROP TABLE IF EXISTS " + DBContract.History.TABLE_NAME + ";";
     /* End HISTORY table */
 
@@ -50,17 +50,19 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        Log.d("DB", "Creating Database...");
-        db.execSQL(SQL_CREATE_ALERTS);
-        db.execSQL(SQL_CREATE_HISTORY);
+        Log.d("DB", "Creating Database tables...");
+        db.execSQL(SQL_CREATE_ALERTS_TABLE);
+        db.execSQL(SQL_CREATE_HISTORY_TABLE);
+        Log.d("DB", "Created Database tables!");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Method to handle DB upgrade
-        Log.d("DB", "Dumping Database on upgrade...");
-        db.execSQL(SQL_DELETE_ALERTS);
-        db.execSQL(SQL_DELETE_HISTORY);
+        Log.d("DB", "Deleting Database tables on upgrade...");
+        db.execSQL(SQL_DELETE_ALERTS_TABLE);
+        db.execSQL(SQL_DELETE_HISTORY_TABLE);
+        Log.d("DB", "Deleted!");
         onCreate(db);
     }
 

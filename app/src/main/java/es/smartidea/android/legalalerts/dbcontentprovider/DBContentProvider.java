@@ -74,7 +74,7 @@ public class DBContentProvider extends ContentProvider {
                 queryBuilder.setTables(DBContract.History.TABLE_NAME);
                 break;
             default:
-                throw new IllegalArgumentException("Wrong URI: " + uri);
+                throw new IllegalArgumentException("ERROR - Wrong URI: " + uri);
         }
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor = queryBuilder.query(db, projection, selection, selectionArgs, null, null, sortOrder);
@@ -103,7 +103,7 @@ public class DBContentProvider extends ContentProvider {
                 Log.d("DB", "Inserted into History table, ID: " + id);
                 break;
             default:
-                throw new IllegalArgumentException("Wrong URI: " + uri);
+                throw new IllegalArgumentException("ERROR - Wrong URI: " + uri);
         }
         getContext().getContentResolver().notifyChange(uri, null);
         return Uri.parse(path + "/" + id);
@@ -126,7 +126,7 @@ public class DBContentProvider extends ContentProvider {
                 Log.d("DB", rowsDeleted + "row(s) deleted from History table!");
                 break;
             default:
-                throw new IllegalArgumentException("Wrong URI: " + uri);
+                throw new IllegalArgumentException("ERROR - Wrong URI: " + uri);
         }
         getContext().getContentResolver().notifyChange(uri, null);
         return rowsDeleted;
@@ -149,7 +149,7 @@ public class DBContentProvider extends ContentProvider {
                 Log.d("DB", rowsUpdated + "row(s) updated from History table!");
                 break;
             default:
-                throw new IllegalArgumentException("Wrong URI: " + uri);
+                throw new IllegalArgumentException("ERROR - Wrong URI: " + uri);
         }
         getContext().getContentResolver().notifyChange(uri, null);
         return rowsUpdated;
@@ -169,7 +169,7 @@ public class DBContentProvider extends ContentProvider {
                     availableC = new String[]{
                             DBContract.Alerts._ID,
                             DBContract.Alerts.COL_ALERT_NAME,
-                            DBContract.Alerts.COL_ALERT_SEARCH_LITERAL
+                            DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL
                     };
                     requested = new HashSet<>(Arrays.asList(projection));
                     available = new HashSet<>(Arrays.asList(availableC));
