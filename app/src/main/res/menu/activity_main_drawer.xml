@@ -5,31 +5,31 @@
         <item
             android:id="@+id/nav_alerts"
             android:icon="@android:drawable/ic_popup_reminder"
-            android:title="My Alerts" />
+            android:title="@string/nav_alerts" />
         <item
             android:id="@+id/nav_history"
-            android:icon="@android:drawable/ic_menu_recent_history"
-            android:title="Alerts history" />
+            android:icon="@android:drawable/ic_input_add"
+            android:title="@string/nav_new_alert" />
         <item
             android:id="@+id/nav_slideshow"
-            android:icon="@drawable/ic_menu_slideshow"
-            android:title="Slideshow" />
+            android:icon="@android:drawable/ic_menu_recent_history"
+            android:title="@string/nav_history" />
         <item
             android:id="@+id/nav_manage"
             android:icon="@drawable/ic_menu_manage"
-            android:title="Tools" />
+            android:title="@string/nav_settings" />
     </group>
 
-    <item android:title="Communicate">
+    <item android:title="@string/nav_more">
         <menu>
             <item
                 android:id="@+id/nav_share"
                 android:icon="@drawable/ic_menu_share"
-                android:title="Share" />
+                android:title="@string/nav_share" />
             <item
                 android:id="@+id/nav_send"
-                android:icon="@drawable/ic_menu_send"
-                android:title="Send" />
+                android:icon="@android:drawable/ic_menu_info_details"
+                android:title="@string/nav_info" />
         </menu>
     </item>
 

@@ -4,15 +4,22 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
+    <string name="nav_alerts">My Alerts</string>
+    <string name="nav_new_alert">New Alert</string>
+    <string name="nav_history">History</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_more">More</string>
+    <string name="nav_share">Share App</string>
+    <string name="nav_info">About</string>
+
     <string name="action_settings">Settings</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="alert_hint">Enter text here</string>
     <string name="button_add_alert">Add</string>
     <string name="button_delete_alert">Delete</string>
     <string name="text_alert_list_item">Alert Item</string>
     <string name="text_delete">Delete</string>
-    <string name="test_string">Test</string>
     <string name="text_image_literal_search">Search literally</string>
+    <string name="info_email">dgonzalez.BZ@gmail.com</string>
+    <string name="test_string">Test</string>
 </resources>
