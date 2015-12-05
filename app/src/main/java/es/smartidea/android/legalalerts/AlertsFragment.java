@@ -36,7 +36,8 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     // Static String arguments for querying
     private static final String[] PROJECTION = new String[]{
             DBContract.Alerts._ID,
-            DBContract.Alerts.COL_ALERT_NAME
+            DBContract.Alerts.COL_ALERT_NAME,
+            DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL
     };
     private static final String SELECTION_NOTNULL = "((" +
             DBContract.Alerts.COL_ALERT_NAME + " NOTNULL) AND (" +
@@ -108,6 +109,8 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+//                    DialogAlert dialogAlert = new DialogAlert();
+//                    dialogAlert.show();
                     if (editTextAlert.getText().length() > 0) {
                         String SELECTION = DBContract.Alerts.COL_ALERT_NAME +
                                 "='" + editTextAlert.getText().toString() + "'";
