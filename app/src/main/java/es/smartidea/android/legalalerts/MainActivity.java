@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.nav_alerts) {
             fragmentClass = AlertsFragment.class;
         } else if (id == R.id.nav_history) {
-            fragmentClass = AlertsFragment.class;
+            fragmentClass = HistoryFragment.class;
         } else if (id == R.id.nav_slideshow) {
 
         } else if (id == R.id.nav_manage) {

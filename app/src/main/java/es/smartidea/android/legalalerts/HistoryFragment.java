@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,7 +20,7 @@ import es.smartidea.android.legalalerts.dbhelper.DBContract;
 
 
 /**
- * A simple {@link Fragment} subclass.
+ * An simple listView container {@link Fragment} subclass.
  */
 public class HistoryFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -37,9 +38,9 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
             DBContract.History.COL_HISTORY_DOCUMENT_NAME,
             DBContract.History.COL_HISTORY_DOCUMENT_URL
     };
-    private static final String SELECTION_NOTNULL = "((" +
-            DBContract.Alerts.COL_ALERT_NAME + " NOTNULL) AND (" +
-            DBContract.Alerts.COL_ALERT_NAME + " != '' ))";
+//    private static final String SELECTION_NOTNULL = "((" +
+//            DBContract.Alerts.COL_ALERT_NAME + " NOTNULL) AND (" +
+//            DBContract.Alerts.COL_ALERT_NAME + " != '' ))";
 
     private static final String ORDER_ASC_BY_NAME = DBContract.Alerts.COL_ALERT_NAME + " ASC";
     // Declare ListView and DBCursor for adapter
@@ -68,10 +69,57 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
         return view;
     }
 
+    // Attach alertsAdapter to ListViewAlerts
+    private void initHistoryLoader() {
+        historyCursor = getActivity().getContentResolver().query(HISTORY_URI, PROJECTION, null, null, ORDER_ASC_BY_NAME);
+        // TODO: Check CONTEXT: ((AppCompatActivity) getActivity())
+        historyAdapter = new DBHistoryCursorAdapter(getActivity(), R.layout.history_list_item, historyCursor, 0);
+        listViewHistory.setAdapter(historyAdapter);
+        // Prepare the loader.  Either re-connect with an existing one or start a new one.
+        getActivity().getSupportLoaderManager().initLoader(0, null, this);
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        // Attach alertsAdapter to ListViewAlerts
+        initHistoryLoader();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Launch LoaderManager when onAttach() Fragment;
+        initHistoryLoader();
+
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (historyCursor != null) {
+            // Close Cursor and destroy LoaderManager when onDetach()
+            historyCursor.close();
+            getActivity().getSupportLoaderManager().destroyLoader(0);
+        }
+    }
+
+    // Returns a new loader after the initAlertsLoader() call
+    @Override
+    public CursorLoader onCreateLoader(int id, Bundle args) {
+        return new CursorLoader(getActivity(), HISTORY_URI, PROJECTION, null, null, ORDER_ASC_BY_NAME);
+    }
+
     @Override
     public void onLoadFinished(Loader loader, Cursor data) {
         data.moveToFirst();
         historyAdapter.swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader loader) {
+        // data is not available anymore, delete reference
+        historyAdapter.swapCursor(null);
     }
 
 }
