@@ -31,10 +31,7 @@
         <EditText
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:inputType="textMultiLine"
             android:ems="10"
-            android:minLines="2"
-            android:maxLines="5"
             android:id="@+id/editTextDialogAlert"
             android:hint="@string/alert_hint"
             android:layout_centerVertical="true"

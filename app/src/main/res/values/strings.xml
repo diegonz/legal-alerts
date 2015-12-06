@@ -14,7 +14,7 @@
 
     <string name="action_settings">Settings</string>
     <string name="text_new_alert">New Alert</string>
-    <string name="alert_hint">Enter text here</string>
+    <string name="alert_hint">Enter Alert text here</string>
     <string name="button_add_alert">Add</string>
     <string name="button_dialog_alert_save">Save</string>
     <string name="button_delete_alert">Delete</string>

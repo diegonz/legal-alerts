@@ -42,7 +42,7 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
 //            DBContract.Alerts.COL_ALERT_NAME + " NOTNULL) AND (" +
 //            DBContract.Alerts.COL_ALERT_NAME + " != '' ))";
 
-    private static final String ORDER_ASC_BY_NAME = DBContract.Alerts.COL_ALERT_NAME + " ASC";
+    private static final String ORDER_ASC_BY_NAME = DBContract.History.COL_HISTORY_DOCUMENT_NAME + " ASC";
     // Declare ListView and DBCursor for adapter
     private ListView listViewHistory;
     private Cursor historyCursor;

@@ -89,13 +89,16 @@ public class MainActivity extends AppCompatActivity
 
         Fragment fragment = null;
         Class fragmentClass = AlertsFragment.class;
+        Boolean startDialogAlert = false;
 
         if (id == R.id.nav_alerts) {
             fragmentClass = AlertsFragment.class;
+        } else if (id == R.id.nav_add_alert) {
+            fragmentClass = AlertsFragment.class;
+            // Set start dialog flag TODO: Check alternatives (frag listener?)
+            startDialogAlert = true;
         } else if (id == R.id.nav_history) {
             fragmentClass = HistoryFragment.class;
-        } else if (id == R.id.nav_slideshow) {
-
         } else if (id == R.id.nav_manage) {
 
         } else if (id == R.id.nav_share) {
@@ -119,6 +122,11 @@ public class MainActivity extends AppCompatActivity
         setTitle(item.getTitle());
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
+        // Start dialog Alert TODO: Check alternatives (frag listener?)
+        if (startDialogAlert){
+            DialogAlert dialogAlert = new DialogAlert();
+            dialogAlert.show(fragmentManager, "dialog_alert");
+        }
         return true;
     }
 
