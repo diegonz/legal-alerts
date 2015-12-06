@@ -4,14 +4,28 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
-    <string name="action_settings">Settings</string>
+    <string name="nav_alerts">My Alerts</string>
+    <string name="nav_new_alert">New Alert</string>
+    <string name="nav_history">History</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_more">More</string>
+    <string name="nav_share">Share App</string>
+    <string name="nav_info">About</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="action_settings">Settings</string>
+    <string name="text_new_alert">New Alert</string>
     <string name="alert_hint">Enter text here</string>
     <string name="button_add_alert">Add</string>
+    <string name="button_dialog_alert_save">Save</string>
     <string name="button_delete_alert">Delete</string>
+    <string name="button_dialog_alert_cancel">Cancel</string>
     <string name="text_alert_list_item">Alert Item</string>
+    <string name="text_alert_colon">Alert:</string>
     <string name="text_delete">Delete</string>
+    <string name="text_image_literal_search">Search literally</string>
+    <string name="info_email">dgonzalez.BZ@gmail.com</string>
+    <string name="text_literal_search"><b>Literal Search</b></string>
+    <string name="info_not_literal"><b>Literal search is disabled.</b>\n<i>Legal Alerts will search for all occurrences disregarding order or place.</i></string>
+    <string name="info_literal"><b>Literal search is enabled.</b>\n<i>Legal Alerts will search for exact match of given Alert pattern.</i></string>
     <string name="test_string">Test</string>
 </resources>

@@ -31,15 +31,20 @@ public class DBContentProvider extends ContentProvider {
     private DBHelper dbHelper;
     //UriMatcher values
     private static final String AUTHORITY = "es.smartidea.legalalerts.dbcontentprovider";
-    // Alerts table access URI
+    // Access URI to Alerts table
     private static final int ALERTS = 10;
-    private static final String ALERTS_PATH = "alerts";
+    private static final String ALERTS_PATH = "alerts_table";
     public static final Uri ALERTS_URI = Uri.parse("content://" + AUTHORITY + "/" + ALERTS_PATH);
+    // Access URI to History table
+    private static final int HISTORY = 20;
+    private static final String HISTORY_PATH = "history_table";
+    public static final Uri HISTORY_URI = Uri.parse("content://" + AUTHORITY + "/" + HISTORY_PATH);
 
     private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
     static {
         sUriMatcher.addURI(AUTHORITY, ALERTS_PATH, ALERTS);
+        sUriMatcher.addURI(AUTHORITY, HISTORY_PATH, HISTORY);
     }
 
     @Override
@@ -65,8 +70,11 @@ public class DBContentProvider extends ContentProvider {
             case ALERTS:
                 queryBuilder.setTables(DBContract.Alerts.TABLE_NAME);
                 break;
+            case HISTORY:
+                queryBuilder.setTables(DBContract.History.TABLE_NAME);
+                break;
             default:
-                throw new IllegalArgumentException("Wrong URI: " + uri);
+                throw new IllegalArgumentException("ERROR - Wrong URI: " + uri);
         }
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor = queryBuilder.query(db, projection, selection, selectionArgs, null, null, sortOrder);
@@ -87,10 +95,15 @@ public class DBContentProvider extends ContentProvider {
             case ALERTS:
                 path = ALERTS_PATH;
                 id = db.insert(DBContract.Alerts.TABLE_NAME, null, values);
-                Log.d("DB", "Inserted ID: " + id);
+                Log.d("DB", "Inserted into Alerts table, ID: " + id);
+                break;
+            case HISTORY:
+                path = HISTORY_PATH;
+                id = db.insert(DBContract.History.TABLE_NAME, null, values);
+                Log.d("DB", "Inserted into History table, ID: " + id);
                 break;
             default:
-                throw new IllegalArgumentException("Wrong URI: " + uri);
+                throw new IllegalArgumentException("ERROR - Wrong URI: " + uri);
         }
         getContext().getContentResolver().notifyChange(uri, null);
         return Uri.parse(path + "/" + id);
@@ -106,12 +119,16 @@ public class DBContentProvider extends ContentProvider {
         switch (uriType) {
             case ALERTS:
                 rowsDeleted = db.delete(DBContract.Alerts.TABLE_NAME, selection, selectionArgs);
+                Log.d("DB", rowsDeleted + "row(s) deleted from Alerts table!");
+                break;
+            case HISTORY:
+                rowsDeleted = db.delete(DBContract.History.TABLE_NAME, selection, selectionArgs);
+                Log.d("DB", rowsDeleted + "row(s) deleted from History table!");
                 break;
             default:
-                throw new IllegalArgumentException("Wrong URI: " + uri);
+                throw new IllegalArgumentException("ERROR - Wrong URI: " + uri);
         }
         getContext().getContentResolver().notifyChange(uri, null);
-        Log.d("DB", rowsDeleted + "Row(s) deleted!");
         return rowsDeleted;
     }
 
@@ -125,9 +142,14 @@ public class DBContentProvider extends ContentProvider {
         switch (uriType) {
             case ALERTS:
                 rowsUpdated = db.update(DBContract.Alerts.TABLE_NAME, values, selection, selectionArgs);
+                Log.d("DB", rowsUpdated + "row(s) updated from Alerts table!");
+                break;
+            case HISTORY:
+                rowsUpdated = db.update(DBContract.History.TABLE_NAME, values, selection, selectionArgs);
+                Log.d("DB", rowsUpdated + "row(s) updated from History table!");
                 break;
             default:
-                throw new IllegalArgumentException("Wrong URI: " + uri);
+                throw new IllegalArgumentException("ERROR - Wrong URI: " + uri);
         }
         getContext().getContentResolver().notifyChange(uri, null);
         return rowsUpdated;
@@ -145,8 +167,23 @@ public class DBContentProvider extends ContentProvider {
             switch (uriType) {
                 case ALERTS:
                     availableC = new String[]{
+                            DBContract.Alerts._ID,
                             DBContract.Alerts.COL_ALERT_NAME,
-                            DBContract.Alerts._ID
+                            DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL
+                    };
+                    requested = new HashSet<>(Arrays.asList(projection));
+                    available = new HashSet<>(Arrays.asList(availableC));
+                    // Checks if all columns are available
+                    if (!available.containsAll(requested)) {
+                        throw new IllegalArgumentException("Invalid columns on projection");
+                    }
+                    break;
+                case HISTORY:
+                    availableC = new String[]{
+                            DBContract.History._ID,
+                            DBContract.History.COL_HISTORY_RELATED_ALERT_NAME,
+                            DBContract.History.COL_HISTORY_DOCUMENT_NAME,
+                            DBContract.History.COL_HISTORY_DOCUMENT_URL
                     };
                     requested = new HashSet<>(Arrays.asList(projection));
                     available = new HashSet<>(Arrays.asList(availableC));

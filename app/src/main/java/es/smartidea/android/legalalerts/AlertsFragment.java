@@ -20,7 +20,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 
 import es.smartidea.android.legalalerts.dbcontentprovider.DBContentProvider;
-import es.smartidea.android.legalalerts.dbcursoradapter.DBCursorAdapter;
+import es.smartidea.android.legalalerts.dbcursoradapter.DBAlertsCursorAdapter;
 import es.smartidea.android.legalalerts.dbhelper.DBContract;
 
 /**
@@ -36,7 +36,8 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     // Static String arguments for querying
     private static final String[] PROJECTION = new String[]{
             DBContract.Alerts._ID,
-            DBContract.Alerts.COL_ALERT_NAME
+            DBContract.Alerts.COL_ALERT_NAME,
+            DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL
     };
     private static final String SELECTION_NOTNULL = "((" +
             DBContract.Alerts.COL_ALERT_NAME + " NOTNULL) AND (" +
@@ -47,7 +48,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     private ListView listViewAlerts;
     private Cursor alertsCursor;
     // Declare DBAdapter
-    private DBCursorAdapter alertsAdapter;
+    private DBAlertsCursorAdapter alertsAdapter;
 
     private OnFragmentInteractionListener mListener;
 
@@ -69,6 +70,8 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
                     if (editTextAlert.getText().length() > 0) {
                         ContentValues values = new ContentValues();
                         values.put(DBContract.Alerts.COL_ALERT_NAME, editTextAlert.getText().toString());
+                        // TODO: Implement not-literal checkbox, now defaults to YES (0)
+                        values.put(DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL, 0);
                         getActivity().getContentResolver().insert(ALERTS_URI, values);
                         Snackbar.make(view, "Alert inserted into DB", Snackbar.LENGTH_SHORT)
                                 .setAction("Action", null).show();
@@ -106,27 +109,29 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    if (editTextAlert.getText().length() > 0) {
-                        String SELECTION = DBContract.Alerts.COL_ALERT_NAME +
-                                "='" + editTextAlert.getText().toString() + "'";
-
-                        Cursor queryCursor = getActivity().getContentResolver().query(ALERTS_URI,
-                                new String[]{DBContract.Alerts.COL_ALERT_NAME},
-                                SELECTION, null, null);
-
-                        if (queryCursor != null && queryCursor.getCount() > 0) {
-                            Snackbar.make(view, "Query returned " + queryCursor.getCount() + " results!.", Snackbar.LENGTH_LONG)
-                                    .setAction("Action", null).show();
-                            queryCursor.moveToFirst();
-                            queryCursor.close();
-                        } else {
-                            Snackbar.make(view, "Query returned no results!!!!.", Snackbar.LENGTH_LONG)
-                                    .setAction("Action", null).show();
-                        }
-                    } else {
-                        Snackbar.make(view, "Insert at least one character!!!", Snackbar.LENGTH_LONG)
-                                .setAction("Action", null).show();
-                    }
+                    DialogAlert dialogAlert = new DialogAlert();
+                    dialogAlert.show(getFragmentManager(), "dialog_alert");
+//                    if (editTextAlert.getText().length() > 0) {
+//                        String SELECTION = DBContract.Alerts.COL_ALERT_NAME +
+//                                "='" + editTextAlert.getText().toString() + "'";
+//
+//                        Cursor queryCursor = getActivity().getContentResolver().query(ALERTS_URI,
+//                                new String[]{DBContract.Alerts.COL_ALERT_NAME},
+//                                SELECTION, null, null);
+//
+//                        if (queryCursor != null && queryCursor.getCount() > 0) {
+//                            Snackbar.make(view, "Query returned " + queryCursor.getCount() + " results!.", Snackbar.LENGTH_LONG)
+//                                    .setAction("Action", null).show();
+//                            queryCursor.moveToFirst();
+//                            queryCursor.close();
+//                        } else {
+//                            Snackbar.make(view, "Query returned no results!!!!.", Snackbar.LENGTH_LONG)
+//                                    .setAction("Action", null).show();
+//                        }
+//                    } else {
+//                        Snackbar.make(view, "Insert at least one character!!!", Snackbar.LENGTH_LONG)
+//                                .setAction("Action", null).show();
+//                    }
                 }
             });
             // Assign listViewAlerts, setup of adapter and onClick methods are attached on initAlertsLoader()
@@ -139,7 +144,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     private void initAlertsLoader() {
         alertsCursor = getActivity().getContentResolver().query(ALERTS_URI, PROJECTION, SELECTION_NOTNULL, null, ORDER_ASC_BY_NAME);
         // TODO: Check CONTEXT
-        alertsAdapter = new DBCursorAdapter(((AppCompatActivity) getActivity()), R.layout.alert_list_item, alertsCursor, 0);
+        alertsAdapter = new DBAlertsCursorAdapter(((AppCompatActivity) getActivity()), R.layout.alert_list_item, alertsCursor, 0);
         listViewAlerts.setAdapter(alertsAdapter);
         // Prepare the loader.  Either re-connect with an existing one or start a new one.
         getActivity().getSupportLoaderManager().initLoader(0, null, this);

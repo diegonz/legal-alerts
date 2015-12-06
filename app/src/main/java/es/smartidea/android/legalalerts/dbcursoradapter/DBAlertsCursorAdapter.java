@@ -9,13 +9,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import es.smartidea.android.legalalerts.R;
 import es.smartidea.android.legalalerts.dbhelper.DBContract;
 
-public class DBCursorAdapter extends ResourceCursorAdapter {
-    public DBCursorAdapter(AppCompatActivity context,int layout, Cursor c, int flags) {
+public class DBAlertsCursorAdapter extends ResourceCursorAdapter {
+    public DBAlertsCursorAdapter(AppCompatActivity context, int layout, Cursor c, int flags) {
         super(context,layout, c, flags);
     }
 
@@ -27,12 +28,18 @@ public class DBCursorAdapter extends ResourceCursorAdapter {
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
         // Find a reference fields to inflate template
-        TextView textViewAlertListItem = (TextView) view.findViewById(R.id.textViewAlertListItem);
-        ImageButton buttonAlertListItem = (ImageButton) view.findViewById(R.id.buttonDeleteAlertListItem);
+        TextView textViewAlertListItem = (TextView)view.findViewById(R.id.textViewAlertListItem);
+        ImageView imageViewAlertListItemLiteral = (ImageView)view.findViewById(R.id.imageViewAlertListItemLiteral);
+        ImageButton buttonAlertListItem = (ImageButton)view.findViewById(R.id.buttonDeleteAlertListItem);
         // Get data from DBCursor
         final String alertName = cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Alerts.COL_ALERT_NAME));
+        final int alertIsLiteral = cursor.getInt(cursor.getColumnIndexOrThrow(DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL));
         // Populate the fields
         textViewAlertListItem.setText(alertName);
+        if (alertIsLiteral > 0){
+            // Change the resource image to an open padlock (not locked) if is set to not literal search
+            imageViewAlertListItemLiteral.setImageResource(android.R.drawable.ic_partial_secure);
+        }
         // Set onClick() methods fot buttons
         buttonAlertListItem.setOnClickListener(new View.OnClickListener() {
             @Override

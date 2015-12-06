@@ -23,7 +23,16 @@ public final class DBContract {
     // Subclass to define "alerts_table" table
     public static abstract class Alerts implements BaseColumns {
         public static final String TABLE_NAME = "alerts_table";
-        public static final String _ID = "_id";                         // _id of Alert
-        public static final String COL_ALERT_NAME = "alert_name";       // Name of Alert
+        public static final String _ID = "_id";                                                 // _id of Alert
+        public static final String COL_ALERT_NAME = "alert_name";                               // Name of Alert
+        public static final String COL_ALERT_SEARCH_NOT_LITERAL = "alert_search_not_literal";   // Search literally or not
+    }
+
+    public static abstract class History implements BaseColumns {
+        public static final String TABLE_NAME = "history_table";
+        public static final String _ID = "_id";                                                     // _id of history item
+        public static final String COL_HISTORY_RELATED_ALERT_NAME = "history_related_alert_name";   // Name of associated Alert
+        public static final String COL_HISTORY_DOCUMENT_NAME = "history_document_name";             // Name of associated XML/PDF
+        public static final String COL_HISTORY_DOCUMENT_URL = "history_document_url";               // URL of associated PDF
     }
 }
