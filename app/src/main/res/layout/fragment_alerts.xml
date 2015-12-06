@@ -37,6 +37,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/listViewAlerts"
+        android:animateLayoutChanges="true"
         android:layout_below="@+id/buttonDelete"
         android:layout_centerHorizontal="true" />
 
