@@ -109,29 +109,29 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-//                    DialogAlert dialogAlert = new DialogAlert();
-//                    dialogAlert.show();
-                    if (editTextAlert.getText().length() > 0) {
-                        String SELECTION = DBContract.Alerts.COL_ALERT_NAME +
-                                "='" + editTextAlert.getText().toString() + "'";
-
-                        Cursor queryCursor = getActivity().getContentResolver().query(ALERTS_URI,
-                                new String[]{DBContract.Alerts.COL_ALERT_NAME},
-                                SELECTION, null, null);
-
-                        if (queryCursor != null && queryCursor.getCount() > 0) {
-                            Snackbar.make(view, "Query returned " + queryCursor.getCount() + " results!.", Snackbar.LENGTH_LONG)
-                                    .setAction("Action", null).show();
-                            queryCursor.moveToFirst();
-                            queryCursor.close();
-                        } else {
-                            Snackbar.make(view, "Query returned no results!!!!.", Snackbar.LENGTH_LONG)
-                                    .setAction("Action", null).show();
-                        }
-                    } else {
-                        Snackbar.make(view, "Insert at least one character!!!", Snackbar.LENGTH_LONG)
-                                .setAction("Action", null).show();
-                    }
+                    DialogAlert dialogAlert = new DialogAlert();
+                    dialogAlert.show(getFragmentManager(), "dialog_alert");
+//                    if (editTextAlert.getText().length() > 0) {
+//                        String SELECTION = DBContract.Alerts.COL_ALERT_NAME +
+//                                "='" + editTextAlert.getText().toString() + "'";
+//
+//                        Cursor queryCursor = getActivity().getContentResolver().query(ALERTS_URI,
+//                                new String[]{DBContract.Alerts.COL_ALERT_NAME},
+//                                SELECTION, null, null);
+//
+//                        if (queryCursor != null && queryCursor.getCount() > 0) {
+//                            Snackbar.make(view, "Query returned " + queryCursor.getCount() + " results!.", Snackbar.LENGTH_LONG)
+//                                    .setAction("Action", null).show();
+//                            queryCursor.moveToFirst();
+//                            queryCursor.close();
+//                        } else {
+//                            Snackbar.make(view, "Query returned no results!!!!.", Snackbar.LENGTH_LONG)
+//                                    .setAction("Action", null).show();
+//                        }
+//                    } else {
+//                        Snackbar.make(view, "Insert at least one character!!!", Snackbar.LENGTH_LONG)
+//                                .setAction("Action", null).show();
+//                    }
                 }
             });
             // Assign listViewAlerts, setup of adapter and onClick methods are attached on initAlertsLoader()

@@ -37,7 +37,8 @@ public class DialogAlert extends DialogFragment {
                             // TODO: Implement not-literal checkbox, now defaults to YES (0)
                             values.put(DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL, 0);
                             getActivity().getContentResolver().insert(ALERTS_URI, values);
-                            Snackbar.make(view, "Alert inserted into DB", Snackbar.LENGTH_SHORT)
+                            Snackbar.make(getActivity().findViewById(R.id.fragmentMainPlaceholder),
+                                    "Alert inserted into DB", Snackbar.LENGTH_SHORT)
                                     .setAction("Action", null).show();
                             // TODO: Check for alternatives to close dialog after job done.
                             DialogAlert.this.getDialog().dismiss();
