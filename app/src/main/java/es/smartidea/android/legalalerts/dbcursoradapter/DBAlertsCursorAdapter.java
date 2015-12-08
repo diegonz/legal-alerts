@@ -2,6 +2,7 @@ package es.smartidea.android.legalalerts.dbcursoradapter;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.net.Uri;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.ResourceCursorAdapter;
 import android.support.v7.app.AppCompatActivity;
@@ -13,9 +14,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import es.smartidea.android.legalalerts.R;
+import es.smartidea.android.legalalerts.dbcontentprovider.DBContentProvider;
 import es.smartidea.android.legalalerts.dbhelper.DBContract;
 
 public class DBAlertsCursorAdapter extends ResourceCursorAdapter {
+    // URI of DB
+    private static final Uri ALERTS_URI = DBContentProvider.ALERTS_URI;
+
     public DBAlertsCursorAdapter(AppCompatActivity context, int layout, Cursor c, int flags) {
         super(context,layout, c, flags);
     }
@@ -26,7 +31,7 @@ public class DBAlertsCursorAdapter extends ResourceCursorAdapter {
     }
 
     @Override
-    public void bindView(View view, Context context, Cursor cursor) {
+    public void bindView(View view, final Context context, Cursor cursor) {
         // Find a reference fields to inflate template
         TextView textViewAlertListItem = (TextView)view.findViewById(R.id.textViewAlertListItem);
         ImageView imageViewAlertListItemLiteral = (ImageView)view.findViewById(R.id.imageViewAlertListItemLiteral);
@@ -44,7 +49,10 @@ public class DBAlertsCursorAdapter extends ResourceCursorAdapter {
         buttonAlertListItem.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Clicked on: " + alertName + " !!!", Snackbar.LENGTH_SHORT).setAction("Action", null).show();
+                String SELECTION = DBContract.Alerts.COL_ALERT_NAME + "='" + alertName + "'";
+                int hits = context.getContentResolver().delete(ALERTS_URI, SELECTION, null);
+                Snackbar.make(view, hits + " Alerts named: " + alertName + " deleted from DB", Snackbar.LENGTH_SHORT)
+                        .setAction("Action", null).show();
             }
         });
     }

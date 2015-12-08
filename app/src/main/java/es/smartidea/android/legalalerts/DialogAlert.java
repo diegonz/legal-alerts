@@ -15,7 +15,6 @@ import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.ToggleButton;
 
 import es.smartidea.android.legalalerts.dbcontentprovider.DBContentProvider;
 import es.smartidea.android.legalalerts.dbhelper.DBContract;

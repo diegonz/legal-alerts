@@ -11,7 +11,9 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -57,11 +59,24 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_alerts, container, false);
+        // Get inflated view of this layout´s fragment
+        final View view = inflater.inflate(R.layout.fragment_alerts, container, false);
 
         if (view != null){
             final EditText editTextAlert = (EditText) view.findViewById(R.id.editTextAlert);
+
+            final SwipeRefreshLayout swipeLayout = (SwipeRefreshLayout)view.findViewById(R.id.fragment_alerts_swipe_layout);
+            swipeLayout.setColorSchemeResources(R.color.colorPrimary, R.color.colorAccent);
+            swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+                @Override
+                public void onRefresh() {
+                    // TODO: Add manual Alerts check based on swipe.
+                    Snackbar.make(view, "Swiped to refresh!!!", Snackbar.LENGTH_SHORT)
+                            .setAction("Action", null).show();
+                    Log.d("UI/UX", "Swiped to refresh!!!");
+                    swipeLayout.setRefreshing(false);
+                }
+            });
 
             Button buttonAdd = (Button) view.findViewById(R.id.buttonAdd);
             buttonAdd.setOnClickListener(new View.OnClickListener() {
@@ -76,7 +91,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
                         Snackbar.make(view, "Alert inserted into DB", Snackbar.LENGTH_SHORT)
                                 .setAction("Action", null).show();
                     } else {
-                        Snackbar.make(view, "Insert at least one character!!!", Snackbar.LENGTH_LONG)
+                        Snackbar.make(view, "Insert at least one character!!!", Snackbar.LENGTH_SHORT)
                                 .setAction("Action", null).show();
                     }
                 }
@@ -98,7 +113,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
                                     .setAction("Action", null).show();
                         }
                     } else {
-                        Snackbar.make(view, "Insert at least one character!!!", Snackbar.LENGTH_LONG)
+                        Snackbar.make(view, "Insert at least one character!!!", Snackbar.LENGTH_SHORT)
                                 .setAction("Action", null).show();
                     }
                 }
@@ -120,16 +135,16 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
 //                                SELECTION, null, null);
 //
 //                        if (queryCursor != null && queryCursor.getCount() > 0) {
-//                            Snackbar.make(view, "Query returned " + queryCursor.getCount() + " results!.", Snackbar.LENGTH_LONG)
+//                            Snackbar.make(view, "Query returned " + queryCursor.getCount() + " results!.", Snackbar.LENGTH_SHORT)
 //                                    .setAction("Action", null).show();
 //                            queryCursor.moveToFirst();
 //                            queryCursor.close();
 //                        } else {
-//                            Snackbar.make(view, "Query returned no results!!!!.", Snackbar.LENGTH_LONG)
+//                            Snackbar.make(view, "Query returned no results!!!!.", Snackbar.LENGTH_SHORT)
 //                                    .setAction("Action", null).show();
 //                        }
 //                    } else {
-//                        Snackbar.make(view, "Insert at least one character!!!", Snackbar.LENGTH_LONG)
+//                        Snackbar.make(view, "Insert at least one character!!!", Snackbar.LENGTH_SHORT)
 //                                .setAction("Action", null).show();
 //                    }
                 }
