@@ -1,5 +1,6 @@
 package es.smartidea.android.legalalerts;
 
+import android.support.annotation.NonNull;
 import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.DialogInterface;
@@ -12,7 +13,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.support.annotation.NonNull;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
@@ -30,7 +30,7 @@ public class DialogAlert extends DialogFragment {
         // Use the Builder class for convenient dialog construction
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = getActivity().getLayoutInflater();
-        final View view = inflater.inflate(R.layout.alert_dialog, null); // TODO: Add passing rootView
+        final View view = inflater.inflate(R.layout.alert_dialog, null); // TODO: Check add passing rootView
         final EditText editTextDialogAlert = (EditText)view.findViewById(R.id.editTextDialogAlert);
         final TextView textViewLiteralInfo = (TextView)view.findViewById(R.id.textViewLiteralInfo);
         final ToggleButton toggleButtonLiteralSearch = (ToggleButton)view.findViewById(R.id.toggleButtonLiteralSearch);
