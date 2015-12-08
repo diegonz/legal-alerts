@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.SwitchCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CompoundButton;
@@ -33,11 +34,11 @@ public class DialogAlert extends DialogFragment {
         final View view = inflater.inflate(R.layout.alert_dialog, null); // TODO: Check add passing rootView
         final EditText editTextDialogAlert = (EditText)view.findViewById(R.id.editTextDialogAlert);
         final TextView textViewLiteralInfo = (TextView)view.findViewById(R.id.textViewLiteralInfo);
-        final ToggleButton toggleButtonLiteralSearch = (ToggleButton)view.findViewById(R.id.toggleButtonLiteralSearch);
-        toggleButtonLiteralSearch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        final SwitchCompat switchLiteralSearch = (SwitchCompat)view.findViewById(R.id.switchLiteralSearch);
+        switchLiteralSearch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if (b){
+                if (b) {
                     textViewLiteralInfo.setText(R.string.info_literal);
                 } else {
                     textViewLiteralInfo.setText(R.string.info_not_literal);
@@ -51,7 +52,7 @@ public class DialogAlert extends DialogFragment {
                             ContentValues values = new ContentValues();
                             values.put(DBContract.Alerts.COL_ALERT_NAME, editTextDialogAlert.getText().toString());
                             // Get REVERSE toggle button state by casting a boolean with ternary operator expression.
-                            int literalIntValue = (!toggleButtonLiteralSearch.isChecked()) ? 1 : 0;
+                            int literalIntValue = (!switchLiteralSearch.isChecked()) ? 1 : 0;
                             values.put(DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL, literalIntValue);
                             getActivity().getContentResolver().insert(ALERTS_URI, values);
                             Snackbar.make(getActivity().findViewById(R.id.fragmentMainPlaceholder),

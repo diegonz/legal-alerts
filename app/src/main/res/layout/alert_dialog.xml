@@ -69,7 +69,7 @@
         <android.support.v7.widget.SwitchCompat
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/toggleButtonLiteralSearch"
+            android:id="@+id/switchLiteralSearch"
             android:checked="true"
             android:textOff="@string/text_off"
             android:textOn="@string/text_literal_search"
