@@ -1,13 +1,15 @@
 package es.smartidea.android.legalalerts;
 
-import android.net.Uri;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.view.View;
+import android.support.v7.app.NotificationCompat;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -24,12 +26,14 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Get Intent extras
+        String initOnFragment = getIntent().getStringExtra("initOnFragment");
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         // TODO: Setup FAB button on each fragment programmatically
-        //FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -40,13 +44,29 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        // If not savedInstanceState (start from scratch) set main fragment
-        if (savedInstanceState == null){
-            FragmentTransaction initFragment = getSupportFragmentManager().beginTransaction();
-            initFragment.replace(R.id.fragmentMainPlaceholder, new AlertsFragment(), "Fragment Alerts");
-            initFragment.commit();
-            setTitle(R.string.app_name);
+        // Set Fragment depending on Intent extras
+        Class fragmentInitClass = AlertsFragment.class;
+
+        if (initOnFragment != null){
+            switch (initOnFragment) {
+                case "history":
+                    fragmentInitClass = HistoryFragment.class;
+                    break;
+            }
         }
+
+        Fragment fragment = null;
+        try {
+            fragment = (Fragment) fragmentInitClass.newInstance();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        FragmentTransaction initFragment = getSupportFragmentManager().beginTransaction();
+        initFragment.replace(R.id.fragmentMainPlaceholder, fragment, initOnFragment);
+        initFragment.commit();
+        // TODO: Check title
+        setTitle(initOnFragment);
+
     }
 
     @Override
@@ -131,8 +151,26 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onFragmentInteraction(Uri uri) {
-        // TODO Implement FragmentListener
+    public void onClickedAddButton(String title, String message) {
+        showAlertNotification(title, message);
     }
 
+    public void showAlertNotification(String title, String message) {
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.putExtra("initOnFragment","history" );
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Resources resources = getResources();
+        Notification notification = new NotificationCompat.Builder(this)
+                .setTicker(resources.getString(R.string.app_name))
+                .setSmallIcon(android.R.drawable.ic_popup_reminder)
+                .setContentTitle(title)
+                .setContentText(message)
+                .setContentIntent(pendingIntent)
+//                .setAutoCancel(true)
+                .build();
+
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        notification.flags |= Notification.FLAG_AUTO_CANCEL;
+        notificationManager.notify(0, notification);
+    }
 }

@@ -1,6 +1,5 @@
 package es.smartidea.android.legalalerts;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
@@ -52,7 +51,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     // Declare DBAdapter
     private DBAlertsCursorAdapter alertsAdapter;
 
-    private OnFragmentInteractionListener mListener;
+    private OnFragmentInteractionListener fragmentInteractionListener;
 
     // Required empty public constructor
     public AlertsFragment() {}
@@ -65,14 +64,14 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
         if (view != null){
             final EditText editTextAlert = (EditText) view.findViewById(R.id.editTextAlert);
 
+            // Swipe to refresh layout, implements an action on pull down.
             final SwipeRefreshLayout swipeLayout = (SwipeRefreshLayout)view.findViewById(R.id.fragment_alerts_swipe_layout);
             swipeLayout.setColorSchemeResources(R.color.colorPrimary, R.color.colorAccent);
             swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
                 @Override
                 public void onRefresh() {
                     // TODO: Add manual Alerts check based on swipe.
-                    Snackbar.make(view, "Swiped to refresh!!!", Snackbar.LENGTH_SHORT)
-                            .setAction("Action", null).show();
+                    fragmentInteractionListener.onClickedAddButton("Swipe2Refresh", "You swiped to refresh!!!");
                     Log.d("UI/UX", "Swiped to refresh!!!");
                     swipeLayout.setRefreshing(false);
                 }
@@ -83,13 +82,9 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
                 @Override
                 public void onClick(View view) {
                     if (editTextAlert.getText().length() > 0) {
-                        ContentValues values = new ContentValues();
-                        values.put(DBContract.Alerts.COL_ALERT_NAME, editTextAlert.getText().toString());
-                        // TODO: Implement not-literal checkbox, now defaults to YES (0)
-                        values.put(DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL, 0);
-                        getActivity().getContentResolver().insert(ALERTS_URI, values);
-                        Snackbar.make(view, "Alert inserted into DB", Snackbar.LENGTH_SHORT)
-                                .setAction("Action", null).show();
+                        // Send notification event
+                        fragmentInteractionListener.onClickedAddButton(editTextAlert.getText().toString(),
+                                getResources().getString(R.string.info_literal));
                     } else {
                         Snackbar.make(view, "Insert at least one character!!!", Snackbar.LENGTH_SHORT)
                                 .setAction("Action", null).show();
@@ -165,18 +160,11 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
         getActivity().getSupportLoaderManager().initLoader(0, null, this);
     }
 
-//    // TODO: Rename method, update argument and hook method into UI event
-//    public void onButtonPressed(Uri uri) {
-//        if (mListener != null) {
-//            mListener.onFragmentInteraction(uri);
-//        }
-//    }
-
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
+            fragmentInteractionListener = (OnFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
@@ -193,7 +181,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     @Override
     public void onResume() {
         super.onResume();
-        // Launch LoaderManager when onAttach() Fragment;
+        // Launch LoaderManager when onResume() Fragment;
         initAlertsLoader();
 
     }
@@ -211,7 +199,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
+        fragmentInteractionListener = null;
     }
 
     /**
@@ -221,8 +209,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
      * activity.
      */
     public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
+        void onClickedAddButton(String title, String message);
     }
 
     // Returns a new loader after the initAlertsLoader() call

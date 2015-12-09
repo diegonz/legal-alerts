@@ -119,11 +119,11 @@ public class DBContentProvider extends ContentProvider {
         switch (uriType) {
             case ALERTS:
                 rowsDeleted = db.delete(DBContract.Alerts.TABLE_NAME, selection, selectionArgs);
-                Log.d("DB", rowsDeleted + "row(s) deleted from Alerts table!");
+                Log.d("DB", rowsDeleted + " row(s) deleted from Alerts table!");
                 break;
             case HISTORY:
                 rowsDeleted = db.delete(DBContract.History.TABLE_NAME, selection, selectionArgs);
-                Log.d("DB", rowsDeleted + "row(s) deleted from History table!");
+                Log.d("DB", rowsDeleted + " row(s) deleted from History table!");
                 break;
             default:
                 throw new IllegalArgumentException("ERROR - Wrong URI: " + uri);
