@@ -4,7 +4,7 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
-    <string name="nav_alerts">My Alerts</string>
+    <string name="nav_alerts">Legal Alerts</string>
     <string name="nav_new_alert">New Alert</string>
     <string name="nav_history">History</string>
     <string name="nav_settings">Settings</string>
@@ -20,6 +20,8 @@
     <string name="button_dialog_alert_save">Save</string>
     <string name="button_delete_alert">Delete</string>
     <string name="button_dialog_alert_cancel">Cancel</string>
+
+    <string name="button_notify_alert">Notify</string>
 
     <string name="text_alert_colon">Alert:</string>
     <string name="text_literal_search"><b>Literal Search</b></string>

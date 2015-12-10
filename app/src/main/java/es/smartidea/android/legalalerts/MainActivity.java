@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.NotificationCompat;
 import android.support.design.widget.NavigationView;
@@ -16,7 +15,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -24,63 +22,34 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         AlertsFragment.OnFragmentInteractionListener {
 
-    // Simple running fragment identifiers
+    // Integer Fragment identifiers
     private static final int FRAGMENT_ALERTS = 0;
     private static final int FRAGMENT_HISTORY = 1;
-    private int RUNNING_FRAGMENT = 0;
-    private String VIEW_TITLE;
+    // Running Fragment initialized to minus one (no matches)
+    private int RUNNING_FRAGMENT = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Get Intent extras
+        // Get Intent extras (if opening activity from notification)
         int initOnFragment = getIntent().getIntExtra("initOnFragment", FRAGMENT_ALERTS);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        // TODO: Setup FAB button on each fragment programmatically
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        // Set Drawer toggle
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar,
+                R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        // Set Fragment depending on Intent extras
-        Class fragmentInitClass;
-
-        switch (initOnFragment){
-            case FRAGMENT_ALERTS:
-                fragmentInitClass = AlertsFragment.class;
-                VIEW_TITLE = getResources().getString(R.string.app_name);
-                break;
-            case FRAGMENT_HISTORY:
-                fragmentInitClass = HistoryFragment.class;
-                VIEW_TITLE = getResources().getString(R.string.nav_history);
-                break;
-            default:
-                fragmentInitClass = AlertsFragment.class;
-                VIEW_TITLE = getResources().getString(R.string.app_name);
-                break;
-        }
-
-        Fragment fragment = null;
-        try {
-            fragment = (Fragment) fragmentInitClass.newInstance();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        FragmentTransaction initFragment = getSupportFragmentManager().beginTransaction();
-        initFragment.replace(R.id.fragmentMainPlaceholder, fragment, VIEW_TITLE);
-        initFragment.commit();
-        // TODO: Check title
-        setTitle(VIEW_TITLE);
-
+        // Replace fragment according to intent extras
+        // If starting from scratch defaults to FRAGMENT_ALERTS
+        replaceFragment(initOnFragment);
     }
 
     @Override
@@ -121,59 +90,51 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        Fragment fragment = null;
-        Class fragmentClass = AlertsFragment.class;
         Boolean startDialogAlert = false;
 
         if (id == R.id.nav_alerts) {
-            fragmentClass = AlertsFragment.class;
+            replaceFragment(FRAGMENT_ALERTS);
             RUNNING_FRAGMENT = FRAGMENT_ALERTS;
         } else if (id == R.id.nav_add_alert) {
-            fragmentClass = AlertsFragment.class;
-            // Set start dialog flag TODO: Check alternatives (frag listener?)
+            replaceFragment(FRAGMENT_ALERTS);
+            // Set start dialog flag after replacing
             startDialogAlert = true;
         } else if (id == R.id.nav_history) {
-            fragmentClass = HistoryFragment.class;
+            replaceFragment(FRAGMENT_HISTORY);
             RUNNING_FRAGMENT = FRAGMENT_HISTORY;
         } else if (id == R.id.nav_manage) {
-
+            replaceFragment(FRAGMENT_ALERTS);
+            RUNNING_FRAGMENT = FRAGMENT_ALERTS;
         } else if (id == R.id.nav_share) {
-
+            replaceFragment(FRAGMENT_ALERTS);
+            RUNNING_FRAGMENT = FRAGMENT_ALERTS;
         } else if (id == R.id.nav_send) {
-
+            replaceFragment(FRAGMENT_ALERTS);
+            RUNNING_FRAGMENT = FRAGMENT_ALERTS;
         }
-
-        try {
-            fragment = (Fragment) fragmentClass.newInstance();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // Insert the fragment by replacing any existing fragment
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.fragmentMainPlaceholder, fragment).commit();
 
         // Highlight the selected item, update the title, and close the drawer
         item.setChecked(true);
         setTitle(item.getTitle());
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
-        // Start dialog Alert TODO: Check alternatives (frag listener?)
+        // TODO: Check alternatives (frag listener?)
+        // Start Alert dialog after replacing Fragment setting title and closing Drawer
         if (startDialogAlert){
             DialogAlert dialogAlert = new DialogAlert();
-            dialogAlert.show(fragmentManager, "dialog_alert");
+            dialogAlert.show(getSupportFragmentManager(), "dialog_alert");
         }
         return true;
     }
 
-    @Override
-    protected void onNewIntent(Intent intent) {
-        Log.d("Intent", "Intent received!");
-        super.onNewIntent(intent);
-        // Get Intent extras
-        int initOnFragment = getIntent().getIntExtra("initOnFragment", FRAGMENT_ALERTS);
-        replaceFragment(initOnFragment);
-    }
+    // TODO: Reuse activity from Notification if app is running
+//    @Override
+//    protected void onNewIntent(Intent intent) {
+//        Log.d("Intent", "Intent received!");
+//        super.onNewIntent(intent);
+//        // Get Intent extras and start Fragment replacing
+//        replaceFragment(intent.getIntExtra("initOnFragment", FRAGMENT_ALERTS));
+//    }
 
     /**
      * replaceFragment (final int fragmentID)
@@ -185,6 +146,7 @@ public class MainActivity extends AppCompatActivity
      **/
     public void replaceFragment(final int fragmentID){
 
+        String VIEW_TITLE;
         // Check if RUNNING_FRAGMENT is the same received
         if (RUNNING_FRAGMENT != fragmentID){
             Fragment fragment = null;
@@ -210,35 +172,35 @@ public class MainActivity extends AppCompatActivity
                 e.printStackTrace();
             }
             // Insert the fragment by replacing any existing fragment
-            FragmentManager fragmentManager = getSupportFragmentManager();
-            fragmentManager.beginTransaction()
-                    .replace(R.id.fragmentMainPlaceholder, fragment)
-                    .commit();
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.replace(R.id.fragmentMainPlaceholder, fragment);
+            fragmentTransaction.commit();
+            setTitle(VIEW_TITLE);
             RUNNING_FRAGMENT = fragmentID;
         }
     }
 
-    @Override
-    public void onClickedAddButton(String title, String message) {
-        showAlertNotification(title, message);
-    }
-
     /**
      * Void method showAlertNotification(String title, String message)
+     *
      * Shows notification according to given parameters
-     * String title
-     * String message
-    * */
+     *
+     * @param title String corresponding to Notification´s title
+     * @param  message String corresponding to Notification´s title
+     **/
     public void showAlertNotification(String title, String message) {
+        // Define notification´s associated intent action
         Intent intent = new Intent(this, MainActivity.class);
+        // Put Fragment (int) identifier on "initOnFragment" (where to start if app is not running)
         intent.putExtra("initOnFragment", FRAGMENT_HISTORY);
-        /**
-         * Reuse MainActivity if possible (ex: is running, paused...)
-         * also can use "Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED"
-         * "FLAG_ACTIVITY_CLEAR_TOP" "FLAG_ACTIVITY_SINGLE_TOP" and others.
-         * check: http://developer.android.com/intl/es/reference/android/content/Intent.html#constants
-         */
-//        intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+        /*
+        * TODO: Try to reuse MainActivity if possible (ex: is running, onPause...)
+        * also tried "Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED"
+        * "FLAG_ACTIVITY_CLEAR_TOP" "FLAG_ACTIVITY_SINGLE_TOP" and others.
+        * intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        * check: http://developer.android.com/intl/es/reference/android/content/Intent.html#constants
+        */
+        intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         Resources resources = getResources();
         Notification notification = new NotificationCompat.Builder(this)
@@ -249,8 +211,13 @@ public class MainActivity extends AppCompatActivity
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true)
                 .build();
-
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notificationManager.notify(0, notification);
+    }
+
+    // Simple listener interface defined on AlertsFragment
+    @Override
+    public void onClickedAddButton(String title, String message) {
+        showAlertNotification(title, message);
     }
 }

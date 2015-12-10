@@ -56,6 +56,9 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     // Required empty public constructor
     public AlertsFragment() {}
 
+    /**
+     * Start fragment lifecycle
+     * */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Get inflated view of this layout´s fragment
@@ -92,28 +95,6 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
                 }
             });
 
-            Button buttonDelete = (Button) view.findViewById(R.id.buttonDelete);
-            buttonDelete.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (editTextAlert.getText().length() > 0) {
-                        String SELECTION = DBContract.Alerts.COL_ALERT_NAME +
-                                "='" + editTextAlert.getText().toString() + "'";
-                        int hits = getActivity().getContentResolver().delete(ALERTS_URI, SELECTION, null);
-                        if (hits > 0) {
-                            Snackbar.make(view, hits + " Alerts deleted from DB", Snackbar.LENGTH_SHORT)
-                                    .setAction("Action", null).show();
-                        } else {
-                            Snackbar.make(view, "Alert not found into DB!!!", Snackbar.LENGTH_SHORT)
-                                    .setAction("Action", null).show();
-                        }
-                    } else {
-                        Snackbar.make(view, "Insert at least one character!!!", Snackbar.LENGTH_SHORT)
-                                .setAction("Action", null).show();
-                    }
-                }
-            });
-
             // Get FAB reference with getActivity() to access MainActivity's FAB in CoordinatorLayout
             FloatingActionButton fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
             fab.setOnClickListener(new View.OnClickListener() {
@@ -121,43 +102,12 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
                 public void onClick(View view) {
                     DialogAlert dialogAlert = new DialogAlert();
                     dialogAlert.show(getFragmentManager(), "dialog_alert");
-//                    if (editTextAlert.getText().length() > 0) {
-//                        String SELECTION = DBContract.Alerts.COL_ALERT_NAME +
-//                                "='" + editTextAlert.getText().toString() + "'";
-//
-//                        Cursor queryCursor = getActivity().getContentResolver().query(ALERTS_URI,
-//                                new String[]{DBContract.Alerts.COL_ALERT_NAME},
-//                                SELECTION, null, null);
-//
-//                        if (queryCursor != null && queryCursor.getCount() > 0) {
-//                            Snackbar.make(view, "Query returned " + queryCursor.getCount() + " results!.", Snackbar.LENGTH_SHORT)
-//                                    .setAction("Action", null).show();
-//                            queryCursor.moveToFirst();
-//                            queryCursor.close();
-//                        } else {
-//                            Snackbar.make(view, "Query returned no results!!!!.", Snackbar.LENGTH_SHORT)
-//                                    .setAction("Action", null).show();
-//                        }
-//                    } else {
-//                        Snackbar.make(view, "Insert at least one character!!!", Snackbar.LENGTH_SHORT)
-//                                .setAction("Action", null).show();
-//                    }
                 }
             });
             // Assign listViewAlerts, setup of adapter and onClick methods are attached on initAlertsLoader()
             listViewAlerts = (ListView) view.findViewById(R.id.listViewAlerts);
         }
         return view;
-    }
-
-    // Attach alertsAdapter to ListViewAlerts
-    private void initAlertsLoader() {
-        alertsCursor = getActivity().getContentResolver().query(ALERTS_URI, PROJECTION, SELECTION_NOTNULL, null, ORDER_ASC_BY_NAME);
-        // TODO: Check CONTEXT
-        alertsAdapter = new DBAlertsCursorAdapter(((AppCompatActivity) getActivity()), R.layout.alert_list_item, alertsCursor, 0);
-        listViewAlerts.setAdapter(alertsAdapter);
-        // Prepare the loader.  Either re-connect with an existing one or start a new one.
-        getActivity().getSupportLoaderManager().initLoader(0, null, this);
     }
 
     @Override
@@ -174,14 +124,14 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        // Attach alertsAdapter to ListViewAlerts
+        // Set alertsAdapter to ListViewAlerts
         initAlertsLoader();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        // Launch LoaderManager when onResume() Fragment;
+        // Launch LoaderManager when onResume()
         initAlertsLoader();
 
     }
@@ -190,7 +140,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     public void onPause() {
         super.onPause();
         if (alertsCursor != null) {
-            // Close Cursor and destroy LoaderManager when onDetach()
+            // Close Cursor and destroy LoaderManager when onPause()
             alertsCursor.close();
             getActivity().getSupportLoaderManager().destroyLoader(0);
         }
@@ -203,14 +153,8 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     }
 
     /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     */
-    public interface OnFragmentInteractionListener {
-        void onClickedAddButton(String title, String message);
-    }
+     * End fragment lifecycle
+     * */
 
     // Returns a new loader after the initAlertsLoader() call
     @Override
@@ -230,4 +174,23 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
         alertsAdapter.swapCursor(null);
     }
 
+    // Set alertsAdapter to ListViewAlerts
+    private void initAlertsLoader() {
+        alertsCursor = getActivity().getContentResolver().query(ALERTS_URI, PROJECTION, SELECTION_NOTNULL, null, ORDER_ASC_BY_NAME);
+        // TODO: Check CONTEXT
+        alertsAdapter = new DBAlertsCursorAdapter(((AppCompatActivity) getActivity()), R.layout.alert_list_item, alertsCursor, 0);
+        listViewAlerts.setAdapter(alertsAdapter);
+        // Prepare the loader.  Either re-connect with an existing one or start a new one.
+        getActivity().getSupportLoaderManager().initLoader(0, null, this);
+    }
+
+    /**
+     * This interface must be implemented by activities that contain this
+     * fragment to allow an interaction in this fragment to be communicated
+     * to the activity and potentially other fragments contained in that
+     * activity.
+     */
+    public interface OnFragmentInteractionListener {
+        void onClickedAddButton(String title, String message);
+    }
 }
