@@ -16,6 +16,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -23,12 +24,18 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         AlertsFragment.OnFragmentInteractionListener {
 
+    // Simple running fragment identifiers
+    private static final int FRAGMENT_ALERTS = 0;
+    private static final int FRAGMENT_HISTORY = 1;
+    private int RUNNING_FRAGMENT = 0;
+    private String VIEW_TITLE;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         // Get Intent extras
-        String initOnFragment = getIntent().getStringExtra("initOnFragment");
+        int initOnFragment = getIntent().getIntExtra("initOnFragment", FRAGMENT_ALERTS);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -45,14 +52,21 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         // Set Fragment depending on Intent extras
-        Class fragmentInitClass = AlertsFragment.class;
+        Class fragmentInitClass;
 
-        if (initOnFragment != null){
-            switch (initOnFragment) {
-                case "history":
-                    fragmentInitClass = HistoryFragment.class;
-                    break;
-            }
+        switch (initOnFragment){
+            case FRAGMENT_ALERTS:
+                fragmentInitClass = AlertsFragment.class;
+                VIEW_TITLE = getResources().getString(R.string.app_name);
+                break;
+            case FRAGMENT_HISTORY:
+                fragmentInitClass = HistoryFragment.class;
+                VIEW_TITLE = getResources().getString(R.string.nav_history);
+                break;
+            default:
+                fragmentInitClass = AlertsFragment.class;
+                VIEW_TITLE = getResources().getString(R.string.app_name);
+                break;
         }
 
         Fragment fragment = null;
@@ -62,10 +76,10 @@ public class MainActivity extends AppCompatActivity
             e.printStackTrace();
         }
         FragmentTransaction initFragment = getSupportFragmentManager().beginTransaction();
-        initFragment.replace(R.id.fragmentMainPlaceholder, fragment, initOnFragment);
+        initFragment.replace(R.id.fragmentMainPlaceholder, fragment, VIEW_TITLE);
         initFragment.commit();
         // TODO: Check title
-        setTitle(initOnFragment);
+        setTitle(VIEW_TITLE);
 
     }
 
@@ -113,12 +127,14 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.nav_alerts) {
             fragmentClass = AlertsFragment.class;
+            RUNNING_FRAGMENT = FRAGMENT_ALERTS;
         } else if (id == R.id.nav_add_alert) {
             fragmentClass = AlertsFragment.class;
             // Set start dialog flag TODO: Check alternatives (frag listener?)
             startDialogAlert = true;
         } else if (id == R.id.nav_history) {
             fragmentClass = HistoryFragment.class;
+            RUNNING_FRAGMENT = FRAGMENT_HISTORY;
         } else if (id == R.id.nav_manage) {
 
         } else if (id == R.id.nav_share) {
@@ -151,13 +167,78 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        Log.d("Intent", "Intent received!");
+        super.onNewIntent(intent);
+        // Get Intent extras
+        int initOnFragment = getIntent().getIntExtra("initOnFragment", FRAGMENT_ALERTS);
+        replaceFragment(initOnFragment);
+    }
+
+    /**
+     * replaceFragment (final int fragmentID)
+     *
+     * Replaces Fragment given by fragmentID on main fragment placeholder
+     *
+     * @param fragmentID : Numeric ID of objective fragment
+     *
+     **/
+    public void replaceFragment(final int fragmentID){
+
+        // Check if RUNNING_FRAGMENT is the same received
+        if (RUNNING_FRAGMENT != fragmentID){
+            Fragment fragment = null;
+            Class fragmentClass;
+
+            switch (fragmentID) {
+                case FRAGMENT_ALERTS:
+                    fragmentClass = AlertsFragment.class;
+                    VIEW_TITLE = getResources().getString(R.string.nav_alerts);
+                    break;
+                case FRAGMENT_HISTORY:
+                    fragmentClass = HistoryFragment.class;
+                    VIEW_TITLE = getResources().getString(R.string.nav_history);
+                    break;
+                default:
+                    fragmentClass = AlertsFragment.class;
+                    VIEW_TITLE = getResources().getString(R.string.nav_alerts);
+                    break;
+            }
+            try {
+                fragment = (Fragment) fragmentClass.newInstance();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            // Insert the fragment by replacing any existing fragment
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            fragmentManager.beginTransaction()
+                    .replace(R.id.fragmentMainPlaceholder, fragment)
+                    .commit();
+            RUNNING_FRAGMENT = fragmentID;
+        }
+    }
+
+    @Override
     public void onClickedAddButton(String title, String message) {
         showAlertNotification(title, message);
     }
 
+    /**
+     * Void method showAlertNotification(String title, String message)
+     * Shows notification according to given parameters
+     * String title
+     * String message
+    * */
     public void showAlertNotification(String title, String message) {
         Intent intent = new Intent(this, MainActivity.class);
-        intent.putExtra("initOnFragment","history" );
+        intent.putExtra("initOnFragment", FRAGMENT_HISTORY);
+        /**
+         * Reuse MainActivity if possible (ex: is running, paused...)
+         * also can use "Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED"
+         * "FLAG_ACTIVITY_CLEAR_TOP" "FLAG_ACTIVITY_SINGLE_TOP" and others.
+         * check: http://developer.android.com/intl/es/reference/android/content/Intent.html#constants
+         */
+//        intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         Resources resources = getResources();
         Notification notification = new NotificationCompat.Builder(this)
@@ -166,11 +247,10 @@ public class MainActivity extends AppCompatActivity
                 .setContentTitle(title)
                 .setContentText(message)
                 .setContentIntent(pendingIntent)
-//                .setAutoCancel(true)
+                .setAutoCancel(true)
                 .build();
 
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        notification.flags |= Notification.FLAG_AUTO_CANCEL;
         notificationManager.notify(0, notification);
     }
 }
