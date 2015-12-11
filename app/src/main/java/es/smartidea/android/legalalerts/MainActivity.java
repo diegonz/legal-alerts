@@ -5,6 +5,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -15,6 +16,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -31,7 +33,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Get Intent extras (if opening activity from notification)
+        // Get Intent extras from the intent which started activity
         int initOnFragment = getIntent().getIntExtra("initOnFragment", FRAGMENT_ALERTS);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -127,14 +129,14 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    // TODO: Reuse activity from Notification if app is running
-//    @Override
-//    protected void onNewIntent(Intent intent) {
-//        Log.d("Intent", "Intent received!");
-//        super.onNewIntent(intent);
-//        // Get Intent extras and start Fragment replacing
-//        replaceFragment(intent.getIntExtra("initOnFragment", FRAGMENT_ALERTS));
-//    }
+    @Override
+    protected void onNewIntent(Intent intent) {
+        Log.d("Intent", "Intent received!");
+        super.onNewIntent(intent);
+        // TODO: Make a selection on drawer
+        // Get Intent extras and start Fragment replacing
+        replaceFragment(intent.getIntExtra("initOnFragment", FRAGMENT_ALERTS));
+    }
 
     /**
      * replaceFragment (final int fragmentID)
@@ -190,7 +192,7 @@ public class MainActivity extends AppCompatActivity
      **/
     public void showAlertNotification(String title, String message) {
         // Define notification´s associated intent action
-        Intent intent = new Intent(this, MainActivity.class);
+        Intent intent = new Intent(getBaseContext(), MainActivity.class);
         // Put Fragment (int) identifier on "initOnFragment" (where to start if app is not running)
         intent.putExtra("initOnFragment", FRAGMENT_HISTORY);
         /*
@@ -200,14 +202,16 @@ public class MainActivity extends AppCompatActivity
         * intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP)
         * check: http://developer.android.com/intl/es/reference/android/content/Intent.html#constants
         */
-        intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+//        intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         Resources resources = getResources();
         Notification notification = new NotificationCompat.Builder(this)
-                .setTicker(resources.getString(R.string.app_name))
+                .setTicker(resources.getString(R.string.app_name) + " - " + title)
                 .setSmallIcon(android.R.drawable.ic_popup_reminder)
                 .setContentTitle(title)
                 .setContentText(message)
+                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                .setVibrate(new long[]{0, 500, 250, 500})
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true)
                 .build();
