@@ -23,12 +23,18 @@ import org.xmlpull.v1.XmlPullParserFactory;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class BoeXMLHandler {
+
+    final String boeBaseURL = "http://www.boe.es";
+    final String boeID = "/diario_boe/xml.php?id=BOE-S-";
+
 
     // String List where url of xml´s are stored
     private List<String> urlXMLs = new ArrayList<>();
@@ -40,9 +46,17 @@ public class BoeXMLHandler {
     private XmlPullParserFactory xmlFactoryObject;
     public volatile boolean parsingComplete = true;
 
-    public BoeXMLHandler(String boeBaseURL, String currentBoeSummaryURL) {
-        this.boeBaseURLString = boeBaseURL;
-        this.currentBoeSummaryURLString = boeBaseURL + currentBoeSummaryURL;
+    // Public Constructor with empty arguments
+    // Creates new BoeXMLHandler object with current date (yyyyMMdd)
+    public BoeXMLHandler() {
+        Date curDate = new Date();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+        String todayDateString = dateFormat.format(curDate);
+        final String currentBoeURL = boeID + todayDateString;
+
+        this.boeBaseURLString = this.boeBaseURL;
+        this.currentBoeSummaryURLString = this.boeBaseURL + currentBoeURL;
+
         Log.d("debug", "BaseURL: " + boeBaseURLString);
         Log.d("debug", "SummaryURL: " + currentBoeSummaryURLString);
     }
@@ -156,7 +170,6 @@ public class BoeXMLHandler {
                     Log.d("debug", "Coincidence found!");
                 }
             }
-            queryResults.add("Query executed! (correctly?)");
             return queryResults;
         } catch (Exception e) {
             e.printStackTrace();
@@ -198,7 +211,7 @@ public class BoeXMLHandler {
                     e.printStackTrace();
                 }
 
-                // Fetches each rawXML and pases each to parse and store data
+                // Fetches each rawXML and passes each one to parse and store data
                 for (String eachUrlXML : urlXMLs) {
                     Log.d("debug", "Iterating through urlXMLs<>.");
                     try {

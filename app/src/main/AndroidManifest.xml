@@ -28,6 +28,8 @@
             android:authorities="es.smartidea.legalalerts.dbcontentprovider"
             android:exported="false">
         </provider>
+        <service android:name=".AlertsIntentService">
+        </service>
     </application>
 
 </manifest>

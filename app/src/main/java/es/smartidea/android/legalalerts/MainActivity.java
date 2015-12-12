@@ -3,7 +3,10 @@ package es.smartidea.android.legalalerts;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.media.RingtoneManager;
 import android.os.Bundle;
@@ -33,6 +36,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         // Get Intent extras from the intent which started activity
         int initOnFragment = getIntent().getIntExtra("initOnFragment", FRAGMENT_ALERTS);
         setContentView(R.layout.activity_main);
@@ -52,6 +56,14 @@ public class MainActivity extends AppCompatActivity
         // Replace fragment according to intent extras
         // If starting from scratch defaults to FRAGMENT_ALERTS
         replaceFragment(initOnFragment);
+
+        // Setup IntentFilter for AlertsIntentService
+        IntentFilter alertsFilter = new IntentFilter();
+        alertsFilter.addAction(AlertsIntentService.ACTION_DONE);
+        alertsFilter.addAction(AlertsIntentService.ACTION_RESULT);
+        alertsFilter.addAction(AlertsIntentService.ACTION_NO_RESULT);
+        AlertsBroadcastReceiver alertsBroadcastReceiver = new AlertsBroadcastReceiver();
+        registerReceiver(alertsBroadcastReceiver, alertsFilter);
     }
 
     @Override
@@ -217,6 +229,26 @@ public class MainActivity extends AppCompatActivity
                 .build();
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notificationManager.notify(0, notification);
+    }
+
+    private class AlertsBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(AlertsIntentService.ACTION_DONE)){
+                Log.d("BroadCast Receiver", "Received DONE from IntentService.");
+            } else if (intent.getAction().equals(AlertsIntentService.ACTION_RESULT)) {
+                String[] resultAlerts = intent.getStringArrayExtra("resultAlerts");
+                StringBuilder stringBuilder = new StringBuilder();
+                for (String eachResult : resultAlerts){
+                    stringBuilder.append(eachResult);
+                }
+                showAlertNotification("RESULTS", stringBuilder.toString());
+                Log.d("BroadCast Receiver", "Received RESULT from IntentService.");
+            } else if (intent.getAction().equals(AlertsIntentService.ACTION_NO_RESULT)){
+                showAlertNotification("RESULTS", "No Results found!!!");
+                Log.d("BroadCast Receiver", "Received NO_RESULT from IntentService.\nNo results where found!.");
+            }
+        }
     }
 
     // Simple listener interface defined on AlertsFragment

@@ -10,9 +10,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -66,19 +64,6 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
 
         if (view != null){
             final EditText editTextAlert = (EditText) view.findViewById(R.id.editTextAlert);
-
-            // Swipe to refresh layout, implements an action on pull down.
-            final SwipeRefreshLayout swipeLayout = (SwipeRefreshLayout)view.findViewById(R.id.fragment_alerts_swipe_layout);
-            swipeLayout.setColorSchemeResources(R.color.colorPrimary, R.color.colorAccent);
-            swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-                @Override
-                public void onRefresh() {
-                    // TODO: Add manual Alerts check based on swipe.
-                    fragmentInteractionListener.onClickedAddButton("Swipe2Refresh", "You swiped to refresh!!!");
-                    Log.d("UI/UX", "Swiped to refresh!!!");
-                    swipeLayout.setRefreshing(false);
-                }
-            });
 
             Button buttonAdd = (Button) view.findViewById(R.id.buttonAdd);
             buttonAdd.setOnClickListener(new View.OnClickListener() {
@@ -140,8 +125,9 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     public void onPause() {
         super.onPause();
         if (alertsCursor != null) {
-            // Close Cursor and destroy LoaderManager when onPause()
-            alertsCursor.close();
+            // TODO: Check close Cursor when onPause() if needed (LoaderManager)
+//            alertsCursor.close();
+            // Destroy LoaderManager when onPause()
             getActivity().getSupportLoaderManager().destroyLoader(0);
         }
     }

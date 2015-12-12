@@ -1,6 +1,7 @@
 package es.smartidea.android.legalalerts;
 
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -14,6 +15,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import es.smartidea.android.legalalerts.dbcontentprovider.DBContentProvider;
 import es.smartidea.android.legalalerts.dbcursoradapter.DBHistoryCursorAdapter;
@@ -31,6 +35,19 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
     }
 
     // URI of DB
+    private static final Uri ALERTS_URI = DBContentProvider.ALERTS_URI;
+    // Static String arguments for querying
+    private static final String[] ALERTS_PROJECTION = new String[]{
+            DBContract.Alerts._ID,
+            DBContract.Alerts.COL_ALERT_NAME,
+            DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL
+    };
+    private static final String ALERTS_SELECTION_NOTNULL = "((" +
+            DBContract.Alerts.COL_ALERT_NAME + " NOTNULL) AND (" +
+            DBContract.Alerts.COL_ALERT_NAME + " != '' ))";
+
+    private static final String ALERTS_ORDER_ASC_BY_NAME = DBContract.Alerts.COL_ALERT_NAME + " ASC";
+
     private static final Uri HISTORY_URI = DBContentProvider.HISTORY_URI;
     // Static String arguments for querying
     private static final String[] PROJECTION = new String[]{
@@ -62,6 +79,25 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
                 public void onClick(View view) {
                     Snackbar.make(view, "Clicked FAB button from History Fragment!!!.", Snackbar.LENGTH_SHORT)
                             .setAction("Action", null).show();
+                    // Starting manual download and search of XML data trough IntentService
+                    Cursor alertsCursor = getActivity().getContentResolver().query(ALERTS_URI,
+                            ALERTS_PROJECTION, ALERTS_SELECTION_NOTNULL, null, ALERTS_ORDER_ASC_BY_NAME);
+                    String[] alertsArray;
+                    if (alertsCursor != null){
+                        alertsCursor.moveToFirst();
+                        List<String> alertsList = new ArrayList<>();
+                        while (!alertsCursor.isAfterLast()){
+                            alertsList.add(alertsCursor.getString(alertsCursor.getColumnIndexOrThrow(DBContract.Alerts.COL_ALERT_NAME)));
+                        }
+                        alertsCursor.close();
+                        alertsArray = new String[alertsList.size()];
+                        alertsList.toArray(alertsArray);
+                    } else {
+                        alertsArray = new String[]{"impuesto", "estado", "ayuda"};
+                    }
+                    Intent searchAlertsIntent = new Intent(getActivity(), AlertsIntentService.class);
+                    searchAlertsIntent.putExtra("alertsToSearch", alertsArray);
+                    getActivity().startService(searchAlertsIntent);
                 }
             });
             // Get ListView reference
