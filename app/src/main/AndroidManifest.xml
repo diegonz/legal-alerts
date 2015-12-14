@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="es.smartidea.android.legalalerts">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+
     <application
         android:allowBackup="true"
         android:icon="@android:drawable/ic_popup_reminder"
@@ -28,7 +32,9 @@
             android:authorities="es.smartidea.legalalerts.dbcontentprovider"
             android:exported="false">
         </provider>
-        <service android:name=".AlertsIntentService">
+        <service android:name=".AlertsIntentService"
+            android:enabled="true"
+            android:exported="false">
         </service>
     </application>
 

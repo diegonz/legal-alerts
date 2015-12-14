@@ -6,11 +6,11 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -77,26 +77,32 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Snackbar.make(view, "Clicked FAB button from History Fragment!!!.", Snackbar.LENGTH_SHORT)
-                            .setAction("Action", null).show();
                     // Starting manual download and search of XML data trough IntentService
                     Cursor alertsCursor = getActivity().getContentResolver().query(ALERTS_URI,
                             ALERTS_PROJECTION, ALERTS_SELECTION_NOTNULL, null, ALERTS_ORDER_ASC_BY_NAME);
                     String[] alertsArray;
                     if (alertsCursor != null){
-                        alertsCursor.moveToFirst();
+                        Log.d("History", "Alerts found on DB, inflating alerts array");
                         List<String> alertsList = new ArrayList<>();
-                        while (!alertsCursor.isAfterLast()){
+                        while (alertsCursor.moveToNext()){
                             alertsList.add(alertsCursor.getString(alertsCursor.getColumnIndexOrThrow(DBContract.Alerts.COL_ALERT_NAME)));
                         }
                         alertsCursor.close();
                         alertsArray = new String[alertsList.size()];
                         alertsList.toArray(alertsArray);
+                        for (String eachAlert: alertsArray ) {
+                            Log.d("History", "Alert to search: " + eachAlert);
+                        }
                     } else {
                         alertsArray = new String[]{"impuesto", "estado", "ayuda"};
+                        Log.d("History", "No alerts from cursor, inflating dummy alerts array");
+                        for (String eachAlert : alertsArray) {
+                            Log.d("History", "Dummy alert to search: " + eachAlert);
+                        }
                     }
                     Intent searchAlertsIntent = new Intent(getActivity(), AlertsIntentService.class);
                     searchAlertsIntent.putExtra("alertsToSearch", alertsArray);
+                    Log.d("History", "Launching Alerts Service...");
                     getActivity().startService(searchAlertsIntent);
                 }
             });

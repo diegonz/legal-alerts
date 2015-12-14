@@ -38,13 +38,14 @@ public class BoeXMLHandler {
 
     // String List where url of xml´s are stored
     private List<String> urlXMLs = new ArrayList<>();
-    private String boeBaseURLString = null;
-    private String currentBoeSummaryURLString = null;
+    private String boeBaseURLString;
+    private String currentBoeSummaryURLString;
     // HashMap where raw data are stored
     private Map<String, String> boeXmlTodayRawData = new HashMap<>();
 
     private XmlPullParserFactory xmlFactoryObject;
     public volatile boolean parsingComplete = true;
+    public volatile boolean fetchCompleted = false;
 
     // Public Constructor with empty arguments
     // Creates new BoeXMLHandler object with current date (yyyyMMdd)
@@ -52,13 +53,13 @@ public class BoeXMLHandler {
         Date curDate = new Date();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
         String todayDateString = dateFormat.format(curDate);
-        final String currentBoeURL = boeID + todayDateString;
+        final String currentBoeURL = this.boeID + todayDateString;
 
         this.boeBaseURLString = this.boeBaseURL;
         this.currentBoeSummaryURLString = this.boeBaseURL + currentBoeURL;
 
-        Log.d("debug", "BaseURL: " + boeBaseURLString);
-        Log.d("debug", "SummaryURL: " + currentBoeSummaryURLString);
+        Log.d("BOE", "BaseURL: " + boeBaseURLString);
+        Log.d("BOE", "SummaryURL: " + currentBoeSummaryURLString);
     }
 
     // Returns number of urlXml tags found
@@ -88,7 +89,7 @@ public class BoeXMLHandler {
                 switch (event) {
 
                     case XmlPullParser.START_TAG:
-                        Log.d("debug", "Start TAG: " + name);
+                        Log.d("BOE", "Start TAG: " + name);
                         break;
 
                     case XmlPullParser.TEXT:
@@ -96,9 +97,9 @@ public class BoeXMLHandler {
                         break;
 
                     case XmlPullParser.END_TAG:
-                        Log.d("debug", "End TAG: " + name);
+                        Log.d("BOE", "End TAG: " + name);
                         if (name.equals("urlXml")) {
-                            Log.d("debug", "BOE´s summary XML urlXml tag found!!!.");
+                            Log.d("BOE", "BOE´s summary XML urlXml tag found!!!.");
                             urlXMLs.add(text);
                         }
                         break;
@@ -137,9 +138,9 @@ public class BoeXMLHandler {
                         break;
 
                     case XmlPullParser.END_TAG:
-                        Log.d("debug", "BOE item´s XML end tag found.");
+                        Log.d("BOE", "BOE item´s XML end tag found.");
                         if (name.equals("p")) {
-                            Log.d("debug", "BOE item´s XML <p> tag found!!! Adding it to rawText.");
+                            Log.d("BOE", "BOE item´s XML <p> tag found!!! Adding it to rawText.");
                             rawText += text;
                         }
                         break;
@@ -148,7 +149,7 @@ public class BoeXMLHandler {
                 event = boeParser.next();
             }
             boeXmlTodayRawData.put(id, rawText);
-            Log.d("debug", "BOE item´s rawText stored on th HashMap.");
+            Log.d("BOE", "BOE item´s rawText stored on th HashMap.");
             parsingComplete = false;
         } catch (Exception e) {
             e.printStackTrace();
@@ -164,10 +165,10 @@ public class BoeXMLHandler {
         try {
             // TODO Review/re-do search query execution
             for (Map.Entry<String, String> eachBoe : boeXmlTodayRawData.entrySet()) {
-                Log.d("debug", "Iterating inside rawData HashMap.");
+                Log.d("BOE", "Iterating inside rawData HashMap.");
                 if (eachBoe.getValue().contains(searchQuery)) {
                     queryResults.add(eachBoe.getKey());
-                    Log.d("debug", "Coincidence found!");
+                    Log.d("BOE", "Coincidence found!");
                 }
             }
             return queryResults;
@@ -213,7 +214,7 @@ public class BoeXMLHandler {
 
                 // Fetches each rawXML and passes each one to parse and store data
                 for (String eachUrlXML : urlXMLs) {
-                    Log.d("debug", "Iterating through urlXMLs<>.");
+                    Log.d("BOE", "Iterating through urlXMLs<>.");
                     try {
                         URL itemURL = new URL(boeBaseURLString + eachUrlXML);
                         HttpURLConnection itemConn = (HttpURLConnection) itemURL.openConnection();
@@ -234,13 +235,16 @@ public class BoeXMLHandler {
                         boeParser.setInput(boeStream, "ISO-8859-1");
 
                         // Send parser and BOE´s id.
-                        Log.d("debug", "BOE id:" + eachUrlXML.substring(eachUrlXML.indexOf("=")));
+                        Log.d("BOE", "BOE id:" + eachUrlXML.substring(eachUrlXML.indexOf("=")));
                         parseXMLAndStoreIt(boeParser, eachUrlXML.substring(eachUrlXML.indexOf("=")));
                         boeStream.close();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
+                // Fetching completed
+                Log.d("BOE", "Fetching BOE documents complete.");
+                fetchCompleted = true;
             }
         });
         thread.start();
