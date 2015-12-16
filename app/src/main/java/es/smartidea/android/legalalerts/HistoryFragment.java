@@ -16,9 +16,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import es.smartidea.android.legalalerts.dbcontentprovider.DBContentProvider;
 import es.smartidea.android.legalalerts.dbcursoradapter.DBHistoryCursorAdapter;
 import es.smartidea.android.legalalerts.dbhelper.DBContract;
@@ -35,19 +32,6 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
     }
 
     // URI of DB
-    private static final Uri ALERTS_URI = DBContentProvider.ALERTS_URI;
-    // Static String arguments for querying
-    private static final String[] ALERTS_PROJECTION = new String[]{
-            DBContract.Alerts._ID,
-            DBContract.Alerts.COL_ALERT_NAME,
-            DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL
-    };
-    private static final String ALERTS_SELECTION_NOTNULL = "((" +
-            DBContract.Alerts.COL_ALERT_NAME + " NOTNULL) AND (" +
-            DBContract.Alerts.COL_ALERT_NAME + " != '' ))";
-
-    private static final String ALERTS_ORDER_ASC_BY_NAME = DBContract.Alerts.COL_ALERT_NAME + " ASC";
-
     private static final Uri HISTORY_URI = DBContentProvider.HISTORY_URI;
     // Static String arguments for querying
     private static final String[] PROJECTION = new String[]{
@@ -78,30 +62,7 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
                 @Override
                 public void onClick(View view) {
                     // Starting manual download and search of XML data trough IntentService
-                    Cursor alertsCursor = getActivity().getContentResolver().query(ALERTS_URI,
-                            ALERTS_PROJECTION, ALERTS_SELECTION_NOTNULL, null, ALERTS_ORDER_ASC_BY_NAME);
-                    String[] alertsArray;
-                    if (alertsCursor != null){
-                        Log.d("History", "Alerts found on DB, inflating alerts array");
-                        List<String> alertsList = new ArrayList<>();
-                        while (alertsCursor.moveToNext()){
-                            alertsList.add(alertsCursor.getString(alertsCursor.getColumnIndexOrThrow(DBContract.Alerts.COL_ALERT_NAME)));
-                        }
-                        alertsCursor.close();
-                        alertsArray = new String[alertsList.size()];
-                        alertsList.toArray(alertsArray);
-                        for (String eachAlert: alertsArray ) {
-                            Log.d("History", "Alert to search: " + eachAlert);
-                        }
-                    } else {
-                        alertsArray = new String[]{"impuesto", "estado", "ayuda"};
-                        Log.d("History", "No alerts from cursor, inflating dummy alerts array");
-                        for (String eachAlert : alertsArray) {
-                            Log.d("History", "Dummy alert to search: " + eachAlert);
-                        }
-                    }
-                    Intent searchAlertsIntent = new Intent(getActivity(), AlertsIntentService.class);
-                    searchAlertsIntent.putExtra("alertsToSearch", alertsArray);
+                    Intent searchAlertsIntent = new Intent(getActivity(), AlertsService.class);
                     Log.d("History", "Launching Alerts Service...");
                     getActivity().startService(searchAlertsIntent);
                 }

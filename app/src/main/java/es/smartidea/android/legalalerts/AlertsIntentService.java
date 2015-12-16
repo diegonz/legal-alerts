@@ -7,10 +7,12 @@ import java.util.ArrayList;
 import java.util.List;
 import es.smartidea.android.legalalerts.boehandler.BoeXMLHandler;
 
-public class AlertsIntentService extends IntentService {
+public class AlertsIntentService extends IntentService implements BoeXMLHandler.BoeXMLHandlerEvents {
     public static String ACTION_DONE = "es.smartidea.android.legalalerts.service.intent.DONE";
     public static String ACTION_RESULT = "es.smartidea.android.legalalerts.service.intent.RESULT";
     public static String ACTION_NO_RESULT = "es.smartidea.android.legalalerts.service.intent.NO_RESULT";
+
+    private Boolean fetchCompleted = false;
 
     public AlertsIntentService() {
         super("AlertsIntentService");
@@ -33,7 +35,7 @@ public class AlertsIntentService extends IntentService {
         }
         // Wait to complete fetching documents
         Log.d("Service", "Waiting to finish fetching documents");
-        while (!boeXMLHandler.fetchCompleted) ;
+//        while (!fetchCompleted);
         // Fetching completed
         Log.d("Service", "Fetching documents complete!");
         for (String eachAlert : alertsToSearch){
@@ -61,6 +63,20 @@ public class AlertsIntentService extends IntentService {
         }
         sendBroadcast(resultMessageIntent);
         Log.d("Service", "Service result sent!");
+    }
+
+    @Override
+    public void onBoeFetchCompleted() {
+        this.fetchCompleted = true;
+    }
+
+    @Override
+    public void onSearchQueryCompleted(int searchQueryResults) {
+
+    }
+
+    @Override
+    public void onFoundXMLErrorTag(String description) {
 
     }
 }

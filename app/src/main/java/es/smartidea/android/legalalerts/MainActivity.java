@@ -28,8 +28,8 @@ public class MainActivity extends AppCompatActivity
         AlertsFragment.OnFragmentInteractionListener {
 
     // Integer Fragment identifiers
-    private static final int FRAGMENT_ALERTS = 0;
-    private static final int FRAGMENT_HISTORY = 1;
+    public static final int FRAGMENT_ALERTS = 0;
+    public static final int FRAGMENT_HISTORY = 1;
     // Running Fragment initialized to minus one (no matches)
     private int RUNNING_FRAGMENT = -1;
 
