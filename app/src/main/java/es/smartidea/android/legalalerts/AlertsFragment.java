@@ -126,7 +126,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
         super.onPause();
         if (alertsCursor != null) {
             // TODO: Check close Cursor when onPause() if needed (LoaderManager)
-//            alertsCursor.close();
+            alertsCursor.close();
             // Destroy LoaderManager when onPause()
             getActivity().getSupportLoaderManager().destroyLoader(0);
         }

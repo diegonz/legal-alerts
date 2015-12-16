@@ -21,7 +21,7 @@ import es.smartidea.android.legalalerts.boehandler.BoeXMLHandler;
 import es.smartidea.android.legalalerts.dbcontentprovider.DBContentProvider;
 import es.smartidea.android.legalalerts.dbhelper.DBContract;
 
-public class AlertsService extends Service implements BoeXMLHandler.BoeXMLHandlerEvents {
+public class AlertsService extends Service {
 
     // URI of DB
     private static final Uri ALERTS_URI = DBContentProvider.ALERTS_URI;
@@ -59,15 +59,21 @@ public class AlertsService extends Service implements BoeXMLHandler.BoeXMLHandle
                     ALERTS_PROJECTION, ALERTS_SELECTION_NOTNULL, null, ALERTS_ORDER_ASC_BY_NAME);
             if (alertsCursor != null) {
                 Log.d("Service", "Alerts found on DB, inflating alerts array");
-                List<String> alertsList = new ArrayList<>();
-                while (alertsCursor.moveToNext()) {
-                    alertsList.add(alertsCursor.getString(alertsCursor.getColumnIndexOrThrow(DBContract.Alerts.COL_ALERT_NAME)));
-                }
-                alertsCursor.close();
-                alertsToSearch = new String[alertsList.size()];
-                alertsList.toArray(alertsToSearch);
-                for (String eachAlert : alertsToSearch) {
-                    Log.d("Service", "Alert to search: " + eachAlert);
+                try {
+                    List<String> alertsList = new ArrayList<>();
+                    while (alertsCursor.moveToNext()) {
+                        alertsList.add(alertsCursor.getString(alertsCursor.getColumnIndexOrThrow(
+                                DBContract.Alerts.COL_ALERT_NAME)));
+                    }
+                    alertsToSearch = new String[alertsList.size()];
+                    alertsList.toArray(alertsToSearch);
+                    for (String eachAlert : alertsToSearch) {
+                        Log.d("Service", "Alert to search: " + eachAlert);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    alertsCursor.close();
                 }
             } else {
                 alertsToSearch = new String[]{"impuesto", "estado", "ayuda"};
@@ -126,6 +132,29 @@ public class AlertsService extends Service implements BoeXMLHandler.BoeXMLHandle
         Log.d("Service", "Service created!");
         // Init new boeXMLHandler
         boeXMLHandler = new BoeXMLHandler();
+        // Set BoeXMLHandler event listener
+        boeXMLHandler.setBoeXMLHandlerEvents(new BoeXMLHandler.BoeXMLHandlerEvents() {
+            @Override
+            public void onBoeFetchCompleted() {
+                Log.d("Service", "Fetching " + boeXMLHandler.getURLXMLsCount() + " documents complete!");
+                boeSearchThread.start();
+            }
+
+            @Override
+            public void onSearchQueryCompleted(int searchQueryResults) {
+                Log.d("Service", "Search completed.");
+                Log.d("Service", "Search returned " + searchQueryResults + " results.");
+            }
+
+            @Override
+            public void onFoundXMLErrorTag(String description) {
+                Log.d("Service", "ERROR TAG found on XML summary.");
+                showAlertNotification("ERROR TAG FOUND", description);
+
+                // Stop service if error tag found on XML
+                stopSelf();
+            }
+        });
         // Start fetching data
         boeFetchThread.start();
     }
@@ -149,6 +178,9 @@ public class AlertsService extends Service implements BoeXMLHandler.BoeXMLHandle
     public void onDestroy() {
         Toast.makeText(this, "service done", Toast.LENGTH_SHORT).show();
         Log.d("Service", "Service work DONE! Stopping...");
+        // TODO: Release all resources as possible
+        boeXMLHandler.unsetBoeXMLHandlerEvents();
+        boeXMLHandler = null;
     }
 
     /**
@@ -186,26 +218,5 @@ public class AlertsService extends Service implements BoeXMLHandler.BoeXMLHandle
                 .build();
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notificationManager.notify(0, notification);
-    }
-
-    @Override
-    public void onBoeFetchCompleted() {
-        Log.d("Service", "Fetching " + boeXMLHandler.getURLXMLsCount() + " documents complete!");
-        boeSearchThread.start();
-    }
-
-    @Override
-    public void onSearchQueryCompleted(int searchQueryResults) {
-        Log.d("Service", "Search completed.");
-        Log.d("Service", "Search returned " + searchQueryResults + " results.");
-    }
-
-    @Override
-    public void onFoundXMLErrorTag(String description) {
-        Log.d("Service", "ERROR TAG found on XML summary.");
-        showAlertNotification("ERROR TAG FOUND", description);
-
-        // Stop service if error tag found on XML
-        stopSelf();
     }
 }

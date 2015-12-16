@@ -33,6 +33,8 @@ public class MainActivity extends AppCompatActivity
     // Running Fragment initialized to minus one (no matches)
     private int RUNNING_FRAGMENT = -1;
 
+    private AlertsBroadcastReceiver alertsBroadcastReceiver;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,7 +64,7 @@ public class MainActivity extends AppCompatActivity
         alertsFilter.addAction(AlertsIntentService.ACTION_DONE);
         alertsFilter.addAction(AlertsIntentService.ACTION_RESULT);
         alertsFilter.addAction(AlertsIntentService.ACTION_NO_RESULT);
-        AlertsBroadcastReceiver alertsBroadcastReceiver = new AlertsBroadcastReceiver();
+        alertsBroadcastReceiver = new AlertsBroadcastReceiver();
         registerReceiver(alertsBroadcastReceiver, alertsFilter);
     }
 
@@ -194,6 +196,13 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Unregister broadcast receiver
+        unregisterReceiver(alertsBroadcastReceiver);
+    }
+
     /**
      * Void method showAlertNotification(String title, String message)
      *
@@ -237,15 +246,15 @@ public class MainActivity extends AppCompatActivity
             if (intent.getAction().equals(AlertsIntentService.ACTION_DONE)){
                 Log.d("BroadCast Receiver", "Received DONE from IntentService.");
             } else if (intent.getAction().equals(AlertsIntentService.ACTION_RESULT)) {
-                String[] resultAlerts = intent.getStringArrayExtra("resultAlerts");
-                StringBuilder stringBuilder = new StringBuilder();
-                for (String eachResult : resultAlerts){
-                    stringBuilder.append(eachResult);
-                }
-                showAlertNotification("RESULTS", stringBuilder.toString());
+//                String[] resultAlerts = intent.getStringArrayExtra("resultAlerts");
+//                StringBuilder stringBuilder = new StringBuilder();
+//                for (String eachResult : resultAlerts){
+//                    stringBuilder.append(eachResult);
+//                }
+//                showAlertNotification("RESULTS", stringBuilder.toString());
                 Log.d("BroadCast Receiver", "Received RESULT from IntentService.");
             } else if (intent.getAction().equals(AlertsIntentService.ACTION_NO_RESULT)){
-                showAlertNotification("RESULTS", "No Results found!!!");
+//                showAlertNotification("RESULTS", "No Results found!!!");
                 Log.d("BroadCast Receiver", "Received NO_RESULT from IntentService.\nNo results where found!.");
             }
         }

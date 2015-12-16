@@ -32,30 +32,7 @@ import java.util.Map;
 
 public class BoeXMLHandler {
 
-    public interface BoeXMLHandlerEvents {
-        void onBoeFetchCompleted();
-
-        void onSearchQueryCompleted(int searchQueryResults);
-
-        void onFoundXMLErrorTag(String description);
-    }
-
-    public BoeXMLHandlerEvents boeXMLHandlerEvents = new BoeXMLHandlerEvents() {
-        @Override
-        public void onBoeFetchCompleted() {
-
-        }
-
-        @Override
-        public void onSearchQueryCompleted(int searchQueryResults) {
-
-        }
-
-        @Override
-        public void onFoundXMLErrorTag(String description) {
-
-        }
-    };
+    private BoeXMLHandlerEvents boeXMLHandlerEvents;
 
     private XmlPullParserFactory xmlFactoryObject;
 
@@ -72,6 +49,7 @@ public class BoeXMLHandler {
     // Public Constructor with empty arguments
     // Creates new BoeXMLHandler object with current date (yyyyMMdd)
     public BoeXMLHandler() {
+        this.boeXMLHandlerEvents = null;
         Date curDate = new Date();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
         String todayDateString = dateFormat.format(curDate);
@@ -89,7 +67,7 @@ public class BoeXMLHandler {
         return urlXMLs.size();
     }
 
-    // Returns number of rawXmls parsed and stored
+    // Returns number of rawXMLs parsed and stored
 //    public int getRawDataHashMapCount() {
 //        return boeXmlTodayRawData.size();
 //    }
@@ -117,7 +95,7 @@ public class BoeXMLHandler {
                     case XmlPullParser.END_TAG:
                         Log.d("BOE", "End TAG: " + name);
                         if (name.equals("urlXml")) {
-                            Log.d("BOE", "BOE´s summary XML urlXml tag found!!!.");
+//                            Log.d("BOE", "BOE´s summary XML urlXml tag found!!!.");
                             urlXMLs.add(text);
                         } else if (name.equals("error")){
                             Log.d("BOE", "BOE´s summary XML ERROR TAG found!!!.");
@@ -276,5 +254,21 @@ public class BoeXMLHandler {
             }
         });
         fetchThread.start();
+    }
+
+    public interface BoeXMLHandlerEvents {
+        void onBoeFetchCompleted();
+
+        void onSearchQueryCompleted(int searchQueryResults);
+
+        void onFoundXMLErrorTag(String description);
+    }
+
+    public void setBoeXMLHandlerEvents(BoeXMLHandlerEvents listener) {
+        this.boeXMLHandlerEvents = listener;
+    }
+
+    public void unsetBoeXMLHandlerEvents() {
+        this.boeXMLHandlerEvents = null;
     }
 }
