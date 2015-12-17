@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="es.smartidea.android.legalalerts">
 
+    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
@@ -24,21 +25,25 @@
             android:name=".MainActivity"
             android:label="@string/app_name"
             android:launchMode="singleTask"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
 
         <provider
             android:name=".dbcontentprovider.DBContentProvider"
             android:authorities="es.smartidea.legalalerts.dbcontentprovider"
-            android:exported="false"></provider>
+            android:exported="false">
+        </provider>
 
         <service
             android:name=".AlertsIntentService"
             android:enabled="true"
-            android:exported="false"></service>
+            android:exported="false">
+        </service>
         <service
             android:name=".AlertsService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="false">
+        </service>
     </application>
 
 </manifest>

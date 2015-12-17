@@ -95,7 +95,6 @@ public class BoeXMLHandler {
                     case XmlPullParser.END_TAG:
                         Log.d("BOE", "End TAG: " + name);
                         if (name.equals("urlXml")) {
-//                            Log.d("BOE", "BOE´s summary XML urlXml tag found!!!.");
                             urlXMLs.add(text);
                         } else if (name.equals("error")){
                             Log.d("BOE", "BOE´s summary XML ERROR TAG found!!!.");
@@ -137,7 +136,6 @@ public class BoeXMLHandler {
                         break;
 
                     case XmlPullParser.END_TAG:
-                        Log.d("BOE", "BOE item´s XML end tag found.");
                         if (name.equals("p")) {
                             rawTextStringBuilder.append(text);
                         }
@@ -147,7 +145,6 @@ public class BoeXMLHandler {
                 event = boeParser.next();
             }
             boeXmlTodayRawData.put(id, rawTextStringBuilder.toString());
-            Log.d("BOE", "BOE item´s rawText stored on th HashMap.");
         } catch (Exception e) {
             Log.d("BOE", "ERROR while parsing attached XML file!");
             e.printStackTrace();
@@ -161,22 +158,20 @@ public class BoeXMLHandler {
     public List<String> boeRawDataQuery(String searchQuery) {
         List<String> queryResults = new ArrayList<>();
         try {
-            // TODO Review/re-do search query execution
+            // TODO Review/re-do search query method execution
             for (Map.Entry<String, String> eachBoe : boeXmlTodayRawData.entrySet()) {
-                Log.d("BOE", "Iterating inside rawData HashMap.");
                 if (eachBoe.getValue().contains(searchQuery)) {
                     queryResults.add(eachBoe.getKey());
-                    Log.d("BOE", "Coincidence found!");
                 }
             }
             // Notify Listeners
-            boeXMLHandlerEvents.onSearchQueryCompleted(queryResults.size());
+            boeXMLHandlerEvents.onSearchQueryCompleted(queryResults.size(), searchQuery);
             return queryResults;
         } catch (Exception e) {
             Log.d("BOE", "ERROR while searching for: " + searchQuery);
             e.printStackTrace();
             // Notify Listeners
-            boeXMLHandlerEvents.onSearchQueryCompleted(queryResults.size());
+            boeXMLHandlerEvents.onSearchQueryCompleted(queryResults.size(), searchQuery);
             return queryResults;
         }
     }
@@ -218,7 +213,6 @@ public class BoeXMLHandler {
                 if (urlXMLs.size() > 0){
                     // Fetches each rawXML and passes each one to parse and store data
                     for (String eachUrlXML : urlXMLs) {
-                        Log.d("BOE", "Iterating through urlXMLs<>.");
                         try {
                             URL itemURL = new URL(boeBaseURLString + eachUrlXML);
                             HttpURLConnection itemConn = (HttpURLConnection) itemURL.openConnection();
@@ -239,8 +233,8 @@ public class BoeXMLHandler {
                             boeParser.setInput(boeStream, "ISO-8859-1");
 
                             // Send parser and BOE´s id.
-                            Log.d("BOE", "BOE id:" + eachUrlXML.substring(eachUrlXML.indexOf("=")));
-                            parseXMLAndStoreIt(boeParser, eachUrlXML.substring(eachUrlXML.indexOf("=")));
+//                            Log.d("BOE", "BOE id:" + eachUrlXML.substring(eachUrlXML.indexOf("=") + 1));
+                            parseXMLAndStoreIt(boeParser, eachUrlXML.substring(eachUrlXML.indexOf("=") + 1));
                             boeStream.close();
                         } catch (Exception e) {
                             Log.d("BOE", "ERROR while trying to download BOE´s attachments!");
@@ -259,7 +253,7 @@ public class BoeXMLHandler {
     public interface BoeXMLHandlerEvents {
         void onBoeFetchCompleted();
 
-        void onSearchQueryCompleted(int searchQueryResults);
+        void onSearchQueryCompleted(int searchQueryResults, String searchTerm);
 
         void onFoundXMLErrorTag(String description);
     }

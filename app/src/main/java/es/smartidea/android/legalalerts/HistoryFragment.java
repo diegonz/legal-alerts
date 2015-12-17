@@ -45,9 +45,12 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
 //            DBContract.Alerts.COL_ALERT_NAME + " != '' ))";
 
     private static final String ORDER_ASC_BY_NAME = DBContract.History.COL_HISTORY_DOCUMENT_NAME + " ASC";
+    // Unique Loader ID to correct management
+    private static final int HISTORY_LOADER_ID = 2;
+
     // Declare ListView and DBCursor for adapter
     private ListView listViewHistory;
-    private Cursor historyCursor;
+//    private Cursor historyCursor;
     // Declare DBAdapter
     private DBHistoryCursorAdapter historyAdapter;
 
@@ -75,12 +78,13 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
 
     // Attach alertsAdapter to ListViewAlerts
     private void initHistoryLoader() {
-        historyCursor = getActivity().getContentResolver().query(HISTORY_URI, PROJECTION, null, null, ORDER_ASC_BY_NAME);
-        // TODO: Check CONTEXT: ((AppCompatActivity) getActivity())
-        historyAdapter = new DBHistoryCursorAdapter(getActivity(), R.layout.history_list_item, historyCursor, 0);
+//        historyCursor = getActivity().getContentResolver().query(HISTORY_URI, PROJECTION, null, null, ORDER_ASC_BY_NAME);
+//        // TODO: Check CONTEXT: ((AppCompatActivity) getActivity())
+//        historyAdapter = new DBHistoryCursorAdapter(getActivity(), R.layout.history_list_item, historyCursor, 0);
+        historyAdapter = new DBHistoryCursorAdapter(getActivity(), R.layout.history_list_item, null, 0);
         listViewHistory.setAdapter(historyAdapter);
         // Prepare the loader.  Either re-connect with an existing one or start a new one.
-        getActivity().getSupportLoaderManager().initLoader(0, null, this);
+        getActivity().getSupportLoaderManager().initLoader(HISTORY_LOADER_ID, null, this);
     }
 
     @Override
@@ -101,11 +105,11 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
     @Override
     public void onPause() {
         super.onPause();
-        if (historyCursor != null) {
-            // Close Cursor and destroy LoaderManager when onDetach()
-            historyCursor.close();
-            getActivity().getSupportLoaderManager().destroyLoader(0);
-        }
+//        if (historyCursor != null) {
+//            // Close Cursor and destroy LoaderManager when onDetach()
+//            historyCursor.close();
+//        }
+        getActivity().getSupportLoaderManager().destroyLoader(HISTORY_LOADER_ID);
     }
 
     // Returns a new loader after the initAlertsLoader() call

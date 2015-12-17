@@ -43,9 +43,12 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
             DBContract.Alerts.COL_ALERT_NAME + " != '' ))";
 
     private static final String ORDER_ASC_BY_NAME = DBContract.Alerts.COL_ALERT_NAME + " ASC";
+    // Unique Loader ID to correct management
+    private static final int ALERTS_LOADER_ID = 1;
+
     // Declare ListView and DBCursor for adapter
     private ListView listViewAlerts;
-    private Cursor alertsCursor;
+//    private Cursor alertsCursor;
     // Declare DBAdapter
     private DBAlertsCursorAdapter alertsAdapter;
 
@@ -124,12 +127,12 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     @Override
     public void onPause() {
         super.onPause();
-        if (alertsCursor != null) {
-            // TODO: Check close Cursor when onPause() if needed (LoaderManager)
-            alertsCursor.close();
-            // Destroy LoaderManager when onPause()
-            getActivity().getSupportLoaderManager().destroyLoader(0);
-        }
+//        if (alertsCursor != null) {
+//            // TODO: Check close Cursor when onPause() if needed (LoaderManager)
+//            alertsCursor.close();
+//            // Destroy LoaderManager when onPause()
+//        }
+        getActivity().getSupportLoaderManager().destroyLoader(ALERTS_LOADER_ID);
     }
 
     @Override
@@ -162,12 +165,13 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
 
     // Set alertsAdapter to ListViewAlerts
     private void initAlertsLoader() {
-        alertsCursor = getActivity().getContentResolver().query(ALERTS_URI, PROJECTION, SELECTION_NOTNULL, null, ORDER_ASC_BY_NAME);
-        // TODO: Check CONTEXT
-        alertsAdapter = new DBAlertsCursorAdapter(((AppCompatActivity) getActivity()), R.layout.alert_list_item, alertsCursor, 0);
+//        alertsCursor = getActivity().getContentResolver().query(ALERTS_URI, PROJECTION, SELECTION_NOTNULL, null, ORDER_ASC_BY_NAME);
+//        // TODO: Check CONTEXT
+//        alertsAdapter = new DBAlertsCursorAdapter(((AppCompatActivity) getActivity()), R.layout.alert_list_item, alertsCursor, 0);
+        alertsAdapter = new DBAlertsCursorAdapter(((AppCompatActivity) getActivity()), R.layout.alert_list_item, null, 0);
         listViewAlerts.setAdapter(alertsAdapter);
         // Prepare the loader.  Either re-connect with an existing one or start a new one.
-        getActivity().getSupportLoaderManager().initLoader(0, null, this);
+        getActivity().getSupportLoaderManager().initLoader(ALERTS_LOADER_ID, null, this);
     }
 
     /**

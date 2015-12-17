@@ -71,7 +71,7 @@ public class AlertsIntentService extends IntentService implements BoeXMLHandler.
     }
 
     @Override
-    public void onSearchQueryCompleted(int searchQueryResults) {
+    public void onSearchQueryCompleted(int searchQueryResults, String searchTerm) {
 
     }
 

@@ -93,8 +93,8 @@ public class AlertsService extends Service {
             for (String eachAlert : alertsToSearch) {
                 // TODO: Check searching method
                 foundAlertsList.addAll(boeXMLHandler.boeRawDataQuery(eachAlert));
-                Log.d("Service", "List size:" + foundAlertsList.size());
             }
+            Log.d("Service", "List size:" + foundAlertsList.size());
             // Send broadcast message confirming work done
             Intent broadcastMessage = new Intent();
             broadcastMessage.setAction(ACTION_DONE);
@@ -141,9 +141,8 @@ public class AlertsService extends Service {
             }
 
             @Override
-            public void onSearchQueryCompleted(int searchQueryResults) {
-                Log.d("Service", "Search completed.");
-                Log.d("Service", "Search returned " + searchQueryResults + " results.");
+            public void onSearchQueryCompleted(int searchQueryResults, String searchTerm) {
+                Log.d("Service", searchQueryResults + " results for: " + searchTerm);
             }
 
             @Override
