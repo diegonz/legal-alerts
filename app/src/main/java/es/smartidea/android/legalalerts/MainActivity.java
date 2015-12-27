@@ -1,5 +1,7 @@
 package es.smartidea.android.legalalerts;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -13,6 +15,8 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -46,6 +50,9 @@ public class MainActivity extends AppCompatActivity
         // Replace fragment according to intent extras
         // If starting from scratch defaults to FRAGMENT_ALERTS
         replaceFragment(initOnFragment);
+
+        // Check/set the Alerts alarm
+        setAlertsAlarm();
     }
 
     @Override
@@ -173,6 +180,36 @@ public class MainActivity extends AppCompatActivity
             fragmentTransaction.commit();
             setTitle(VIEW_TITLE);
             RUNNING_FRAGMENT = fragmentID;
+        }
+    }
+
+    private void setAlertsAlarm(){
+        /*
+        * Try to check if another PendingIntent exists via creating new one
+        * with flag PendingIntent.FLAG_NO_CREATE (returns null if exists)
+        * more info check Android documentation:
+        * http://developer.android.com/intl/es/reference/android/app/PendingIntent.html#FLAG_NO_CREATE
+        */
+        PendingIntent alarmIntent;
+        alarmIntent = PendingIntent.getBroadcast(this, 0, new Intent(this, AlertsService.class),
+                PendingIntent.FLAG_NO_CREATE);
+        if (alarmIntent == null){
+            AlarmManager alarmMgr;
+            alarmMgr = (AlarmManager) getSystemService(ALARM_SERVICE);
+            Log.d("MainActivity", "No Alarm found, creating new one.");
+            alarmIntent = PendingIntent.getBroadcast(this, 0, new Intent(this, AlertsService.class), 0);
+            // Set the alarm to start at 9:30 a.m.
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(System.currentTimeMillis());
+            calendar.set(Calendar.HOUR_OF_DAY, 9);
+            calendar.set(Calendar.MINUTE, 30);
+
+            // With setInexactRepeating(), you have to use one of the AlarmManager interval
+            // constants, in this case, AlarmManager.INTERVAL_DAY.
+            alarmMgr.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
+                    AlarmManager.INTERVAL_DAY, alarmIntent);
+        } else {
+            Log.d("MainActivity", "Alarm already set, while boot completed?");
         }
     }
 }
