@@ -10,6 +10,8 @@ import android.util.Log;
 import java.util.Calendar;
 
 public class AlertsAlarmBroadcastReceiver extends BroadcastReceiver {
+
+    // Setup broadcast messages
     public static final String SET_ALARM_FROM_ACTIVITY = "es.smartidea.android.legalalerts.SET_ALARM_FROM_ACTIVITY";
 
     // AlertsAlarmBroadcastReceiver public empty constructor
@@ -21,8 +23,9 @@ public class AlertsAlarmBroadcastReceiver extends BroadcastReceiver {
         // This method is called when the BroadcastReceiver is receiving an Intent broadcast.
         AlarmManager alarmMgr;
         PendingIntent alarmIntent;
-        // Received BOOT_COMPLETED broadcast message, set new alarm
+        // Check received broadcast message
         if (intent.getAction().equals("android.intent.action.BOOT_COMPLETED")) {
+            // Received BOOT_COMPLETED broadcast message, set new alarm
             Log.d("AlertsAlarmBCReceiver", "Boot completed, setting Alerts Service Alarm...");
             // Setup the alarm.
             alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
