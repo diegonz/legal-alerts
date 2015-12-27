@@ -42,11 +42,15 @@
         </service>
 
         <receiver
-            android:name=".BootReceiver"
+            android:name=".AlertsAlarmBroadcastReceiver"
             android:enabled="true"
             android:exported="true" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED">
+                </action>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="es.smartidea.legalalerts.SET_ALARM_FROM_ACTIVITY">
                 </action>
             </intent-filter>
         </receiver>
