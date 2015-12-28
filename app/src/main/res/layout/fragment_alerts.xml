@@ -9,31 +9,13 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <EditText
-        android:layout_width="wrap_content"
+    <ListView
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/editTextAlert"
+        android:id="@+id/listViewAlerts"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_toLeftOf="@+id/buttonAdd"
-        android:layout_toStartOf="@+id/buttonAdd"
-        android:hint="@string/alert_hint" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/button_notify_alert"
-        android:id="@+id/buttonAdd"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"/>
-
-    <ListView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/listViewAlerts"
-        android:layout_below="@+id/buttonAdd"
         android:layout_centerHorizontal="true" />
 
 </RelativeLayout>

@@ -27,7 +27,7 @@ public class DBAlertsCursorAdapter extends ResourceCursorAdapter {
 
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
-        return LayoutInflater.from(context).inflate(R.layout.alert_list_item, viewGroup, false);
+        return LayoutInflater.from(context).inflate(R.layout.list_item_alert, viewGroup, false);
     }
 
     @Override

@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         // Replace fragment according to intent extras
-        // If starting from scratch defaults to FRAGMENT_ALERTS
+        // If starting from scratch it defaults to FRAGMENT_ALERTS
         replaceFragment(initOnFragment);
 
         // Check/set the Alerts alarm
@@ -79,6 +79,8 @@ public class MainActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            // Start Settings activity
+            startActivity(new Intent(this, SettingsActivity.class));
             return true;
         }
 
@@ -91,7 +93,9 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        Boolean startDialogAlert = false;
+        final int START_DIALOG_ALERT = 1;
+        final int START_SETTINGS_ACTIVITY = 2;
+        int afterSelectionTask = 0;
 
         if (id == R.id.nav_alerts) {
             replaceFragment(FRAGMENT_ALERTS);
@@ -99,17 +103,16 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_add_alert) {
             replaceFragment(FRAGMENT_ALERTS);
             // Set start dialog flag after replacing
-            startDialogAlert = true;
+            afterSelectionTask = START_DIALOG_ALERT;
         } else if (id == R.id.nav_history) {
             replaceFragment(FRAGMENT_HISTORY);
             RUNNING_FRAGMENT = FRAGMENT_HISTORY;
-        } else if (id == R.id.nav_manage) {
-            replaceFragment(FRAGMENT_ALERTS);
-            RUNNING_FRAGMENT = FRAGMENT_ALERTS;
+        } else if (id == R.id.nav_settings) {
+            afterSelectionTask = START_SETTINGS_ACTIVITY;
         } else if (id == R.id.nav_share) {
             replaceFragment(FRAGMENT_ALERTS);
             RUNNING_FRAGMENT = FRAGMENT_ALERTS;
-        } else if (id == R.id.nav_send) {
+        } else if (id == R.id.nav_info) {
             replaceFragment(FRAGMENT_ALERTS);
             RUNNING_FRAGMENT = FRAGMENT_ALERTS;
         }
@@ -119,11 +122,21 @@ public class MainActivity extends AppCompatActivity
         setTitle(item.getTitle());
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
-        // TODO: Check alternatives (frag listener?)
-        // Start Alert dialog after replacing Fragment setting title and closing Drawer
-        if (startDialogAlert){
-            DialogAlert dialogAlert = new DialogAlert();
-            dialogAlert.show(getSupportFragmentManager(), "dialog_alert");
+
+        switch (afterSelectionTask){
+            case START_DIALOG_ALERT:
+                // Launch Alerts dialog
+                AlertDialog alertDialog = new AlertDialog();
+                alertDialog.show(getSupportFragmentManager(), "dialog_alert");
+                break;
+            case START_SETTINGS_ACTIVITY:
+                // Launch Settings Activity
+                startActivity(new Intent(this, SettingsActivity.class));
+                break;
+            // Default case
+            case 0:
+                Log.d("MainActivity", "Drawer: No additional task found.");
+                break;
         }
         return true;
     }

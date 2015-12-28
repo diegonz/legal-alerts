@@ -1,5 +1,6 @@
 package es.smartidea.android.legalalerts;
 
+import android.annotation.SuppressLint;
 import android.support.annotation.NonNull;
 import android.app.Dialog;
 import android.content.ContentValues;
@@ -8,7 +9,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.SwitchCompat;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,18 +19,20 @@ import android.widget.TextView;
 import es.smartidea.android.legalalerts.dbContentProvider.DBContentProvider;
 import es.smartidea.android.legalalerts.dbHelper.DBContract;
 
-public class DialogAlert extends DialogFragment {
+public class AlertDialog extends DialogFragment {
     // URI of DB
     private static final Uri ALERTS_URI = DBContentProvider.ALERTS_URI;
 
     @Override
-    @NonNull    // Added annotation to avoid warnings and assure not launched with null Bundle
+    @NonNull    // Added annotations to avoid warnings and assure not launched with null Bundle
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
         // Use the Builder class for convenient dialog construction
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(getActivity());
         LayoutInflater inflater = getActivity().getLayoutInflater();
-        final View view = inflater.inflate(R.layout.alert_dialog, null); // TODO: Check add passing rootView
+        // Annotation to disable warning on inflating dialog
+        @SuppressLint("InflateParams")
+        final View view = inflater.inflate(R.layout.dialog_alert, null);
         final EditText editTextDialogAlert = (EditText)view.findViewById(R.id.editTextDialogAlert);
         final TextView textViewLiteralInfo = (TextView)view.findViewById(R.id.textViewLiteralInfo);
         final SwitchCompat switchLiteralSearch = (SwitchCompat)view.findViewById(R.id.switchLiteralSearch);
@@ -58,7 +60,8 @@ public class DialogAlert extends DialogFragment {
                                     "Alert inserted into DB", Snackbar.LENGTH_SHORT)
                                     .setAction("Action", null).show();
                             // TODO: Check for alternatives to close dialog after job done.
-                            DialogAlert.this.getDialog().dismiss();
+                            AlertDialog.this.getDialog().hide();
+                            AlertDialog.this.getDialog().dismiss();
                         } else {
                             Snackbar.make(view, "Insert at least one character!!!", Snackbar.LENGTH_LONG)
                                     .setAction("Action", null).show();
@@ -68,7 +71,7 @@ public class DialogAlert extends DialogFragment {
                 .setNegativeButton(R.string.button_dialog_alert_cancel, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         // Selected negative (Cancel) from dialog buttons
-                        DialogAlert.this.getDialog().cancel();
+                        AlertDialog.this.getDialog().cancel();
                     }
                 });
         builder.setTitle(R.string.text_new_alert);

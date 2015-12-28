@@ -78,9 +78,6 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
 
     // Attach alertsAdapter to ListViewAlerts
     private void initHistoryLoader() {
-//        historyCursor = getActivity().getContentResolver().query(HISTORY_URI, PROJECTION, null, null, ORDER_ASC_BY_NAME);
-//        // TODO: Check CONTEXT: ((AppCompatActivity) getActivity())
-//        historyAdapter = new DBHistoryCursorAdapter(getActivity(), R.layout.history_list_item, historyCursor, 0);
         historyAdapter = new DBHistoryCursorAdapter(getActivity(), R.layout.history_list_item, null, 0);
         listViewHistory.setAdapter(historyAdapter);
         // Prepare the loader.  Either re-connect with an existing one or start a new one.

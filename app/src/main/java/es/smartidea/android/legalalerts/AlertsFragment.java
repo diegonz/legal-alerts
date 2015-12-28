@@ -20,6 +20,9 @@ import es.smartidea.android.legalalerts.dbHelper.DBContract;
 
 /**
  * A simple {@link Fragment} subclass.
+ * Displays ListView showing alerts stored on DB
+ * Shows delete button
+ * TODO: Add edit-on-click behaviour
  */
 public class AlertsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -48,7 +51,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     public AlertsFragment() {}
 
     /**
-     * Start fragment lifecycle
+     * Start of fragment lifecycle
      * */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -61,8 +64,8 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    DialogAlert dialogAlert = new DialogAlert();
-                    dialogAlert.show(getFragmentManager(), "dialog_alert");
+                    AlertDialog alertDialog = new AlertDialog();
+                    alertDialog.show(getFragmentManager(), "dialog_alert");
                 }
             });
             // Assign listViewAlerts, setup of adapter and onClick methods are attached on initAlertsLoader()
@@ -92,9 +95,8 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
         // Destroy LoaderManager when onPause()
         getActivity().getSupportLoaderManager().destroyLoader(ALERTS_LOADER_ID);
     }
-
     /**
-     * End fragment lifecycle
+     * End of fragment lifecycle
      * */
 
     // Returns a new loader after the initAlertsLoader() call
@@ -117,10 +119,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
 
     // Set alertsAdapter to ListViewAlerts
     private void initAlertsLoader() {
-//        alertsCursor = getActivity().getContentResolver().query(ALERTS_URI, PROJECTION, SELECTION_NOTNULL, null, ORDER_ASC_BY_NAME);
-//        // TODO: Check CONTEXT
-//        alertsAdapter = new DBAlertsCursorAdapter(((AppCompatActivity) getActivity()), R.layout.alert_list_item, alertsCursor, 0);
-        alertsAdapter = new DBAlertsCursorAdapter(((AppCompatActivity) getActivity()), R.layout.alert_list_item, null, 0);
+        alertsAdapter = new DBAlertsCursorAdapter(((AppCompatActivity) getActivity()), R.layout.list_item_alert, null, 0);
         listViewAlerts.setAdapter(alertsAdapter);
         // Prepare the loader.  Either re-connect with an existing one or start a new one.
         getActivity().getSupportLoaderManager().initLoader(ALERTS_LOADER_ID, null, this);

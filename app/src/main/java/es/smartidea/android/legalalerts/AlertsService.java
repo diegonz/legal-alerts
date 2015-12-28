@@ -177,7 +177,7 @@ public class AlertsService extends Service {
     public void onDestroy() {
         Toast.makeText(this, "service done", Toast.LENGTH_SHORT).show();
         Log.d("Service", "Service work DONE! Stopping...");
-        // TODO: Release all resources as possible
+        // Release as many resources as possible
         boeXMLHandler.unsetBoeXMLHandlerEvents();
         boeXMLHandler = null;
     }
@@ -195,14 +195,7 @@ public class AlertsService extends Service {
         Intent intent = new Intent(getBaseContext(), MainActivity.class);
         // Put Fragment (int) identifier on "initOnFragment" (where to start if app is not running)
         intent.putExtra("initOnFragment", MainActivity.FRAGMENT_HISTORY);
-        /*
-        * TODO: Try to reuse MainActivity if possible (ex: is running, onPause...)
-        * also tried "Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED"
-        * "FLAG_ACTIVITY_CLEAR_TOP" "FLAG_ACTIVITY_SINGLE_TOP" and others.
-        * intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        * check: http://developer.android.com/intl/es/reference/android/content/Intent.html#constants
-        */
-//        intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+        intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         Resources resources = getResources();
         Notification notification = new NotificationCompat.Builder(this)
