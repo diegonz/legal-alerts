@@ -17,9 +17,9 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
-import es.smartidea.android.legalalerts.boehandler.BoeXMLHandler;
-import es.smartidea.android.legalalerts.dbcontentprovider.DBContentProvider;
-import es.smartidea.android.legalalerts.dbhelper.DBContract;
+import es.smartidea.android.legalalerts.boeHandler.BoeXMLHandler;
+import es.smartidea.android.legalalerts.dbContentProvider.DBContentProvider;
+import es.smartidea.android.legalalerts.dbHelper.DBContract;
 
 public class AlertsService extends Service {
 

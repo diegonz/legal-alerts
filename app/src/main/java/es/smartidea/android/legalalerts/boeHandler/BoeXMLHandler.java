@@ -1,4 +1,4 @@
-package es.smartidea.android.legalalerts.boehandler;
+package es.smartidea.android.legalalerts.boeHandler;
 
 /**
  * @BoeXMLHandler

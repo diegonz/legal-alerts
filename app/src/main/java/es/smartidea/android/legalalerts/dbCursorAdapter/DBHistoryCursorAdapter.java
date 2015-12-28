@@ -1,4 +1,4 @@
-package es.smartidea.android.legalalerts.dbcursoradapter;
+package es.smartidea.android.legalalerts.dbCursorAdapter;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -11,7 +11,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import es.smartidea.android.legalalerts.R;
-import es.smartidea.android.legalalerts.dbhelper.DBContract;
+import es.smartidea.android.legalalerts.dbHelper.DBContract;
 
 public class DBHistoryCursorAdapter extends ResourceCursorAdapter {
 

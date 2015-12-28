@@ -16,8 +16,8 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import es.smartidea.android.legalalerts.dbcontentprovider.DBContentProvider;
-import es.smartidea.android.legalalerts.dbhelper.DBContract;
+import es.smartidea.android.legalalerts.dbContentProvider.DBContentProvider;
+import es.smartidea.android.legalalerts.dbHelper.DBContract;
 
 public class DialogAlert extends DialogFragment {
     // URI of DB

@@ -1,4 +1,4 @@
-package es.smartidea.android.legalalerts.dbcontentprovider;
+package es.smartidea.android.legalalerts.dbContentProvider;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
@@ -12,8 +12,8 @@ import android.util.Log;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import es.smartidea.android.legalalerts.dbhelper.DBContract;
-import es.smartidea.android.legalalerts.dbhelper.DBHelper;
+import es.smartidea.android.legalalerts.dbHelper.DBContract;
+import es.smartidea.android.legalalerts.dbHelper.DBHelper;
 
 import android.support.annotation.NonNull;
 
@@ -30,7 +30,7 @@ public class DBContentProvider extends ContentProvider {
     // DBHelper declaration
     private DBHelper dbHelper;
     //UriMatcher values
-    private static final String AUTHORITY = "es.smartidea.legalalerts.dbcontentprovider";
+    private static final String AUTHORITY = "es.smartidea.legalalerts.dbContentProvider";
     // Access URI to Alerts table
     private static final int ALERTS = 10;
     private static final String ALERTS_PATH = "alerts_table";

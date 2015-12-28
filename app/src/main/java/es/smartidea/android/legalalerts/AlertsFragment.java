@@ -14,9 +14,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
-import es.smartidea.android.legalalerts.dbcontentprovider.DBContentProvider;
-import es.smartidea.android.legalalerts.dbcursoradapter.DBAlertsCursorAdapter;
-import es.smartidea.android.legalalerts.dbhelper.DBContract;
+import es.smartidea.android.legalalerts.dbContentProvider.DBContentProvider;
+import es.smartidea.android.legalalerts.dbCursorAdapter.DBAlertsCursorAdapter;
+import es.smartidea.android.legalalerts.dbHelper.DBContract;
 
 /**
  * A simple {@link Fragment} subclass.

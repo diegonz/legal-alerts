@@ -1,4 +1,4 @@
-package es.smartidea.android.legalalerts.dbcursoradapter;
+package es.smartidea.android.legalalerts.dbCursorAdapter;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -14,8 +14,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import es.smartidea.android.legalalerts.R;
-import es.smartidea.android.legalalerts.dbcontentprovider.DBContentProvider;
-import es.smartidea.android.legalalerts.dbhelper.DBContract;
+import es.smartidea.android.legalalerts.dbContentProvider.DBContentProvider;
+import es.smartidea.android.legalalerts.dbHelper.DBContract;
 
 public class DBAlertsCursorAdapter extends ResourceCursorAdapter {
     // URI of DB
