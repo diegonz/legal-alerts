@@ -1,5 +1,15 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <SwitchPreference
+        android:defaultValue="true"
+        android:key="sync_only_when_charging"
+        android:title="@string/pref_title_sync_charging_only" />
+
+    <SwitchPreference
+        android:defaultValue="true"
+        android:key="sync_only_over_unmetered_network"
+        android:title="@string/pref_title_sync_unmetered_only" />
+
     <!-- NOTE: Hide buttons to simplify the UI. Users can touch outside the dialog to
          dismiss it. -->
     <!-- NOTE: ListPreference's summary should be set to its value by the activity code. -->

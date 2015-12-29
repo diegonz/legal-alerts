@@ -59,8 +59,6 @@ public class AlertDialog extends DialogFragment {
                             Snackbar.make(getActivity().findViewById(R.id.fragmentMainPlaceholder),
                                     "Alert inserted into DB", Snackbar.LENGTH_SHORT)
                                     .setAction("Action", null).show();
-                            // TODO: Check for alternatives to close dialog after job done.
-                            AlertDialog.this.getDialog().hide();
                             AlertDialog.this.getDialog().dismiss();
                         } else {
                             Snackbar.make(view, "Insert at least one character!!!", Snackbar.LENGTH_LONG)

@@ -1,15 +1,17 @@
 package es.smartidea.android.legalalerts;
 
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.database.Cursor;
-import android.media.RingtoneManager;
+// TODO: Check ringtone functionality.
+//import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
@@ -45,9 +47,13 @@ public class AlertsService extends Service {
     private String[] alertsToSearch;
     private BoeXMLHandler boeXMLHandler;
 
+    // Shared preferences
+    SharedPreferences sharedPreferences;
+
     private Thread boeFetchThread = new Thread(new Runnable() {
         @Override
         public void run() {
+
             // TODO: Check if data has been downloaded (store on DB for re-querying? ex:new alert added)
             // Create new BoeXMLHandler object
             // Fetch all documents
@@ -95,6 +101,7 @@ public class AlertsService extends Service {
                 foundAlertsList.addAll(boeXMLHandler.boeRawDataQuery(eachAlert));
             }
             Log.d("Service", "List size:" + foundAlertsList.size());
+
             // Send broadcast message confirming work done
             Intent broadcastMessage = new Intent();
             broadcastMessage.setAction(ACTION_DONE);
@@ -113,7 +120,10 @@ public class AlertsService extends Service {
                 showAlertNotification(foundAlertsList.size() + " RESULTS FOUND", "Coincidences are found");
             } else {
                 resultMessageIntent.setAction(ACTION_NO_RESULT);
-                showAlertNotification("NO RESULTS FOUND", "Any coincidences where found");
+                // If notification enabled in shared preferences
+                if (sharedPreferences.getBoolean("notifications_new_message", true)){
+                    showAlertNotification("NO RESULTS FOUND", "Any coincidences where found");
+                }
             }
             sendBroadcast(resultMessageIntent);
             Log.d("Service", "Service result sent!");
@@ -125,13 +135,19 @@ public class AlertsService extends Service {
 
     @Override
     public void onCreate() {
+
+        // Get shared preferences
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
         // Start up the thread running the service.  Note that we create a
         // separate thread because the service normally runs in the process's
         // main thread, which we don't want to block.  We also make it
         // background priority so CPU-intensive work will not disrupt our UI.
         Log.d("Service", "Service created!");
+
         // Init new boeXMLHandler
         boeXMLHandler = new BoeXMLHandler();
+
         // Set BoeXMLHandler event listener
         boeXMLHandler.setBoeXMLHandlerEvents(new BoeXMLHandler.BoeXMLHandlerEvents() {
             @Override
@@ -185,30 +201,45 @@ public class AlertsService extends Service {
     /**
      * Void method showAlertNotification(String title, String message)
      *
-     * Shows a notification according to given parameters
+     * Build and Shows a notification, according to given parameters
      *
      * @param title   String corresponding to Notification´s title
      * @param message String corresponding to Notification´s title
      **/
     public void showAlertNotification(String title, String message) {
+
+        // Notification ID
+        final int ALERT_NOTIFICATION_ID = 0;
+
         // Define notification´s associated intent action
         Intent intent = new Intent(getBaseContext(), MainActivity.class);
+
         // Put Fragment (int) identifier on "initOnFragment" (where to start if app is not running)
         intent.putExtra("initOnFragment", MainActivity.FRAGMENT_HISTORY);
         intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         Resources resources = getResources();
-        Notification notification = new NotificationCompat.Builder(this)
-                .setTicker(resources.getString(R.string.app_name) + " - " + title)
-                .setSmallIcon(android.R.drawable.ic_popup_reminder)
-                .setContentTitle(title)
-                .setContentText(message)
-                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
-                .setVibrate(new long[]{0, 500, 250, 500})
-                .setContentIntent(pendingIntent)
-                .setAutoCancel(true)
-                .build();
+        NotificationCompat.Builder notification = new NotificationCompat.Builder(this);
+        notification.setTicker(resources.getString(R.string.app_name) + " - " + title)
+                    .setSmallIcon(android.R.drawable.ic_popup_reminder)
+                    .setContentTitle(title)
+                    .setContentText(message);
+//        notification.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+        // TODO: Check ringtone management
+        notification.setSound(
+                Uri.parse(
+                        sharedPreferences.getString(
+                                "notifications_new_message_ringtone",
+                                "content://settings/system/notification_sound"))
+        );
+        // Check vibrate from preferences
+        if (sharedPreferences.getBoolean("notifications_new_message_vibrate", true)){
+            notification.setVibrate(new long[]{0, 500, 250, 500});
+        }
+        notification.setContentIntent(pendingIntent)
+                    .setAutoCancel(true);
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        notificationManager.notify(0, notification);
+        notificationManager.notify(ALERT_NOTIFICATION_ID, notification.build());
     }
 }

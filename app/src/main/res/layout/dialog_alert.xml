@@ -35,6 +35,8 @@
             android:layout_height="wrap_content"
             android:ems="10"
             android:singleLine="true"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
             android:id="@+id/editTextDialogAlert"
             android:hint="@string/alert_hint"
             android:layout_centerVertical="true"
