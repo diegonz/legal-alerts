@@ -3,12 +3,15 @@ package es.smartidea.android.legalalerts;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.database.Cursor;
 // TODO: Check ringtone functionality.
 //import android.media.RingtoneManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -136,14 +139,24 @@ public class AlertsService extends Service {
     @Override
     public void onCreate() {
 
+        Log.d("Service", "Service created!");
+
         // Get shared preferences
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        // Check connectivity type and status
+        if (!wanAvailable()){
+            stopSelf();
+        } else {
+            if (sharedPreferences.getBoolean("sync_only_over_unmetered_network", true) && !unmeteredNetworkAvailable()){
+                stopSelf();
+            }
+        }
 
         // Start up the thread running the service.  Note that we create a
         // separate thread because the service normally runs in the process's
         // main thread, which we don't want to block.  We also make it
         // background priority so CPU-intensive work will not disrupt our UI.
-        Log.d("Service", "Service created!");
 
         // Init new boeXMLHandler
         boeXMLHandler = new BoeXMLHandler();
@@ -194,8 +207,26 @@ public class AlertsService extends Service {
         Toast.makeText(this, "service done", Toast.LENGTH_SHORT).show();
         Log.d("Service", "Service work DONE! Stopping...");
         // Release as many resources as possible
-        boeXMLHandler.unsetBoeXMLHandlerEvents();
-        boeXMLHandler = null;
+        if (boeXMLHandler != null){
+            boeXMLHandler.unsetBoeXMLHandlerEvents();
+            boeXMLHandler = null;
+        }
+    }
+
+    // Check for unmetered network availability
+    private boolean unmeteredNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager)
+                getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        return (networkInfo != null && (networkInfo.getType() == ConnectivityManager.TYPE_WIFI));
+    }
+
+    // Check for available internet connection
+    public boolean wanAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager)
+                getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        return (networkInfo != null && networkInfo.isConnected());
     }
 
     /**
