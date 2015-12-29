@@ -35,6 +35,9 @@ import java.util.List;
  * API Guide</a> for more information on developing a Settings UI.
  */
 public class SettingsActivity extends AppCompatPreferenceActivity {
+    final static String LEGACY_PREF_HEADER_GENERAL = "es.smartidea.android.legalalerts.LEGACY_PREF_HEADER_GENERAL";
+    final static String LEGACY_PREF_HEADER_NOTIFICATIONS = "es.smartidea.android.legalalerts.LEGACY_PREF_HEADER_NOTIFICATIONS";
+    final static String LEGACY_PREF_HEADER_DATA_SYNC = "es.smartidea.android.legalalerts.LEGACY_PREF_HEADER_DATA_SYNC";
     /**
      * A preference value change listener that updates the preference's summary
      * to reflect its new value.
@@ -117,10 +120,35 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                         .getString(preference.getKey(), ""));
     }
 
+    // Annotation to disable deprecation related warnings.
+    @SuppressWarnings("deprecation")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setupActionBar();
+
+        // TODO: Check support for legacy SDK version (<= API10):
+        // http://developer.android.com/intl/es/guide/topics/ui/settings.html#BackCompatHeaders
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+            String prefScreen = getIntent().getAction();
+            if (prefScreen != null){
+                // Check required action
+                switch (prefScreen){
+                    case LEGACY_PREF_HEADER_GENERAL:
+                        addPreferencesFromResource(R.xml.pref_general);
+                        break;
+                    case LEGACY_PREF_HEADER_NOTIFICATIONS:
+                        addPreferencesFromResource(R.xml.pref_notification);
+                        break;
+                    case LEGACY_PREF_HEADER_DATA_SYNC:
+                        addPreferencesFromResource(R.xml.pref_data_sync);
+                        break;
+                }
+            } else {
+                // If no associated action load legacy version
+                addPreferencesFromResource(R.xml.pref_headers_legacy);
+            }
+        }
     }
 
     /**
