@@ -3,18 +3,14 @@ package es.smartidea.android.legalalerts;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.database.Cursor;
 // TODO: Check ringtone functionality.
 //import android.media.RingtoneManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
@@ -141,48 +137,14 @@ public class AlertsService extends Service {
 
         Log.d("Service", "Service created!");
 
-        // Get shared preferences
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-
-        // Check connectivity type and status
-        if (!wanAvailable()){
-            stopSelf();
-        } else {
-            if (sharedPreferences.getBoolean("sync_only_over_unmetered_network", true) && !unmeteredNetworkAvailable()){
-                stopSelf();
-            }
-        }
+        //setup BoeHandler and BoeHandler.Listeners
+        setupBoeHandler();
 
         // Start up the thread running the service.  Note that we create a
         // separate thread because the service normally runs in the process's
         // main thread, which we don't want to block.  We also make it
         // background priority so CPU-intensive work will not disrupt our UI.
 
-        // Init new boeXMLHandler
-        boeXMLHandler = new BoeXMLHandler();
-
-        // Set BoeXMLHandler event listener
-        boeXMLHandler.setBoeXMLHandlerEvents(new BoeXMLHandler.BoeXMLHandlerEvents() {
-            @Override
-            public void onBoeFetchCompleted() {
-                Log.d("Service", "Fetching " + boeXMLHandler.getURLXMLsCount() + " documents complete!");
-                boeSearchThread.start();
-            }
-
-            @Override
-            public void onSearchQueryCompleted(int searchQueryResults, String searchTerm) {
-                Log.d("Service", searchQueryResults + " results for: " + searchTerm);
-            }
-
-            @Override
-            public void onFoundXMLErrorTag(String description) {
-                Log.d("Service", "ERROR TAG found on XML summary.");
-                showAlertNotification("ERROR TAG FOUND", description);
-
-                // Stop service if error tag found on XML
-                stopSelf();
-            }
-        });
         // Start fetching data
         boeFetchThread.start();
     }
@@ -213,29 +175,40 @@ public class AlertsService extends Service {
         }
     }
 
-    // Check for unmetered network availability
-    private boolean unmeteredNetworkAvailable() {
-        ConnectivityManager connectivityManager = (ConnectivityManager)
-                getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-        return (networkInfo != null && (networkInfo.getType() == ConnectivityManager.TYPE_WIFI));
-    }
+    private void setupBoeHandler(){
+        // Init new boeXMLHandler
+        boeXMLHandler = new BoeXMLHandler();
 
-    // Check for available internet connection
-    public boolean wanAvailable() {
-        ConnectivityManager connectivityManager = (ConnectivityManager)
-                getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-        return (networkInfo != null && networkInfo.isConnected());
-    }
+        // Set BoeXMLHandler event listener
+        boeXMLHandler.setBoeXMLHandlerEvents(new BoeXMLHandler.BoeXMLHandlerEvents() {
+            @Override
+            public void onBoeFetchCompleted() {
+                Log.d("Service", "Fetching " + boeXMLHandler.getURLXMLsCount() + " documents complete!");
+                boeSearchThread.start();
+            }
 
+            @Override
+            public void onSearchQueryCompleted(int searchQueryResults, String searchTerm) {
+                Log.d("Service", searchQueryResults + " results for: " + searchTerm);
+            }
+
+            @Override
+            public void onFoundXMLErrorTag(String description) {
+                Log.d("Service", "ERROR TAG found on XML summary.");
+                showAlertNotification("ERROR TAG FOUND", description);
+
+                // Stop service if error tag found on XML
+                stopSelf();
+            }
+        });
+    }
     /**
      * Void method showAlertNotification(String title, String message)
      *
      * Build and Shows a notification, according to given parameters
      *
      * @param title   String corresponding to Notification´s title
-     * @param message String corresponding to Notification´s title
+     * @param message String corresponding to Notification´s message
      **/
     public void showAlertNotification(String title, String message) {
 

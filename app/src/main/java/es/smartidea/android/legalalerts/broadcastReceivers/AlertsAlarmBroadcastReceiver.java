@@ -1,4 +1,4 @@
-package es.smartidea.android.legalalerts.broadcastReceiver;
+package es.smartidea.android.legalalerts.broadcastReceivers;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -23,6 +23,7 @@ public class AlertsAlarmBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         // This method is called when the BroadcastReceiver is receiving an Intent broadcast.
+
         AlarmManager alarmMgr;
         PendingIntent alarmIntent;
         // Check received broadcast message

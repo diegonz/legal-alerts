@@ -14,7 +14,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import es.smartidea.android.legalalerts.broadcastReceiver.AlertsAlarmBroadcastReceiver;
+import es.smartidea.android.legalalerts.broadcastReceivers.AlertsAlarmBroadcastReceiver;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {

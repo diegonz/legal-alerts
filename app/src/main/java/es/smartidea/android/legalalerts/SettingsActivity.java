@@ -18,6 +18,7 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.MenuItem;
 import android.support.v4.app.NavUtils;
 
@@ -35,7 +36,6 @@ import java.util.List;
  * API Guide</a> for more information on developing a Settings UI.
  */
 public class SettingsActivity extends AppCompatPreferenceActivity {
-    final static String LEGACY_PREF_HEADER_GENERAL = "es.smartidea.android.legalalerts.LEGACY_PREF_HEADER_GENERAL";
     final static String LEGACY_PREF_HEADER_NOTIFICATIONS = "es.smartidea.android.legalalerts.LEGACY_PREF_HEADER_NOTIFICATIONS";
     final static String LEGACY_PREF_HEADER_DATA_SYNC = "es.smartidea.android.legalalerts.LEGACY_PREF_HEADER_DATA_SYNC";
     /**
@@ -134,13 +134,12 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             if (prefScreen != null){
                 // Check required action
                 switch (prefScreen){
-                    case LEGACY_PREF_HEADER_GENERAL:
-                        addPreferencesFromResource(R.xml.pref_general);
-                        break;
                     case LEGACY_PREF_HEADER_NOTIFICATIONS:
+                        Log.d("Settings", "LEGACY_PREF_HEADER_NOTIFICATIONS");
                         addPreferencesFromResource(R.xml.pref_notification);
                         break;
                     case LEGACY_PREF_HEADER_DATA_SYNC:
+                        Log.d("Settings", "LEGACY_PREF_HEADER_DATA_SYNC");
                         addPreferencesFromResource(R.xml.pref_data_sync);
                         break;
                 }
@@ -197,40 +196,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      */
     protected boolean isValidFragment(String fragmentName) {
         return PreferenceFragment.class.getName().equals(fragmentName)
-                || GeneralPreferenceFragment.class.getName().equals(fragmentName)
                 || DataSyncPreferenceFragment.class.getName().equals(fragmentName)
                 || NotificationPreferenceFragment.class.getName().equals(fragmentName);
-    }
-
-    /**
-     * This fragment shows general preferences only. It is used when the
-     * activity is showing a two-pane settings UI.
-     */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class GeneralPreferenceFragment extends PreferenceFragment {
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_general);
-            setHasOptionsMenu(true);
-
-            // Bind the summaries of EditText/List/Dialog/Ringtone preferences
-            // to their values. When their values change, their summaries are
-            // updated to reflect the new value, per the Android Design
-            // guidelines.
-            bindPreferenceSummaryToValue(findPreference("example_text"));
-            bindPreferenceSummaryToValue(findPreference("example_list"));
-        }
-
-        @Override
-        public boolean onOptionsItemSelected(MenuItem item) {
-            int id = item.getItemId();
-            if (id == android.R.id.home) {
-                startActivity(new Intent(getActivity(), SettingsActivity.class));
-                return true;
-            }
-            return super.onOptionsItemSelected(item);
-        }
     }
 
     /**
@@ -279,7 +246,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // to their values. When their values change, their summaries are
             // updated to reflect the new value, per the Android Design
             // guidelines.
-            bindPreferenceSummaryToValue(findPreference("sync_frequency"));
         }
 
         @Override

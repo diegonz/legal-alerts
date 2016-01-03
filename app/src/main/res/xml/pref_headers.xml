@@ -3,11 +3,6 @@
     <!-- These settings headers are only used on tablets. -->
 
     <header
-        android:fragment="es.smartidea.android.legalalerts.SettingsActivity$GeneralPreferenceFragment"
-        android:icon="@android:drawable/ic_menu_manage"
-        android:title="@string/pref_header_general" />
-
-    <header
         android:fragment="es.smartidea.android.legalalerts.SettingsActivity$NotificationPreferenceFragment"
         android:icon="@drawable/ic_notifications_black_24dp"
         android:title="@string/pref_header_notifications" />

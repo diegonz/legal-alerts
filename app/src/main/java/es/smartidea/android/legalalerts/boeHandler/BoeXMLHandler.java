@@ -32,31 +32,61 @@ import java.util.Map;
 
 public class BoeXMLHandler {
 
-    private BoeXMLHandlerEvents boeXMLHandlerEvents;
-
     private XmlPullParserFactory xmlFactoryObject;
 
-    final String boeBaseURL = "http://www.boe.es";
-    final String boeID = "/diario_boe/xml.php?id=BOE-S-";
+    final String BOE_BASE_URL = "http://www.boe.es";
+    final String BOE_BASE_ID = "/diario_boe/xml.php?id=BOE-S-";
 
     // String List where url of xml´s are stored
     private List<String> urlXMLs = new ArrayList<>();
-    private String boeBaseURLString;
-    private String currentBoeSummaryURLString;
+    private String boeBaseURLString, currentBoeSummaryURLString;
+
     // HashMap where raw data are stored
     private Map<String, String> boeXmlTodayRawData = new HashMap<>();
 
     // Public Constructor with empty arguments
     // Creates new BoeXMLHandler object with current date (yyyyMMdd)
     public BoeXMLHandler() {
+
+        // Set null or default listener or accept as argument to constructor
         this.boeXMLHandlerEvents = null;
+
+        // Setup base data
+        boeSetup();
+    }
+
+    // Callback interface to enable async communication with parent object
+    // This interface defines the type of messages I want to communicate to my owner
+    public interface BoeXMLHandlerEvents {
+        void onBoeFetchCompleted();
+
+        void onSearchQueryCompleted(int searchQueryResults, String searchTerm);
+
+        void onFoundXMLErrorTag(String description);
+    }
+
+
+    // Assign the listener implementing events interface that will receive the events
+    public void setBoeXMLHandlerEvents(BoeXMLHandlerEvents listener) {
+        this.boeXMLHandlerEvents = listener;
+    }
+
+    public void unsetBoeXMLHandlerEvents() {
+        this.boeXMLHandlerEvents = null;
+    }
+
+    // This variable represents the listener passed in by the owning object
+    // The listener must implement the events interface and passes messages up to the parent.
+    private BoeXMLHandlerEvents boeXMLHandlerEvents;
+
+    private void boeSetup(){
         Date curDate = new Date();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
         String todayDateString = dateFormat.format(curDate);
-        final String currentBoeURL = this.boeID + todayDateString;
+        final String currentBoeURL = this.BOE_BASE_ID + todayDateString;
 
-        this.boeBaseURLString = this.boeBaseURL;
-        this.currentBoeSummaryURLString = this.boeBaseURL + currentBoeURL;
+        this.boeBaseURLString = this.BOE_BASE_URL;
+        this.currentBoeSummaryURLString = this.BOE_BASE_URL + currentBoeURL;
 
         Log.d("BOE", "BaseURL: " + boeBaseURLString);
         Log.d("BOE", "SummaryURL: " + currentBoeSummaryURLString);
@@ -248,21 +278,5 @@ public class BoeXMLHandler {
             }
         });
         fetchThread.start();
-    }
-
-    public interface BoeXMLHandlerEvents {
-        void onBoeFetchCompleted();
-
-        void onSearchQueryCompleted(int searchQueryResults, String searchTerm);
-
-        void onFoundXMLErrorTag(String description);
-    }
-
-    public void setBoeXMLHandlerEvents(BoeXMLHandlerEvents listener) {
-        this.boeXMLHandlerEvents = listener;
-    }
-
-    public void unsetBoeXMLHandlerEvents() {
-        this.boeXMLHandlerEvents = null;
     }
 }
