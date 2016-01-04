@@ -34,8 +34,8 @@ public class BoeXMLHandler {
 
     private XmlPullParserFactory xmlFactoryObject;
 
-    final String BOE_BASE_URL = "http://www.boe.es";
-    final String BOE_BASE_ID = "/diario_boe/xml.php?id=BOE-S-";
+    public final static String BOE_BASE_URL = "http://www.boe.es";
+    public final static String BOE_BASE_ID = "/diario_boe/xml.php?id=BOE-S-";
 
     // String List where url of xml´s are stored
     private List<String> urlXMLs = new ArrayList<>();
@@ -65,12 +65,12 @@ public class BoeXMLHandler {
         void onFoundXMLErrorTag(String description);
     }
 
-
     // Assign the listener implementing events interface that will receive the events
     public void setBoeXMLHandlerEvents(BoeXMLHandlerEvents listener) {
         this.boeXMLHandlerEvents = listener;
     }
 
+    // TODO: Check need of un-setter/un-binder method.
     public void unsetBoeXMLHandlerEvents() {
         this.boeXMLHandlerEvents = null;
     }
@@ -83,29 +83,24 @@ public class BoeXMLHandler {
         Date curDate = new Date();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
         String todayDateString = dateFormat.format(curDate);
-        final String currentBoeURL = this.BOE_BASE_ID + todayDateString;
+        final String currentBoeURL = BOE_BASE_ID + todayDateString;
 
-        this.boeBaseURLString = this.BOE_BASE_URL;
-        this.currentBoeSummaryURLString = this.BOE_BASE_URL + currentBoeURL;
+        this.boeBaseURLString = BOE_BASE_URL;
+        this.currentBoeSummaryURLString = BOE_BASE_URL + currentBoeURL;
 
         Log.d("BOE", "BaseURL: " + boeBaseURLString);
         Log.d("BOE", "SummaryURL: " + currentBoeSummaryURLString);
     }
 
-    // Returns number of urlXml tags found
+    // Returns number of urlXml tags found (Announcements and disposals)
     public int getURLXMLsCount() {
         return urlXMLs.size();
     }
 
-    // Returns number of rawXMLs parsed and stored
-//    public int getRawDataHashMapCount() {
-//        return boeXmlTodayRawData.size();
-//    }
-
     /*
-    parseXMLSumAndGetRawData is a method to parse summary and get urlXml´s.
-    Data is stored on List<String> urlXMLs.
-    */
+    * parseXMLSumAndGetRawData is a method to parse summary and get urlXml´s.
+    * Data is stored on List<String> urlXMLs.
+    **/
     public void parseXMLSumAndGetRawData(XmlPullParser boeParser) {
         int event;
         String text = null;
@@ -123,13 +118,13 @@ public class BoeXMLHandler {
                         break;
 
                     case XmlPullParser.END_TAG:
-                        Log.d("BOE", "End TAG: " + name);
                         if (name.equals("urlXml")) {
                             urlXMLs.add(text);
                         } else if (name.equals("error")){
-                            Log.d("BOE", "BOE´s summary XML ERROR TAG found!!!.");
+
                             Log.d("BOE", "BOE´s summary XML ERROR TAG content: " + text);
-                            //Notify Listeners
+
+                            //Notify Listeners TODO: Handle error tag on GET request
                             boeXMLHandlerEvents.onFoundXMLErrorTag(text);
                         }
                         break;
@@ -143,9 +138,9 @@ public class BoeXMLHandler {
     }
 
     /*
-    parseXMLAndStoreIt is a method to parse and store xmls data.
-    Data is stored on HashMap<String, String> boeXmlTodayRawData.
-    */
+    * parseXMLAndStoreIt is a method to parse and store xml data.
+    * Data is stored on HashMap<String, String> boeXmlTodayRawData.
+    **/
     public void parseXMLAndStoreIt(XmlPullParser boeParser, String id) {
         int event;
         StringBuilder rawTextStringBuilder= new StringBuilder();
@@ -182,8 +177,8 @@ public class BoeXMLHandler {
     }
 
     /*
-     boeRawDataQuery is a method to query/search data in the object.
-     It returns a list<> with matching BOE´s ids.
+    * boeRawDataQuery is a method to query/search data in the object.
+    * It returns a list<> with matching BOE´s ids.
     */
     public List<String> boeRawDataQuery(String searchQuery) {
         List<String> queryResults = new ArrayList<>();
@@ -207,7 +202,7 @@ public class BoeXMLHandler {
     }
 
     /*
-     fetchXML runs a thread to fetch URLs for summary and others
+    * fetchXML runs a thread to fetch URLs for summary and others
     */
     public void fetchXML() {
         Thread fetchThread = new Thread(new Runnable() {
@@ -263,7 +258,6 @@ public class BoeXMLHandler {
                             boeParser.setInput(boeStream, "ISO-8859-1");
 
                             // Send parser and BOE´s id.
-//                            Log.d("BOE", "BOE id:" + eachUrlXML.substring(eachUrlXML.indexOf("=") + 1));
                             parseXMLAndStoreIt(boeParser, eachUrlXML.substring(eachUrlXML.indexOf("=") + 1));
                             boeStream.close();
                         } catch (Exception e) {

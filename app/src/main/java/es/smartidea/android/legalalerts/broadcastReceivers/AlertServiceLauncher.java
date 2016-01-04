@@ -21,50 +21,70 @@ public class AlertServiceLauncher extends BroadcastReceiver {
     public AlertServiceLauncher() {
     }
 
+    public final static String START_ALARMS_SERVICE = "es.smartidea.legalalerts.START_ALARMS_SERVICE";
+    public final static String START_MANUAL_SYNC_SERVICE = "es.smartidea.legalalerts.START_MANUAL_SYNC_SERVICE";
+
     @Override
     public void onReceive(Context context, Intent intent) {
-        final String START_ALARMS_SERVICE = "es.smartidea.legalalerts.START_ALARMS_SERVICE";
-        final String START_MANUAL_SYNC_SERVICE = "es.smartidea.legalalerts.START_MANUAL_SYNC_SERVICE";
         if (intent.getAction().equals(START_ALARMS_SERVICE)){
 
             // Get shared preferences
             SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 
+            // User preferences requirements boolean flag
+            // TODO: Refactor checking, external/inner class?
             boolean userPrefOK = true;
-            // Check charging status
-            if (sharedPreferences.getBoolean("sync_only_when_charging", true) && !deviceIsCharging(context)) {
-                Log.d("Service", "Charging required!");
-                userPrefOK = false;
-            }
 
             // Check connectivity type and status
             if (!wanAvailable(context)) {
-                Log.d("Service", "Unavailable WAN!");
+                Log.d("ServiceLauncher", "Unavailable WAN!");
                 userPrefOK = false;
             } else {
+
+                // Check charging status
+                if (sharedPreferences.getBoolean("sync_only_when_charging", true) && !deviceIsCharging(context)) {
+                    Log.d("ServiceLauncher", "Device charging required!");
+                    userPrefOK = false;
+                }
+
                 if (sharedPreferences.getBoolean("sync_only_over_unmetered_network", true) && !unmeteredNetworkAvailable(context)) {
-                    Log.d("Service", "WiFi required!");
+                    Log.d("ServiceLauncher", "WiFi network required!");
                     userPrefOK = false;
                 }
             }
 
             // Launch service if meet the requirements
             if (userPrefOK){
+
+                Log.d("ServiceLauncher", "Preferences requirements OK, launching service.");
+
+                // User preferences OK, star service
                 context.startService(new Intent(context, AlertsService.class));
+            } else {
+                Log.d("ServiceLauncher", "Doesn't meet user preferences requirements.");
             }
 
         } else if (intent.getAction().equals(START_MANUAL_SYNC_SERVICE)){
-            context.startService(new Intent(context, AlertsService.class));
+
+            if (wanAvailable(context)) {
+
+                Log.d("ServiceLauncher", "Manual sync started, launching service.");
+
+                // Manual sync requested TODO: Implement dialog according to user preferences
+                context.startService(new Intent(context, AlertsService.class));
+            } else {
+                Log.d("ServiceLauncher", "Manual sync failed, unavailable WAN.");
+            }
         }
     }
 
-    /* Methods checking for user preferences */
+    /* Methods for checking about user preferences requirements */
 
     // Check charging state
     public boolean deviceIsCharging(Context context) {
-        Intent intent = context.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+        Intent batteryStatus = context.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
         // TODO: Check warning about battery
-        int plugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
+        int plugged = batteryStatus.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
         return plugged == BatteryManager.BATTERY_PLUGGED_AC || plugged == BatteryManager.BATTERY_PLUGGED_USB;
     }
 

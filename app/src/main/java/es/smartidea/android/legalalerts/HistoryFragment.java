@@ -40,17 +40,13 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
             DBContract.History.COL_HISTORY_DOCUMENT_NAME,
             DBContract.History.COL_HISTORY_DOCUMENT_URL
     };
-//    private static final String SELECTION_NOTNULL = "((" +
-//            DBContract.Alerts.COL_ALERT_NAME + " NOTNULL) AND (" +
-//            DBContract.Alerts.COL_ALERT_NAME + " != '' ))";
 
     private static final String ORDER_ASC_BY_NAME = DBContract.History.COL_HISTORY_DOCUMENT_NAME + " ASC";
     // Unique Loader ID to correct management
     private static final int HISTORY_LOADER_ID = 2;
 
-    // Declare ListView and DBCursor for adapter
+    // Declare ListView
     private ListView listViewHistory;
-//    private Cursor historyCursor;
     // Declare DBAdapter
     private DBHistoryCursorAdapter historyAdapter;
 
@@ -102,10 +98,6 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
     @Override
     public void onPause() {
         super.onPause();
-//        if (historyCursor != null) {
-//            // Close Cursor and destroy LoaderManager when onDetach()
-//            historyCursor.close();
-//        }
         getActivity().getSupportLoaderManager().destroyLoader(HISTORY_LOADER_ID);
     }
 

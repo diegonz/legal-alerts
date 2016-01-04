@@ -183,7 +183,7 @@ public class AlertsService extends Service {
         boeXMLHandler.setBoeXMLHandlerEvents(new BoeXMLHandler.BoeXMLHandlerEvents() {
             @Override
             public void onBoeFetchCompleted() {
-                Log.d("Service", "Fetching " + boeXMLHandler.getURLXMLsCount() + " documents complete!");
+                Log.d("Service", "Fetching " + boeXMLHandler.getURLXMLsCount() + " XMLs completed");
                 boeSearchThread.start();
             }
 
@@ -197,7 +197,7 @@ public class AlertsService extends Service {
                 Log.d("Service", "ERROR TAG found on XML summary.");
                 showAlertNotification("ERROR TAG FOUND", description);
 
-                // Stop service if error tag found on XML
+                // Stop service if error tag found on XML TODO: Check error handling implementation
                 stopSelf();
             }
         });
