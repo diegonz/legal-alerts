@@ -34,6 +34,10 @@ public class BoeXMLHandler {
 
     private XmlPullParserFactory xmlFactoryObject;
 
+    // XML error flag
+    // Only write-accessed from summary thread
+    public boolean xmlError = false;
+
     public final static String BOE_BASE_URL = "http://www.boe.es";
     public final static String BOE_BASE_ID = "/diario_boe/xml.php?id=BOE-S-";
 
@@ -122,6 +126,9 @@ public class BoeXMLHandler {
                             urlXMLs.add(text);
                         } else if (name.equals("error")){
 
+                            // Set XML error flag
+                            xmlError = true;
+
                             Log.d("BOE", "BOE´s summary XML ERROR TAG content: " + text);
 
                             //Notify Listeners TODO: Handle error tag on GET request
@@ -208,6 +215,7 @@ public class BoeXMLHandler {
         Thread fetchThread = new Thread(new Runnable() {
             @Override
             public void run() {
+
                 // Fetches XML´s summary URL and sends it to parse rawData URLs
                 try {
                     URL summaryURL = new URL(currentBoeSummaryURLString);
@@ -235,7 +243,8 @@ public class BoeXMLHandler {
                     e.printStackTrace();
                 }
 
-                if (urlXMLs.size() > 0){
+                // Start fetch and parse thread if xmlError is FALSE
+                if (!xmlError){
                     // Fetches each rawXML and passes each one to parse and store data
                     for (String eachUrlXML : urlXMLs) {
                         try {
