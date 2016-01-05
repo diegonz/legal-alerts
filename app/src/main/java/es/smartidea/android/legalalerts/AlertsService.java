@@ -11,6 +11,7 @@ import android.database.Cursor;
 //import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
@@ -47,7 +48,10 @@ public class AlertsService extends Service {
     private BoeXMLHandler boeXMLHandler;
 
     // Shared preferences
-    SharedPreferences sharedPreferences;
+    private SharedPreferences sharedPreferences;
+    // boolean preferences
+    private boolean notifyON = false;
+    private boolean vibrateON = false;
 
     private Thread boeFetchThread = new Thread(new Runnable() {
         @Override
@@ -120,7 +124,7 @@ public class AlertsService extends Service {
             } else {
                 resultMessageIntent.setAction(ACTION_NO_RESULT);
                 // If notification enabled in shared preferences
-                if (sharedPreferences.getBoolean("notifications_new_message", true)){
+                if (notifyON){
                     showAlertNotification("NO RESULTS FOUND", "Any coincidences where found");
                 }
             }
@@ -136,6 +140,13 @@ public class AlertsService extends Service {
     public void onCreate() {
 
         Log.d("Service", "Service created!");
+        // Get shared preferences
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+
+        // Set user preference flags
+        notifyON = sharedPreferences.getBoolean("notifications_new_message", true);
+        vibrateON = sharedPreferences.getBoolean("notifications_new_message_vibrate", true);
 
         //setup BoeHandler and BoeHandler.Listeners
         setupBoeHandler();
@@ -229,8 +240,6 @@ public class AlertsService extends Service {
                     .setSmallIcon(android.R.drawable.ic_popup_reminder)
                     .setContentTitle(title)
                     .setContentText(message);
-//        notification.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
-        // TODO: Check ringtone management
         notification.setSound(
                 Uri.parse(
                         sharedPreferences.getString(
@@ -238,7 +247,7 @@ public class AlertsService extends Service {
                                 "content://settings/system/notification_sound"))
         );
         // Check vibrate from preferences
-        if (sharedPreferences.getBoolean("notifications_new_message_vibrate", true)){
+        if (vibrateON){
             notification.setVibrate(new long[]{0, 500, 250, 500});
         }
         notification.setContentIntent(pendingIntent)
