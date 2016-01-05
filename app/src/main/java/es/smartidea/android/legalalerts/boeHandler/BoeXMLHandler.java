@@ -128,10 +128,9 @@ public class BoeXMLHandler {
 
                             // Set XML error flag
                             xmlError = true;
-
                             Log.d("BOE", "BOE´s summary XML ERROR TAG content: " + text);
 
-                            //Notify Listeners TODO: Handle error tag on GET request
+                            //Notify Listeners
                             boeXMLHandlerEvents.onFoundXMLErrorTag(text);
                         }
                         break;
