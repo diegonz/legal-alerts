@@ -5,20 +5,23 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.BatteryManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import es.smartidea.android.legalalerts.AlertsService;
+import es.smartidea.android.legalalerts.R;
 
 /*
 * Simple BroadcastReceiver subclass
-* Manages direct order to star th Alarms Service
+* Manages direct order to start the alarms service
 * */
-public class AlertServiceLauncher extends BroadcastReceiver {
-    public AlertServiceLauncher() {
+public class AlertServiceLauncherReceiver extends BroadcastReceiver {
+    public AlertServiceLauncherReceiver() {
     }
 
     public final static String START_ALARMS_SERVICE = "es.smartidea.legalalerts.START_ALARMS_SERVICE";
@@ -28,33 +31,8 @@ public class AlertServiceLauncher extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals(START_ALARMS_SERVICE)){
 
-            // Get shared preferences
-            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-
-            // User preferences requirements boolean flag
-            // TODO: Refactor checking, external/inner class?
-            boolean userPrefOK = true;
-
-            // Check connectivity type and status
-            if (!wanAvailable(context)) {
-                Log.d("ServiceLauncher", "Unavailable WAN!");
-                userPrefOK = false;
-            } else {
-
-                // Check charging status
-                if (sharedPreferences.getBoolean("sync_only_when_charging", true) && !deviceIsCharging(context)) {
-                    Log.d("ServiceLauncher", "Device charging required!");
-                    userPrefOK = false;
-                }
-
-                if (sharedPreferences.getBoolean("sync_only_over_unmetered_network", true) && !unmeteredNetworkAvailable(context)) {
-                    Log.d("ServiceLauncher", "WiFi network required!");
-                    userPrefOK = false;
-                }
-            }
-
             // Launch service if meet the requirements
-            if (userPrefOK){
+            if (preferenceChecker(context)){
 
                 Log.d("ServiceLauncher", "Preferences requirements OK, launching service.");
 
@@ -74,6 +52,10 @@ public class AlertServiceLauncher extends BroadcastReceiver {
                 context.startService(new Intent(context, AlertsService.class));
             } else {
                 Log.d("ServiceLauncher", "Manual sync failed, unavailable WAN.");
+                Resources resources = context.getResources();
+
+                // Notify no wan available via toast message
+                Toast.makeText(context,resources.getString(R.string.toast_no_wan), Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -89,7 +71,7 @@ public class AlertServiceLauncher extends BroadcastReceiver {
     }
 
     // Check for unmetered network availability
-    private boolean unmeteredNetworkAvailable(Context context) {
+    public boolean unmeteredNetworkAvailable(Context context) {
         ConnectivityManager connectivityManager = (ConnectivityManager)
                 context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
@@ -104,4 +86,35 @@ public class AlertServiceLauncher extends BroadcastReceiver {
         return (networkInfo != null && networkInfo.isConnected());
     }
 
+    // Check user preferences
+    // Returns true/false if accomplished requirements
+    public boolean preferenceChecker(Context context){
+
+        // Get shared preferences
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+
+        // User preferences requirements boolean flag
+        boolean userPrefOK = true;
+
+        // Check connectivity type and status
+        if (!wanAvailable(context)) {
+            Log.d("ServiceLauncher", "Unavailable WAN!");
+            userPrefOK = false;
+        } else {
+
+            // Check charging status
+            if (sharedPreferences.getBoolean("sync_only_when_charging", true)
+                    && !deviceIsCharging(context)) {
+                        Log.d("ServiceLauncher", "Device charging required!");
+                        userPrefOK = false;
+            }
+
+            if (sharedPreferences.getBoolean("sync_only_over_unmetered_network", true)
+                    && !unmeteredNetworkAvailable(context)) {
+                        Log.d("ServiceLauncher", "WiFi network required!");
+                        userPrefOK = false;
+            }
+        }
+        return userPrefOK;
+    }
 }

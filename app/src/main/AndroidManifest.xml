@@ -40,7 +40,7 @@
             android:exported="false" />
 
         <receiver
-            android:name=".broadcastReceivers.AlertsAlarmBroadcastReceiver"
+            android:name=".broadcastReceivers.AlertsAlarmReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
@@ -61,7 +61,7 @@
         </activity>
 
         <receiver
-            android:name=".broadcastReceivers.AlertServiceLauncher"
+            android:name=".broadcastReceivers.AlertServiceLauncherReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>

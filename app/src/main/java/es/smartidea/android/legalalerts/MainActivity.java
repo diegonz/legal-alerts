@@ -14,7 +14,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import es.smartidea.android.legalalerts.broadcastReceivers.AlertsAlarmBroadcastReceiver;
+import es.smartidea.android.legalalerts.broadcastReceivers.AlertsAlarmReceiver;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -197,7 +197,7 @@ public class MainActivity extends AppCompatActivity
     // setAlertsAlarmFromActivity void method, sends broadcast to setup alarm
     private void setAlertsAlarmFromActivity(){
         Intent setAlarmIntent = new Intent().setAction(
-                AlertsAlarmBroadcastReceiver.SET_ALARM_FROM_ACTIVITY);
+                AlertsAlarmReceiver.SET_ALARM_FROM_ACTIVITY);
         sendBroadcast(setAlarmIntent);
     }
 }
