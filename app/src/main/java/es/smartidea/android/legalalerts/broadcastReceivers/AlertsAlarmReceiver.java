@@ -23,10 +23,11 @@ public class AlertsAlarmReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         // This method is called when the BroadcastReceiver is receiving an Intent broadcast.
+        Log.d("AlertsAlarmReceiver", "Receiver started! ");
 
         // Log intent action
         String intentAction = intent.getAction();
-        Log.d("AlertsAlarmBCReceiver","IntentAction: " + intentAction);
+        Log.d("AlertsAlarmReceiver","IntentAction: " + intentAction);
 
         AlarmManager alarmMgr;
         PendingIntent alarmIntent;
@@ -47,7 +48,7 @@ public class AlertsAlarmReceiver extends BroadcastReceiver {
 
             if (alarmIntent == null) {
 
-                Log.d("AlertsAlarmBCReceiver", "No Alarm found, creating new one.");
+                Log.d("AlertsAlarmReceiver", "No Alarm found, creating new one.");
 
                 // Setup the alarm.
                 alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
@@ -65,13 +66,13 @@ public class AlertsAlarmReceiver extends BroadcastReceiver {
                 alarmMgr.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
                         AlarmManager.INTERVAL_DAY, alarmIntent);
             } else {
-                Log.d("AlertsAlarmBCReceiver", "Alarm already set.");
+                Log.d("AlertsAlarmReceiver", "Alarm already set.");
             }
 
         } else {
 
             // Received BOOT_COMPLETED broadcast message, set new alarm
-            Log.d("AlertsAlarmBCReceiver", "Boot completed, setting Alerts Service Alarm...");
+            Log.d("AlertsAlarmReceiver", "Boot completed, setting Alerts Service Alarm...");
 
             // Setup the alarm.
             alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);

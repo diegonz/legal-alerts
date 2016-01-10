@@ -272,11 +272,12 @@ public class BoeXMLHandler {
                             Log.d("BOE", "ERROR while trying to download BOE´s attachments!");
                             e.printStackTrace();
                         }
+                        // Fetch Completed Listener
+                        boeXMLHandlerEvents.onBoeFetchCompleted();
                     }
                 } else {
                     Log.d("BOE", "ERROR No urlXml tags found.");
                 }
-                boeXMLHandlerEvents.onBoeFetchCompleted();
             }
         });
         fetchThread.start();

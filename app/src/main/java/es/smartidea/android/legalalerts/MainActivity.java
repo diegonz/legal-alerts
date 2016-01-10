@@ -196,7 +196,7 @@ public class MainActivity extends AppCompatActivity
 
     // setAlertsAlarmFromActivity void method, sends broadcast to setup alarm
     private void setAlertsAlarmFromActivity(){
-        Intent setAlarmIntent = new Intent().setAction(
+        Intent setAlarmIntent = new Intent(this, AlertsAlarmReceiver.class).setAction(
                 AlertsAlarmReceiver.SET_ALARM_FROM_ACTIVITY);
         sendBroadcast(setAlarmIntent);
     }
