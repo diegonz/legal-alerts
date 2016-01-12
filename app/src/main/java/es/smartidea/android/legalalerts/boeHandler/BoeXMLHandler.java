@@ -8,15 +8,9 @@ package es.smartidea.android.legalalerts.boeHandler;
  * Also extracts documents paragraphs (<p> tags) to a HashMap<>,
  * and holds it to offer a query by containing text method.
  *
- * BOE´s summary XML tag structure:
- * Diario >
- * Seccion >
- * Departamento >
- * Epigrafe >
- * Item >
- * <urlXml>
  * */
 
+import android.annotation.SuppressLint;
 import android.util.Log;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -60,7 +54,7 @@ public class BoeXMLHandler {
     }
 
     // Callback interface to enable async communication with parent object
-    // This interface defines the type of messages I want to communicate to my owner
+    // This interface defines the type of messages I want to communicate to owner object
     public interface BoeXMLHandlerEvents {
         void onBoeFetchCompleted();
 
@@ -74,7 +68,7 @@ public class BoeXMLHandler {
         this.boeXMLHandlerEvents = listener;
     }
 
-    // TODO: Check need of un-setter/un-binder method.
+    // Listener un-setter/un-binder method.
     public void unsetBoeXMLHandlerEvents() {
         this.boeXMLHandlerEvents = null;
     }
@@ -83,6 +77,7 @@ public class BoeXMLHandler {
     // The listener must implement the events interface and passes messages up to the parent.
     private BoeXMLHandlerEvents boeXMLHandlerEvents;
 
+    @SuppressLint("SimpleDateFormat")
     private void boeSetup(){
         Date curDate = new Date();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
@@ -101,81 +96,49 @@ public class BoeXMLHandler {
         return urlXMLs.size();
     }
 
-    /*
-    * parseXMLSumAndGetRawData is a method to parse summary and get urlXml´s.
-    * Data is stored on List<String> urlXMLs.
+    /**
+     * boeXmlWorker is a void method to parse and store xml data
+     * or download attached XML docs according to isSummary flag.
+     *
+     * @param boeParser BOE´s summary or attached doc associated XMLPullParser.
+     * @param docID BOE´s document ID, can send null when parsing BOE´s summary.
+     * @param isSummary boolean flag indicating type of document (summary or not).
+     *
+     * Attached doc URLs is stored on List<String> urlXMLs.
+     * Data is stored on HashMap<String, String> boeXmlTodayRawData.
     **/
-    public void parseXMLSumAndGetRawData(XmlPullParser boeParser) {
+    public void boeXmlWorker(XmlPullParser boeParser, String docID, boolean isSummary){
         int event;
+        StringBuilder rawTextStringBuilder = new StringBuilder();
         String text = null;
 
         try {
             event = boeParser.getEventType();
-
             while (event != XmlPullParser.END_DOCUMENT) {
                 String name = boeParser.getName();
-
                 switch (event) {
-
                     case XmlPullParser.TEXT:
                         text = boeParser.getText();
                         break;
-
                     case XmlPullParser.END_TAG:
-                        if (name.equals("urlXml")) {
-                            urlXMLs.add(text);
-                        } else if (name.equals("error")){
-
-                            // Set XML error flag
-                            xmlError = true;
-                            Log.d("BOE", "BOE´s summary XML ERROR TAG content: " + text);
-
-                            //Notify Listeners
-                            boeXMLHandlerEvents.onFoundXMLErrorTag(text);
-                        }
-                        break;
-                }
-                event = boeParser.next();
-            }
-        } catch (Exception e) {
-            Log.d("BOE", "ERROR while parsing XML summary file!");
-            e.printStackTrace();
-        }
-    }
-
-    /*
-    * parseXMLAndStoreIt is a method to parse and store xml data.
-    * Data is stored on HashMap<String, String> boeXmlTodayRawData.
-    **/
-    public void parseXMLAndStoreIt(XmlPullParser boeParser, String id) {
-        int event;
-        StringBuilder rawTextStringBuilder= new StringBuilder();
-        String text = null;
-
-        try {
-            event = boeParser.getEventType();
-
-            while (event != XmlPullParser.END_DOCUMENT) {
-                String name = boeParser.getName();
-
-                switch (event) {
-                    case XmlPullParser.START_TAG:
-                        break;
-
-                    case XmlPullParser.TEXT:
-                        text = boeParser.getText();
-                        break;
-
-                    case XmlPullParser.END_TAG:
-                        if (name.equals("p")) {
+                        if (isSummary){
+                            if (name.equals("urlXml")) {
+                                urlXMLs.add(text);
+                            } else if (name.equals("error")) {
+                                // Set XML error flag
+                                xmlError = true;
+                                Log.d("BOE", "BOE´s summary XML ERROR TAG content: " + text);
+                                //Notify Listeners
+                                boeXMLHandlerEvents.onFoundXMLErrorTag(text);
+                            }
+                        } else if (name.equals("p")) {
                             rawTextStringBuilder.append(text);
                         }
                         break;
-
                 }
                 event = boeParser.next();
             }
-            boeXmlTodayRawData.put(id, rawTextStringBuilder.toString());
+            boeXmlTodayRawData.put(docID, rawTextStringBuilder.toString());
         } catch (Exception e) {
             Log.d("BOE", "ERROR while parsing attached XML file!");
             e.printStackTrace();
@@ -208,7 +171,7 @@ public class BoeXMLHandler {
     }
 
     /*
-    * fetchXML runs a thread to fetch URLs for summary and others
+    * fetchXML() runs a thread to fetch URLs for summary and others, based on OkHttp library
     */
     public void fetchXML() {
         Thread fetchThread = new Thread(new Runnable() {
@@ -220,20 +183,21 @@ public class BoeXMLHandler {
                     InputStream boeSummaryStream = new OkHttpGetURL().run(currentBoeSummaryURLString);
                     xmlFactoryObject = XmlPullParserFactory.newInstance();
                     XmlPullParser boeSummaryParser = xmlFactoryObject.newPullParser();
-
                     boeSummaryParser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
 
                     // Set xml´s encoding to latin1
                     boeSummaryParser.setInput(boeSummaryStream, "ISO-8859-1");
 
-                    parseXMLSumAndGetRawData(boeSummaryParser);
+                    // Send parser, BOE´s document id set to null (summary)
+                    // and isSummary flag set to true.
+                    boeXmlWorker(boeSummaryParser, null, true);
                     boeSummaryStream.close();
                 } catch (Exception e) {
                     Log.d("BOE", "ERROR while trying to download BOE´s summary!");
                     e.printStackTrace();
                 }
 
-                // Start fetch and parse thread if xmlError is FALSE
+                // Start fetch and parse thread if xmlError flag maintains its FALSE original state.
                 if (!xmlError){
                     // Fetches each rawXML and passes each one to parse and store data
                     for (String eachUrlXML : urlXMLs) {
@@ -241,14 +205,13 @@ public class BoeXMLHandler {
                             InputStream boeStream = new OkHttpGetURL().run(boeBaseURLString + eachUrlXML);
                             xmlFactoryObject = XmlPullParserFactory.newInstance();
                             XmlPullParser boeParser = xmlFactoryObject.newPullParser();
-
                             boeParser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
 
                             // Set xml´s encoding to latin1 (ISO-8859-1)
                             boeParser.setInput(boeStream, "ISO-8859-1");
 
-                            // Send parser and BOE´s id.
-                            parseXMLAndStoreIt(boeParser, eachUrlXML.substring(eachUrlXML.indexOf("=") + 1));
+                            // Send parser, BOE´s document id and isSummary flag set to false.
+                            boeXmlWorker(boeParser, eachUrlXML.substring(eachUrlXML.indexOf("=") + 1), false );
                             boeStream.close();
                         } catch (Exception e) {
                             Log.d("BOE", "ERROR while trying to download BOE´s attachments!");
@@ -257,30 +220,9 @@ public class BoeXMLHandler {
                         // Fetch Completed Listener
                         boeXMLHandlerEvents.onBoeFetchCompleted();
                     }
-                } else {
-                    Log.d("BOE", "ERROR No urlXml tags found.");
                 }
             }
         });
         fetchThread.start();
     }
-
-    // TODO: Check AsyncTask vs pure Threads
-//    public class GetURL extends AsyncTask<String, Void, InputStream> {
-//
-//        @Override
-//        protected InputStream doInBackground(String... strings) {
-//            try {
-//                return new OkHttpGetURL().run(strings[0]);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//            return null;
-//        }
-//
-//        @Override
-//        protected void onPostExecute(InputStream inputStream) {
-//            super.onPostExecute(inputStream);
-//        }
-//    }
 }
