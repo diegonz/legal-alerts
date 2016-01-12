@@ -21,14 +21,14 @@ import android.util.Log;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import es.smartidea.android.legalalerts.okHttp.OkHttpGetURL;
 
 public class BoeXMLHandler {
 
@@ -52,7 +52,7 @@ public class BoeXMLHandler {
     // Creates new BoeXMLHandler object with current date (yyyyMMdd)
     public BoeXMLHandler() {
 
-        // Set null or default listener or accept as argument to constructor
+        // Set null or default listener
         this.boeXMLHandlerEvents = null;
 
         // Setup base data
@@ -217,16 +217,7 @@ public class BoeXMLHandler {
 
                 // Fetches XML´s summary URL and sends it to parse rawData URLs
                 try {
-                    URL summaryURL = new URL(currentBoeSummaryURLString);
-                    HttpURLConnection summaryConn = (HttpURLConnection) summaryURL.openConnection();
-
-                    summaryConn.setReadTimeout(10000);      /* milliseconds */
-                    summaryConn.setConnectTimeout(15000);   /* milliseconds */
-                    summaryConn.setRequestMethod("GET");
-                    summaryConn.setDoInput(true);
-                    summaryConn.connect();
-
-                    InputStream boeSummaryStream = summaryConn.getInputStream();
+                    InputStream boeSummaryStream = new OkHttpGetURL().run(currentBoeSummaryURLString);
                     xmlFactoryObject = XmlPullParserFactory.newInstance();
                     XmlPullParser boeSummaryParser = xmlFactoryObject.newPullParser();
 
@@ -247,16 +238,7 @@ public class BoeXMLHandler {
                     // Fetches each rawXML and passes each one to parse and store data
                     for (String eachUrlXML : urlXMLs) {
                         try {
-                            URL itemURL = new URL(boeBaseURLString + eachUrlXML);
-                            HttpURLConnection itemConn = (HttpURLConnection) itemURL.openConnection();
-
-                            itemConn.setReadTimeout(10000 /* milliseconds */);
-                            itemConn.setConnectTimeout(15000 /* milliseconds */);
-                            itemConn.setRequestMethod("GET");
-                            itemConn.setDoInput(true);
-                            itemConn.connect();
-
-                            InputStream boeStream = itemConn.getInputStream();
+                            InputStream boeStream = new OkHttpGetURL().run(boeBaseURLString + eachUrlXML);
                             xmlFactoryObject = XmlPullParserFactory.newInstance();
                             XmlPullParser boeParser = xmlFactoryObject.newPullParser();
 
@@ -282,4 +264,23 @@ public class BoeXMLHandler {
         });
         fetchThread.start();
     }
+
+    // TODO: Check AsyncTask vs pure Threads
+//    public class GetURL extends AsyncTask<String, Void, InputStream> {
+//
+//        @Override
+//        protected InputStream doInBackground(String... strings) {
+//            try {
+//                return new OkHttpGetURL().run(strings[0]);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//            return null;
+//        }
+//
+//        @Override
+//        protected void onPostExecute(InputStream inputStream) {
+//            super.onPostExecute(inputStream);
+//        }
+//    }
 }
