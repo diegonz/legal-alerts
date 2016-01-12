@@ -24,6 +24,8 @@ public class MainActivity extends AppCompatActivity
     public static final int FRAGMENT_HISTORY = 1;
     // RUNNING_FRAGMENT initialized to -1, forcing first replacement and RUNNING_FRAGMENT update.
     private int RUNNING_FRAGMENT = -1;
+    // Running fragment string
+    static final String RUNNING_FRAGMENT_STRING = "running_fragment";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +33,11 @@ public class MainActivity extends AppCompatActivity
 
         // Get Intent extras from the intent which started activity
         int initOnFragment = getIntent().getIntExtra("initOnFragment", FRAGMENT_ALERTS);
+        // Check activity recreation
+        if (savedInstanceState != null) {
+            initOnFragment = savedInstanceState.getInt(RUNNING_FRAGMENT_STRING);
+        }
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -45,12 +52,19 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        // Replace fragment according to intent extras
+        // Replace fragment according to intent extras or savedInstanceState
         // If starting from scratch it defaults to FRAGMENT_ALERTS
         replaceFragment(initOnFragment);
 
         // Check/set the Alerts alarm
         setAlertsAlarmFromActivity();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        // Save the user's current running fragment
+        outState.putInt(RUNNING_FRAGMENT_STRING, RUNNING_FRAGMENT);
+        super.onSaveInstanceState(outState);
     }
 
     @Override

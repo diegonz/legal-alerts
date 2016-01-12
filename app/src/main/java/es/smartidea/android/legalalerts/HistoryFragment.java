@@ -27,9 +27,8 @@ import es.smartidea.android.legalalerts.dbHelper.DBContract;
 public class HistoryFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
 
-    public HistoryFragment() {
-        // Required empty public constructor
-    }
+    // Required empty public constructor
+    public HistoryFragment() {}
 
     // URI of DB
     private static final Uri HISTORY_URI = DBContentProvider.HISTORY_URI;

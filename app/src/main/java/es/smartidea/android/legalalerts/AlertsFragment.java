@@ -53,6 +53,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     /**
      * Start of fragment lifecycle
      * */
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Get inflated view of this layout´s fragment
