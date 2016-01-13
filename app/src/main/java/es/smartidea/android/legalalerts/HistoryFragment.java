@@ -56,15 +56,9 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
         if (view != null){
             // Get FAB reference with getActivity() to access MainActivity's FAB in CoordinatorLayout
             FloatingActionButton fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
-            fab.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    // Starting manual download and search of XML data trough IntentService
-                    Intent searchAlertsIntent = new Intent(getActivity(), AlertsService.class);
-                    Log.d("History", "Launching Alerts Service...");
-                    getActivity().startService(searchAlertsIntent);
-                }
-            });
+            // Hide fab button for this fragment
+            fab.hide();
+
             // Get ListView reference
             listViewHistory = (ListView)view.findViewById(R.id.listViewHistory);
         }

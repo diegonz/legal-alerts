@@ -1,5 +1,6 @@
 package es.smartidea.android.legalalerts;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -10,9 +11,13 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import es.smartidea.android.legalalerts.dbContentProvider.DBContentProvider;
 import es.smartidea.android.legalalerts.dbCursorAdapter.DBAlertsCursorAdapter;
@@ -53,6 +58,21 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     /**
      * Start of fragment lifecycle
      * */
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        // It is explicitly stated that the fragment has menu options to contribute
+        setHasOptionsMenu(true);
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        // Add fragment´s contributed options BEFORE calling super method
+        inflater.inflate(R.menu.fragment_alerts_menu, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -96,9 +116,33 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
         // Destroy LoaderManager when onPause()
         getActivity().getSupportLoaderManager().destroyLoader(ALERTS_LOADER_ID);
     }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_refresh) {
+            // Start manual sync if service is not already running
+            if (AlertsService.isRunning()){
+                Toast.makeText(getActivity(), "service already running...", Toast.LENGTH_SHORT).show();
+            } else {
+                // Starting manual download and search of XML data trough IntentService
+                getActivity().startService(new Intent(getActivity(), AlertsService.class));
+            }
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
     /**
      * End of fragment lifecycle
      * */
+
 
     // Returns a new loader after the initAlertsLoader() call
     @Override

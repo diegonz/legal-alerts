@@ -23,6 +23,9 @@ import es.smartidea.android.legalalerts.dbHelper.DBContract;
 
 public class AlertsService extends Service {
 
+    // Public boolean flag indicating if service is running.
+    private static boolean serviceRunning = false;
+
     // URI of DB
     private static final Uri ALERTS_URI = DBContentProvider.ALERTS_URI;
     // Static String arguments for querying
@@ -54,8 +57,12 @@ public class AlertsService extends Service {
     /*
     * Start of Service´s lifecycle
     * */
+
     @Override
     public void onCreate() {
+
+        // Set TRUE to serviceRunning flag
+        serviceRunning = true;
 
         Log.d("Service", "Service created!");
         // Get shared preferences
@@ -102,6 +109,9 @@ public class AlertsService extends Service {
             boeXMLHandler.unsetBoeXMLHandlerEvents();
             boeXMLHandler = null;
         }
+
+        // Set serviceRunning flag to FALSE
+        serviceRunning = false;
     }
 
     /*
@@ -120,9 +130,10 @@ public class AlertsService extends Service {
                     Log.d("Service", "BOE´s summary fetching completed");
                     boeFetchAttachmentThread.start();
                 } else {
-                    // Error tag found on summary, stop service.
                     Log.d("Service", "Error tag found on BOE´s summary");
                     Log.d("Service", "Requesting service stop...");
+
+                    // Error tag found on summary, stop service.
                     stopSelf();
                 }
             }
@@ -271,5 +282,9 @@ public class AlertsService extends Service {
                     .setAutoCancel(true);
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notificationManager.notify(ALERT_NOTIFICATION_ID, notification.build());
+    }
+
+    public static boolean isRunning(){
+        return serviceRunning;
     }
 }

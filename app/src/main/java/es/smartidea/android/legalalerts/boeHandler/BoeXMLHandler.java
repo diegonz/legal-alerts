@@ -233,9 +233,9 @@ public class BoeXMLHandler {
                             Log.d("BOE", "ERROR while trying to download BOE´s attachments!");
                             e.printStackTrace();
                         }
-                        // Fetch Completed Listener
-                        boeXMLHandlerEvents.onBoeAttachmentsFetchCompleted();
                     }
+                    // Notify fetch completed to listener
+                    boeXMLHandlerEvents.onBoeAttachmentsFetchCompleted();
                 }
             }
         });
