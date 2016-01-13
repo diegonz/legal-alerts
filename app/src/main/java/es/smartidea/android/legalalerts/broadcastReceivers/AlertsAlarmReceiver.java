@@ -65,6 +65,7 @@ public class AlertsAlarmReceiver extends BroadcastReceiver {
                 // constants, in this case, AlarmManager.INTERVAL_DAY.
                 alarmMgr.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
                         AlarmManager.INTERVAL_DAY, alarmIntent);
+                Log.d("AlertsAlarmReceiver", "Alarm set from activity.");
             } else {
                 Log.d("AlertsAlarmReceiver", "Alarm already set.");
             }

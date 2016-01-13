@@ -51,44 +51,115 @@ public class AlertsService extends Service {
     private boolean notifyON = false;
     private boolean vibrateON = false;
 
-    private Thread boeFetchThread = new Thread(new Runnable() {
-        @Override
-        public void run() {
+    /*
+    * Start of Service´s lifecycle
+    * */
+    @Override
+    public void onCreate() {
 
-            // TODO: Check if data has been downloaded (store on DB for re-querying? ex:new alert added)
-            // Create new BoeXMLHandler object
-            // Fetch all documents
-            Log.d("Service", "Starting to fetch all documents");
-            boeXMLHandler.fetchXML();
+        Log.d("Service", "Service created!");
+        // Get shared preferences
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-            // Get current Alerts to look for from DB
-            Cursor alertsCursor = getApplicationContext().getContentResolver().query(ALERTS_URI,
-                    ALERTS_PROJECTION, ALERTS_SELECTION_NOTNULL, null, ALERTS_ORDER_ASC_BY_NAME);
-            if (alertsCursor != null) {
-                Log.d("Service", "Alerts found on DB, inflating alerts array");
-                try {
-                    List<String> alertsList = new ArrayList<>();
-                    while (alertsCursor.moveToNext()) {
-                        alertsList.add(alertsCursor.getString(alertsCursor.getColumnIndexOrThrow(
-                                DBContract.Alerts.COL_ALERT_NAME)));
-                    }
-                    alertsToSearch = new String[alertsList.size()];
-                    alertsList.toArray(alertsToSearch);
-                    for (String eachAlert : alertsToSearch) {
-                        Log.d("Service", "Alert to search: " + eachAlert);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    alertsCursor.close();
-                }
-            } else {
-                alertsToSearch = new String[]{"impuesto", "estado", "ayuda"};
-                Log.d("History", "No alerts from cursor, inflating dummy alerts array");
-                for (String eachAlert : alertsToSearch) {
-                    Log.d("Service", "Dummy alert to search: " + eachAlert);
+
+        // Set user preference flags
+        notifyON = sharedPreferences.getBoolean("notifications_new_message", true);
+        vibrateON = sharedPreferences.getBoolean("notifications_new_message_vibrate", true);
+
+        //setup BoeHandler and BoeHandler.Listeners
+        setupBoeHandler();
+
+        // Start up the thread running the service.  Note that we create a
+        // separate thread because the service normally runs in the process's
+        // main thread, which we don't want to block.  We also make it
+        // background priority so CPU-intensive work will not disrupt our UI.
+
+        // Start fetching summary
+        boeFetchSummaryThread.start();
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
+        Log.d("Service", "Service started!");
+
+        // If we get killed, after returning from here, AVOID restarting
+        return START_NOT_STICKY;
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        // We don't provide binding, so return null
+        return null;
+    }
+
+    @Override
+    public void onDestroy() {
+        Toast.makeText(this, "service done", Toast.LENGTH_SHORT).show();
+        Log.d("Service", "Service work DONE! Stopping...");
+        // Release as many resources as possible
+        if (boeXMLHandler != null){
+            boeXMLHandler.unsetBoeXMLHandlerEvents();
+            boeXMLHandler = null;
+        }
+    }
+
+    /*
+    * End of Service´s lifecycle
+    * */
+
+    private void setupBoeHandler(){
+        // Init new boeXMLHandler
+        boeXMLHandler = new BoeXMLHandler();
+
+        // Set BoeXMLHandler event listener
+        boeXMLHandler.setBoeXMLHandlerEvents(new BoeXMLHandler.BoeXMLHandlerEvents() {
+            @Override
+            public void onBoeSummaryFetchCompleted(boolean xmlError) {
+                if (!xmlError){
+                    Log.d("Service", "BOE´s summary fetching completed");
+                    boeFetchAttachmentThread.start();
+                } else {
+                    // Error tag found on summary, stop service.
+                    Log.d("Service", "Error tag found on BOE´s summary");
+                    Log.d("Service", "Requesting service stop...");
+                    stopSelf();
                 }
             }
+
+            @Override
+            public void onBoeAttachmentsFetchCompleted() {
+                Log.d("Service", "Fetching " + boeXMLHandler.getURLXMLsCount() + " XMLs completed");
+                getAlertsFromDB();
+                boeSearchThread.start();
+            }
+
+            @Override
+            public void onSearchQueryCompleted(int searchQueryResults, String searchTerm) {
+                Log.d("Service", searchQueryResults + " results for: " + searchTerm);
+            }
+
+            @Override
+            public void onFoundXMLErrorTag(String description) {
+                Log.d("Service", "ERROR TAG found on XML summary.");
+                showAlertNotification("ERROR TAG FOUND", description);
+            }
+        });
+    }
+
+    private Thread boeFetchSummaryThread = new Thread(new Runnable() {
+        @Override
+        public void run() {
+            Log.d("Service", "Starting to fetch BOE´s summary");
+            boeXMLHandler.fetchXMLSummary();
+        }
+    });
+
+    private Thread boeFetchAttachmentThread = new Thread(new Runnable() {
+        @Override
+        public void run() {
+            Log.d("Service", "Starting to fetch BOE´s attachments");
+            boeXMLHandler.fetchXMLAttachments();
         }
     });
 
@@ -122,7 +193,7 @@ public class AlertsService extends Service {
             } else {
                 resultMessageIntent.setAction(ACTION_NO_RESULT);
                 // If notification enabled in shared preferences
-                if (notifyON){
+                if (notifyON) {
                     showAlertNotification("NO RESULTS FOUND", "Any coincidences where found");
                 }
             }
@@ -134,83 +205,31 @@ public class AlertsService extends Service {
         }
     });
 
-    @Override
-    public void onCreate() {
-
-        Log.d("Service", "Service created!");
-        // Get shared preferences
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-
-
-        // Set user preference flags
-        notifyON = sharedPreferences.getBoolean("notifications_new_message", true);
-        vibrateON = sharedPreferences.getBoolean("notifications_new_message_vibrate", true);
-
-        //setup BoeHandler and BoeHandler.Listeners
-        setupBoeHandler();
-
-        // Start up the thread running the service.  Note that we create a
-        // separate thread because the service normally runs in the process's
-        // main thread, which we don't want to block.  We also make it
-        // background priority so CPU-intensive work will not disrupt our UI.
-
-        // Start fetching data
-        boeFetchThread.start();
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
-        Log.d("Service", "Service started!");
-
-        // If we get killed, after returning from here, AVOID restarting
-        return START_NOT_STICKY;
-    }
-
-    @Override
-    public IBinder onBind(Intent intent) {
-        // We don't provide binding, so return null
-        return null;
-    }
-
-    @Override
-    public void onDestroy() {
-        Toast.makeText(this, "service done", Toast.LENGTH_SHORT).show();
-        Log.d("Service", "Service work DONE! Stopping...");
-        // Release as many resources as possible
-        if (boeXMLHandler != null){
-            boeXMLHandler.unsetBoeXMLHandlerEvents();
-            boeXMLHandler = null;
+    private void getAlertsFromDB() {
+        // Get current Alerts to look for from DB
+        Cursor alertsCursor = getApplicationContext().getContentResolver().query(ALERTS_URI,
+                ALERTS_PROJECTION, ALERTS_SELECTION_NOTNULL, null, ALERTS_ORDER_ASC_BY_NAME);
+        if (alertsCursor != null) {
+            Log.d("Service", "Alerts found on DB, inflating alerts array");
+            try {
+                List<String> alertsList = new ArrayList<>();
+                while (alertsCursor.moveToNext()) {
+                    alertsList.add(alertsCursor.getString(alertsCursor.getColumnIndexOrThrow(
+                            DBContract.Alerts.COL_ALERT_NAME)));
+                }
+                alertsToSearch = new String[alertsList.size()];
+                alertsList.toArray(alertsToSearch);
+                for (String eachAlert : alertsToSearch) {
+                    Log.d("Service", "Alert to search: " + eachAlert);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                alertsCursor.close();
+            }
         }
     }
 
-    private void setupBoeHandler(){
-        // Init new boeXMLHandler
-        boeXMLHandler = new BoeXMLHandler();
-
-        // Set BoeXMLHandler event listener
-        boeXMLHandler.setBoeXMLHandlerEvents(new BoeXMLHandler.BoeXMLHandlerEvents() {
-            @Override
-            public void onBoeFetchCompleted() {
-                Log.d("Service", "Fetching " + boeXMLHandler.getURLXMLsCount() + " XMLs completed");
-                boeSearchThread.start();
-            }
-
-            @Override
-            public void onSearchQueryCompleted(int searchQueryResults, String searchTerm) {
-                Log.d("Service", searchQueryResults + " results for: " + searchTerm);
-            }
-
-            @Override
-            public void onFoundXMLErrorTag(String description) {
-                Log.d("Service", "ERROR TAG found on XML summary.");
-                showAlertNotification("ERROR TAG FOUND", description);
-
-                // Stop service if error tag found on XML TODO: Check error handling implementation
-                stopSelf();
-            }
-        });
-    }
     /**
      * Void method showAlertNotification(String title, String message)
      *
@@ -227,8 +246,8 @@ public class AlertsService extends Service {
         // Define notification´s associated intent action
         Intent intent = new Intent(getBaseContext(), MainActivity.class);
 
-        // Put Fragment (int) identifier on "initOnFragment" (where to start if app is not running)
-        intent.putExtra("initOnFragment", MainActivity.FRAGMENT_HISTORY);
+        // Put Fragment (int) identifier on "start_on_fragment" (where to start if app is not running)
+        intent.putExtra("start_on_fragment", MainActivity.FRAGMENT_HISTORY);
         intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
 
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);

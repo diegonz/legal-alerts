@@ -31,11 +31,14 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Get Intent extras from the intent which started activity
-        int initOnFragment = getIntent().getIntExtra("initOnFragment", FRAGMENT_ALERTS);
+        int startOnFragment;
+
         // Check activity recreation
         if (savedInstanceState != null) {
-            initOnFragment = savedInstanceState.getInt(RUNNING_FRAGMENT_STRING);
+            startOnFragment = savedInstanceState.getInt(RUNNING_FRAGMENT_STRING);
+        } else {
+            // Get Intent extras from the intent which started activity
+            startOnFragment = getIntent().getIntExtra("start_on_fragment", FRAGMENT_ALERTS);
         }
 
         setContentView(R.layout.activity_main);
@@ -54,7 +57,7 @@ public class MainActivity extends AppCompatActivity
 
         // Replace fragment according to intent extras or savedInstanceState
         // If starting from scratch it defaults to FRAGMENT_ALERTS
-        replaceFragment(initOnFragment);
+        replaceFragment(startOnFragment);
 
         // Check/set the Alerts alarm
         setAlertsAlarmFromActivity();
@@ -131,12 +134,16 @@ public class MainActivity extends AppCompatActivity
             RUNNING_FRAGMENT = FRAGMENT_ALERTS;
         }
 
-        // Highlight the selected item, update the title, and close the drawer
-        item.setChecked(true);
-        setTitle(item.getTitle());
+        // Highlight the selected item and update the title if no afterSelectionTask.
+        // Then close the drawer
+        if (afterSelectionTask == 0){
+            item.setChecked(true);
+            setTitle(item.getTitle());
+        }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
 
+        // Launch afterSelectionTask if there is any
         switch (afterSelectionTask){
             case START_DIALOG_ALERT:
                 // Launch Alerts dialog
@@ -146,10 +153,6 @@ public class MainActivity extends AppCompatActivity
             case START_SETTINGS_ACTIVITY:
                 // Launch Settings Activity
                 startActivity(new Intent(this, SettingsActivity.class));
-                break;
-            // Default case
-            case 0:
-                Log.d("MainActivity", "Drawer: No additional task found.");
                 break;
         }
         return true;
@@ -161,7 +164,7 @@ public class MainActivity extends AppCompatActivity
         super.onNewIntent(intent);
         // TODO: Make a selection on drawer
         // Get Intent extras and start Fragment replacing
-        replaceFragment(intent.getIntExtra("initOnFragment", FRAGMENT_ALERTS));
+        replaceFragment(intent.getIntExtra("start_on_fragment", FRAGMENT_ALERTS));
     }
 
     /**

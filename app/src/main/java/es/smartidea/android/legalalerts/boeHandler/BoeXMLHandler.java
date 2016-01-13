@@ -53,10 +53,26 @@ public class BoeXMLHandler {
         boeSetup();
     }
 
+    @SuppressLint("SimpleDateFormat")
+    private void boeSetup() {
+        Date curDate = new Date();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+        String todayDateString = dateFormat.format(curDate);
+        final String currentBoeURL = BOE_BASE_ID + todayDateString;
+
+        this.boeBaseURLString = BOE_BASE_URL;
+        this.currentBoeSummaryURLString = BOE_BASE_URL + currentBoeURL;
+
+        Log.d("BOE", "BaseURL: " + boeBaseURLString);
+        Log.d("BOE", "SummaryURL: " + currentBoeSummaryURLString);
+    }
+
     // Callback interface to enable async communication with parent object
     // This interface defines the type of messages I want to communicate to owner object
     public interface BoeXMLHandlerEvents {
-        void onBoeFetchCompleted();
+        void onBoeSummaryFetchCompleted(boolean xmlSummaryError);
+
+        void onBoeAttachmentsFetchCompleted();
 
         void onSearchQueryCompleted(int searchQueryResults, String searchTerm);
 
@@ -76,20 +92,6 @@ public class BoeXMLHandler {
     // This variable represents the listener passed in by the owning object
     // The listener must implement the events interface and passes messages up to the parent.
     private BoeXMLHandlerEvents boeXMLHandlerEvents;
-
-    @SuppressLint("SimpleDateFormat")
-    private void boeSetup(){
-        Date curDate = new Date();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-        String todayDateString = dateFormat.format(curDate);
-        final String currentBoeURL = BOE_BASE_ID + todayDateString;
-
-        this.boeBaseURLString = BOE_BASE_URL;
-        this.currentBoeSummaryURLString = BOE_BASE_URL + currentBoeURL;
-
-        Log.d("BOE", "BaseURL: " + boeBaseURLString);
-        Log.d("BOE", "SummaryURL: " + currentBoeSummaryURLString);
-    }
 
     // Returns number of urlXml tags found (Announcements and disposals)
     public int getURLXMLsCount() {
@@ -171,9 +173,9 @@ public class BoeXMLHandler {
     }
 
     /*
-    * fetchXML() runs a thread to fetch URLs for summary and others, based on OkHttp library
+    * fetchXMLSummary() runs a thread to fetch URLs for summary and others, based on OkHttp library
     */
-    public void fetchXML() {
+    public void fetchXMLSummary() {
         Thread fetchThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -197,8 +199,22 @@ public class BoeXMLHandler {
                     e.printStackTrace();
                 }
 
+                // Notifies summary fetching complete passing xmlError value
+                boeXMLHandlerEvents.onBoeSummaryFetchCompleted(xmlError);
+            }
+        });
+        fetchThread.start();
+    }
+
+    /*
+* fetchXMLSummary() runs a thread to fetch URLs for summary and others, based on OkHttp library
+*/
+    public void fetchXMLAttachments() {
+        Thread fetchThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
                 // Start fetch and parse thread if xmlError flag maintains its FALSE original state.
-                if (!xmlError){
+                if (!xmlError && !urlXMLs.isEmpty()) {
                     // Fetches each rawXML and passes each one to parse and store data
                     for (String eachUrlXML : urlXMLs) {
                         try {
@@ -211,18 +227,19 @@ public class BoeXMLHandler {
                             boeParser.setInput(boeStream, "ISO-8859-1");
 
                             // Send parser, BOE´s document id and isSummary flag set to false.
-                            boeXmlWorker(boeParser, eachUrlXML.substring(eachUrlXML.indexOf("=") + 1), false );
+                            boeXmlWorker(boeParser, eachUrlXML.substring(eachUrlXML.indexOf("=") + 1), false);
                             boeStream.close();
                         } catch (Exception e) {
                             Log.d("BOE", "ERROR while trying to download BOE´s attachments!");
                             e.printStackTrace();
                         }
                         // Fetch Completed Listener
-                        boeXMLHandlerEvents.onBoeFetchCompleted();
+                        boeXMLHandlerEvents.onBoeAttachmentsFetchCompleted();
                     }
                 }
             }
         });
         fetchThread.start();
     }
+
 }
