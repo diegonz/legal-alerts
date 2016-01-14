@@ -18,7 +18,6 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.MenuItem;
 import android.support.v4.app.NavUtils;
 
@@ -36,8 +35,6 @@ import java.util.List;
  * API Guide</a> for more information on developing a Settings UI.
  */
 public class SettingsActivity extends AppCompatPreferenceActivity {
-    final static String LEGACY_PREF_HEADER_NOTIFICATIONS = "es.smartidea.android.legalalerts.LEGACY_PREF_HEADER_NOTIFICATIONS";
-    final static String LEGACY_PREF_HEADER_DATA_SYNC = "es.smartidea.android.legalalerts.LEGACY_PREF_HEADER_DATA_SYNC";
     /**
      * A preference value change listener that updates the preference's summary
      * to reflect its new value.
@@ -126,28 +123,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setupActionBar();
-
-        // TODO: Check support for legacy SDK version (<= API10):
-        // http://developer.android.com/intl/es/guide/topics/ui/settings.html#BackCompatHeaders
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
-            String prefScreen = getIntent().getAction();
-            if (prefScreen != null){
-                // Check required action
-                switch (prefScreen){
-                    case LEGACY_PREF_HEADER_NOTIFICATIONS:
-                        Log.d("Settings", "LEGACY_PREF_HEADER_NOTIFICATIONS");
-                        addPreferencesFromResource(R.xml.pref_notification);
-                        break;
-                    case LEGACY_PREF_HEADER_DATA_SYNC:
-                        Log.d("Settings", "LEGACY_PREF_HEADER_DATA_SYNC");
-                        addPreferencesFromResource(R.xml.pref_data_sync);
-                        break;
-                }
-            } else {
-                // If no associated action load legacy version
-                addPreferencesFromResource(R.xml.pref_headers_legacy);
-            }
-        }
     }
 
     /**
