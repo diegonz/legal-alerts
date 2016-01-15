@@ -220,7 +220,7 @@ public class BoeXMLHandler {
      *                 for comparing purposes.
      **/
     private boolean normalizedStringSearch(String mainText, String searchItem){
-        // TODO: Check: org.apache.commons.lang3.StringUtils.containsIgnoreCase
+        // TODO: Check alternatives like: org.apache.commons.lang3.StringUtils.containsIgnoreCase
         String normalizedMainText =
                 Normalizer
                         .normalize(mainText, Normalizer.Form.NFD)

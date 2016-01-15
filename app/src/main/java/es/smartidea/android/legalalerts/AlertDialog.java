@@ -53,12 +53,21 @@ public class AlertDialog extends DialogFragment {
                             ContentValues values = new ContentValues();
                             values.put(DBContract.Alerts.COL_ALERT_NAME, editTextDialogAlert.getText().toString());
                             // Get REVERSE toggle button state by casting a boolean with ternary operator expression.
-                            int literalIntValue = (!switchLiteralSearch.isChecked()) ? 1 : 0;
-                            values.put(DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL, literalIntValue);
-                            getActivity().getContentResolver().insert(ALERTS_URI, values);
-                            Snackbar.make(getActivity().findViewById(R.id.fragmentMainPlaceholder),
-                                    "Alert inserted into DB", Snackbar.LENGTH_SHORT)
-                                    .setAction("Action", null).show();
+                            // If its checked returns 0 and if not checked returns 1
+                            int literalSearchIntValue = (!switchLiteralSearch.isChecked()) ? 1 : 0;
+                            values.put(DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL, literalSearchIntValue);
+                            Uri resultID = getActivity().getContentResolver().insert(ALERTS_URI, values);
+                            if (resultID != null) {
+                                String resultMessageString;
+                                if (resultID.getLastPathSegment().equals("-1")){
+                                    resultMessageString = "Alert already existed into DB";
+                                } else {
+                                    resultMessageString = "Alert inserted into DB";
+                                }
+                                Snackbar.make(getActivity().findViewById(R.id.fragmentMainPlaceholder),
+                                        resultMessageString, Snackbar.LENGTH_SHORT)
+                                        .setAction("Action", null).show();
+                            }
                             AlertDialog.this.getDialog().dismiss();
                         } else {
                             Snackbar.make(view, "Insert at least one character!!!", Snackbar.LENGTH_LONG)

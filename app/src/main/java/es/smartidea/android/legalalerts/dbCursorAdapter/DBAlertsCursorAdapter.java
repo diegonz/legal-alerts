@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.ResourceCursorAdapter;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,26 +32,40 @@ public class DBAlertsCursorAdapter extends ResourceCursorAdapter {
     }
 
     @Override
-    public void bindView(View view, final Context context, Cursor cursor) {
+    public void bindView(View view, final Context context, final Cursor cursor) {
         // Find a reference fields to inflate template
         TextView textViewAlertListItem = (TextView)view.findViewById(R.id.textViewAlertListItem);
         ImageView imageViewAlertListItemLiteral = (ImageView)view.findViewById(R.id.imageViewAlertListItemLiteral);
         ImageButton buttonAlertListItem = (ImageButton)view.findViewById(R.id.buttonDeleteAlertListItem);
         // Get data from DBCursor
         final String alertName = cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Alerts.COL_ALERT_NAME));
-        final int alertIsLiteral = cursor.getInt(cursor.getColumnIndexOrThrow(DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL));
         // Populate the fields
-        textViewAlertListItem.setText(alertName);
-        if (alertIsLiteral > 0){
-            // Change the resource image to an open padlock (not locked) if is set to not literal search
-            imageViewAlertListItemLiteral.setImageResource(android.R.drawable.ic_partial_secure);
+        textViewAlertListItem.setText(cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Alerts.COL_ALERT_NAME)));
+        // Change the resource image to an open/closed padlock according if its set to not literal search
+        switch (cursor.getInt(cursor.getColumnIndexOrThrow(DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL))){
+            case 0:
+                imageViewAlertListItemLiteral.setImageResource(android.R.drawable.ic_secure);
+                break;
+            case 1:
+                imageViewAlertListItemLiteral.setImageResource(android.R.drawable.ic_partial_secure);
+                break;
         }
-        // Set onClick() methods fot buttons
+
+        Log.d("AlertsAdapter", "ID: " + cursor.getLong(cursor.getColumnIndex(DBContract.Alerts._ID)));
+        // Set onClick() methods fot buttons TODO: Check deletion implementation
         buttonAlertListItem.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String SELECTION = DBContract.Alerts.COL_ALERT_NAME + "='" + alertName + "'";
+                final String SELECTION = DBContract.Alerts.COL_ALERT_NAME + "='" + alertName + "'";
+
+//                final String[] SELECTION_ARGS = new String[]{
+//                        DBContract.Alerts._ID + "='" +
+//                        cursor.getLong(cursor.getColumnIndex(DBContract.Alerts._ID)) + "'"
+//                };
+
+                // Perform deletion according to SELECTION
                 int hits = context.getContentResolver().delete(ALERTS_URI, SELECTION, null);
+
                 Snackbar.make(view, hits + " Alerts named: " + alertName + " deleted from DB", Snackbar.LENGTH_SHORT)
                         .setAction("Action", null).show();
             }

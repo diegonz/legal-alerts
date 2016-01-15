@@ -53,6 +53,57 @@ public class DBContentProvider extends ContentProvider {
         return true;
     }
 
+    // insert() handles an insert to DB, notifies changes to ContentResolver and returns the URI
+    @Override
+    public Uri insert(@NonNull Uri uri, ContentValues values) {
+        int uriType = sUriMatcher.match(uri);
+        String path;
+        long id;
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        switch (uriType) {
+            case ALERTS:
+                path = ALERTS_PATH;
+                final String[] PROJECTION = new String[]{
+                        DBContract.Alerts._ID,
+                        DBContract.Alerts.COL_ALERT_NAME,
+                        DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL
+                };
+                final String SELECTION = DBContract.Alerts.COL_ALERT_NAME + "='" +
+                        values.getAsString(DBContract.Alerts.COL_ALERT_NAME) + "'";
+
+                Cursor alreadyExistCursor = db.query(DBContract.Alerts.TABLE_NAME,
+                        PROJECTION,
+                        SELECTION,
+                        null, null, null, null);
+
+                // Check if alerts already exists
+                if (!alreadyExistCursor.moveToFirst()) {
+                    id = db.insert(DBContract.Alerts.TABLE_NAME, null, values);
+                    Log.d("DB", "Inserted into Alerts table, ID: " + id);
+                } else {
+//                    id = alreadyExistCursor.getLong(alreadyExistCursor.getColumnIndex(DBContract.Alerts._ID));
+                    // Set id to -1 if alert exist
+                    id = -1;
+                    Log.d("DB", "Inserted into Alerts table, ID: " + id);
+                }
+
+                // Close db cursor
+                alreadyExistCursor.close();
+
+                break;
+            case HISTORY:
+                path = HISTORY_PATH;
+                id = db.insert(DBContract.History.TABLE_NAME, null, values);
+                Log.d("DB", "Inserted into History table, ID: " + id);
+                break;
+            default:
+                throw new IllegalArgumentException("ERROR - Wrong URI: " + uri);
+        }
+        getContext().getContentResolver().notifyChange(uri, null);
+        return Uri.parse(path + "/" + id);
+    }
+
     // query() method queries DB and returns a Cursor to result set
     @Override
     public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
@@ -81,32 +132,6 @@ public class DBContentProvider extends ContentProvider {
         // Send change notifications to potential listeners (CursorLoader)
         cursor.setNotificationUri(getContext().getContentResolver(), uri);
         return cursor;
-    }
-
-    // insert() handles an insert to DB, notifies changes to ContentResolver and returns the URI
-    @Override
-    public Uri insert(@NonNull Uri uri, ContentValues values) {
-        int uriType = sUriMatcher.match(uri);
-        String path;
-        long id;
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-
-        switch (uriType) {
-            case ALERTS:
-                path = ALERTS_PATH;
-                id = db.insert(DBContract.Alerts.TABLE_NAME, null, values);
-                Log.d("DB", "Inserted into Alerts table, ID: " + id);
-                break;
-            case HISTORY:
-                path = HISTORY_PATH;
-                id = db.insert(DBContract.History.TABLE_NAME, null, values);
-                Log.d("DB", "Inserted into History table, ID: " + id);
-                break;
-            default:
-                throw new IllegalArgumentException("ERROR - Wrong URI: " + uri);
-        }
-        getContext().getContentResolver().notifyChange(uri, null);
-        return Uri.parse(path + "/" + id);
     }
 
     // delete() handles deletions on DB, notifies changes and returns number of deleted rows
