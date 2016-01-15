@@ -15,7 +15,9 @@ import android.util.Log;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import es.smartidea.android.legalalerts.boeHandler.BoeXMLHandler;
 import es.smartidea.android.legalalerts.dbContentProvider.DBContentProvider;
@@ -45,7 +47,7 @@ public class AlertsService extends Service {
     public static String ACTION_RESULT = "es.smartidea.android.legalalerts.service.intent.RESULT";
     public static String ACTION_NO_RESULT = "es.smartidea.android.legalalerts.service.intent.NO_RESULT";
 
-    private String[] alertsToSearch;
+    private Map<String, Boolean> alertsListFullData;
     private BoeXMLHandler boeXMLHandler;
 
     // Shared preferences
@@ -146,8 +148,8 @@ public class AlertsService extends Service {
             }
 
             @Override
-            public void onSearchQueryCompleted(int searchQueryResults, String searchTerm) {
-                Log.d("Service", searchQueryResults + " results for: " + searchTerm);
+            public void onSearchQueryCompleted(int searchQueryResults, String searchTerm, boolean isLiteralSearch) {
+                Log.d("Service", searchQueryResults + " results for: " + searchTerm + " - Literal " + isLiteralSearch);
             }
 
             @Override
@@ -179,9 +181,8 @@ public class AlertsService extends Service {
         public void run() {
 
             List<String> foundAlertsList = new ArrayList<>();
-            for (String eachAlert : alertsToSearch) {
-                // TODO: Check searching method
-                foundAlertsList.addAll(boeXMLHandler.boeRawDataQuery(eachAlert));
+            for (Map.Entry<String, Boolean> eachAlert : alertsListFullData.entrySet()){
+                foundAlertsList.addAll(boeXMLHandler.boeRawDataQuery(eachAlert.getKey(), eachAlert.getValue()));
             }
             Log.d("Service", "List size:" + foundAlertsList.size());
 
@@ -221,19 +222,20 @@ public class AlertsService extends Service {
         Cursor alertsCursor = getApplicationContext().getContentResolver().query(ALERTS_URI,
                 ALERTS_PROJECTION, ALERTS_SELECTION_NOTNULL, null, ALERTS_ORDER_ASC_BY_NAME);
         if (alertsCursor != null) {
-            Log.d("Service", "Alerts found on DB, inflating alerts array");
             try {
-                List<String> alertsList = new ArrayList<>();
+                alertsListFullData = new HashMap<>();
                 while (alertsCursor.moveToNext()) {
-                    alertsList.add(alertsCursor.getString(alertsCursor.getColumnIndexOrThrow(
-                            DBContract.Alerts.COL_ALERT_NAME)));
+                    boolean isLiteralSearch = (alertsCursor.getInt(
+                            alertsCursor.getColumnIndexOrThrow(
+                                    DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL)) == 0);
+                    alertsListFullData.put(
+                            alertsCursor.getString(alertsCursor.getColumnIndexOrThrow(
+                            DBContract.Alerts.COL_ALERT_NAME)), isLiteralSearch);
                 }
-                alertsToSearch = new String[alertsList.size()];
-                alertsList.toArray(alertsToSearch);
-                for (String eachAlert : alertsToSearch) {
-                    Log.d("Service", "Alert to search: " + eachAlert);
+                for (Map.Entry<String, Boolean> eachAlert : alertsListFullData.entrySet()) {
+                    Log.d("Service", "Alert to search: " + eachAlert.getKey() + " literal search: " + eachAlert.getValue());
                 }
-            } catch (Exception e) {
+                } catch (Exception e) {
                 e.printStackTrace();
             } finally {
                 alertsCursor.close();

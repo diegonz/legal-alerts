@@ -16,11 +16,15 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import es.smartidea.android.legalalerts.okHttp.OkHttpGetURL;
 
@@ -60,10 +64,12 @@ public class BoeXMLHandler {
         String todayDateString = dateFormat.format(curDate);
         final String currentBoeURL = BOE_BASE_ID + todayDateString;
 
+//        String fakeTodayDate = "20160114";
+//        final String currentBoeURL = BOE_BASE_ID + fakeTodayDate;
+
         this.boeBaseURLString = BOE_BASE_URL;
         this.currentBoeSummaryURLString = BOE_BASE_URL + currentBoeURL;
 
-        Log.d("BOE", "BaseURL: " + boeBaseURLString);
         Log.d("BOE", "SummaryURL: " + currentBoeSummaryURLString);
     }
 
@@ -74,7 +80,7 @@ public class BoeXMLHandler {
 
         void onBoeAttachmentsFetchCompleted();
 
-        void onSearchQueryCompleted(int searchQueryResults, String searchTerm);
+        void onSearchQueryCompleted(int searchQueryResults, String searchTerm, boolean isLiteralSearch);
 
         void onFoundXMLErrorTag(String description);
     }
@@ -116,6 +122,8 @@ public class BoeXMLHandler {
 
         try {
             event = boeParser.getEventType();
+            final Set<String> rawTextTags = new HashSet<>(Arrays.asList("p", "titulo", "palabra"));
+
             while (event != XmlPullParser.END_DOCUMENT) {
                 String name = boeParser.getName();
                 switch (event) {
@@ -123,18 +131,15 @@ public class BoeXMLHandler {
                         text = boeParser.getText();
                         break;
                     case XmlPullParser.END_TAG:
-                        if (isSummary){
-                            if (name.equals("urlXml")) {
-                                urlXMLs.add(text);
-                            } else if (name.equals("error")) {
-                                // Set XML error flag
+                        if (!isSummary && (rawTextTags.contains(name))){
+                            rawTextStringBuilder.append(text);
+                        } else if (isSummary){
+                            if (name.equals("urlXml")){ urlXMLs.add(text); }
+                            if (name.equals("error")){
+                                // Set XML error flag and notify listeners
                                 xmlError = true;
-                                Log.d("BOE", "BOE´s summary XML ERROR TAG content: " + text);
-                                //Notify Listeners
                                 boeXMLHandlerEvents.onFoundXMLErrorTag(text);
                             }
-                        } else if (name.equals("p")) {
-                            rawTextStringBuilder.append(text);
                         }
                         break;
                 }
@@ -151,25 +156,80 @@ public class BoeXMLHandler {
     * boeRawDataQuery is a method to query/search data in the object.
     * It returns a list<> with matching BOE´s ids.
     */
-    public List<String> boeRawDataQuery(String searchQuery) {
+    // TODO Review/re-do search query method execution
+    public List<String> boeRawDataQuery(String searchQuery, boolean isLiteralSearch) {
         List<String> queryResults = new ArrayList<>();
-        try {
-            // TODO Review/re-do search query method execution
-            for (Map.Entry<String, String> eachBoe : boeXmlTodayRawData.entrySet()) {
-                if (eachBoe.getValue().contains(searchQuery)) {
-                    queryResults.add(eachBoe.getKey());
+        if (isLiteralSearch){
+            try {
+                for (Map.Entry<String, String> eachBoe : boeXmlTodayRawData.entrySet()) {
+                    if (normalizedStringSearch(eachBoe.getValue(), searchQuery)){
+                        queryResults.add(eachBoe.getKey());
+                    }
                 }
+                // Notify Listeners
+                boeXMLHandlerEvents.onSearchQueryCompleted(queryResults.size(), searchQuery, true);
+                return queryResults;
+            } catch (Exception e) {
+                Log.d("BOE", "ERROR while searching for: " + searchQuery);
+                e.printStackTrace();
+                // Notify Listeners
+                boeXMLHandlerEvents.onSearchQueryCompleted(queryResults.size(), searchQuery, true);
+                return queryResults;
             }
-            // Notify Listeners
-            boeXMLHandlerEvents.onSearchQueryCompleted(queryResults.size(), searchQuery);
-            return queryResults;
-        } catch (Exception e) {
-            Log.d("BOE", "ERROR while searching for: " + searchQuery);
-            e.printStackTrace();
-            // Notify Listeners
-            boeXMLHandlerEvents.onSearchQueryCompleted(queryResults.size(), searchQuery);
-            return queryResults;
+        } else {
+            // Split alert items by space
+            String[] searchItemArray = searchQuery.split("\\s");
+            try {
+                // For eachBoe item
+                for (Map.Entry<String, String> eachBoe : boeXmlTodayRawData.entrySet()) {
+                    // Flag that indicates every search query where successful
+                    boolean hasAllSearchItems = true;
+                    for (String eachSearchItem : searchItemArray) {
+                        if (!normalizedStringSearch(eachBoe.getValue(), eachSearchItem)) {
+                            // If item is not contained, set flag to false
+                            hasAllSearchItems = false;
+                        }
+                    }
+                    // Add Boe to result if "hasAllSearchItems"
+                    if (hasAllSearchItems) {
+                        queryResults.add(eachBoe.getKey());
+                    }
+                }
+                // Notify Listeners
+                boeXMLHandlerEvents.onSearchQueryCompleted(queryResults.size(), searchQuery, false);
+                return queryResults;
+            } catch (Exception e) {
+                Log.d("BOE", "ERROR while searching for: " + searchQuery);
+                e.printStackTrace();
+                // Notify Listeners
+                boeXMLHandlerEvents.onSearchQueryCompleted(queryResults.size(), searchQuery, false);
+                return queryResults;
+            }
         }
+    }
+
+    /**
+     * Boolean class normalizedStringSearch search for searchItem in mainText
+     * Normalizes and converts text to lower-case for comparing
+     *
+     * @param mainText String XML´s raw text, <titulo> and <p> tags
+     *                 its normalized and converted to lower-case
+     *                 for comparing purposes.
+     * @param searchItem String item to search into mainText
+     *                 its normalized and converted to lower-case
+     *                 for comparing purposes.
+     **/
+    private boolean normalizedStringSearch(String mainText, String searchItem){
+        // TODO: Check: org.apache.commons.lang3.StringUtils.containsIgnoreCase
+        String normalizedMainText =
+                Normalizer
+                        .normalize(mainText, Normalizer.Form.NFD)
+                        .replaceAll("[^\\p{ASCII}]", "");
+        String normalizedSearchItem =
+                Normalizer
+                        .normalize(searchItem, Normalizer.Form.NFD)
+                        .replaceAll("[^\\p{ASCII}]", "");
+        return normalizedMainText.toLowerCase().contains(normalizedSearchItem.toLowerCase());
     }
 
     /*
