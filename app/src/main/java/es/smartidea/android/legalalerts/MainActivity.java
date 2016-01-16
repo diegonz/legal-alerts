@@ -2,6 +2,7 @@ package es.smartidea.android.legalalerts;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.design.widget.NavigationView;
@@ -10,7 +11,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -26,6 +26,8 @@ public class MainActivity extends AppCompatActivity
     private int RUNNING_FRAGMENT = -1;
     // Running fragment string
     static final String RUNNING_FRAGMENT_STRING = "running_fragment";
+    private FloatingActionButton fab;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +41,8 @@ public class MainActivity extends AppCompatActivity
         } else {
             // Get Intent extras from the intent which started activity
             startOnFragment = getIntent().getIntExtra("start_on_fragment", FRAGMENT_ALERTS);
+            // Check/set the Alerts alarm if cold start
+            setAlertsAlarmFromActivity();
         }
 
         setContentView(R.layout.activity_main);
@@ -55,12 +59,14 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        // Get fab reference for showing/hiding purposes
+        fab = (FloatingActionButton) findViewById(R.id.fab);
+        // Hide fab button
+        fab.hide();
+
         // Replace fragment according to intent extras or savedInstanceState
         // If starting from scratch it defaults to FRAGMENT_ALERTS
         replaceFragment(startOnFragment);
-
-        // Check/set the Alerts alarm
-        setAlertsAlarmFromActivity();
     }
 
     @Override
@@ -73,8 +79,8 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
+        if (!drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.openDrawer(GravityCompat.START);
         } else {
             super.onBackPressed();
         }
@@ -184,14 +190,20 @@ public class MainActivity extends AppCompatActivity
 
             switch (fragmentID) {
                 case FRAGMENT_ALERTS:
+                    // Show fab button
+                    fab.show();
                     fragmentClass = AlertsFragment.class;
                     VIEW_TITLE = getResources().getString(R.string.nav_alerts);
                     break;
                 case FRAGMENT_HISTORY:
+                    // Hide fab button
+                    fab.hide();
                     fragmentClass = HistoryFragment.class;
                     VIEW_TITLE = getResources().getString(R.string.nav_history);
                     break;
                 default:
+                    // Show fab button
+                    fab.show();
                     fragmentClass = AlertsFragment.class;
                     VIEW_TITLE = getResources().getString(R.string.nav_alerts);
                     break;

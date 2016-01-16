@@ -4,7 +4,6 @@ package es.smartidea.android.legalalerts;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -47,21 +46,11 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
     // Declare DBAdapter
     private DBHistoryCursorAdapter historyAdapter;
 
-    private FloatingActionButton fab;
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_history, container, false);
-        if (view != null){
-            // Get FAB reference with getActivity() to access MainActivity's FAB in CoordinatorLayout
-            fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
-            // Hide fab button for this fragment
-            fab.hide();
-
-            // Get ListView reference
-            listViewHistory = (ListView)view.findViewById(R.id.listViewHistory);
-        }
+        listViewHistory = (ListView) view.findViewById(R.id.listViewHistory);
         return view;
     }
 
@@ -97,7 +86,6 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
     @Override
     public void onDestroyView() {
         // Show fab before destroy view
-        fab.show();
         super.onDestroyView();
     }
 
