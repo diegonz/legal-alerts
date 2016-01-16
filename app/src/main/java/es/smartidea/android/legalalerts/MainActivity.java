@@ -160,7 +160,6 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onNewIntent(Intent intent) {
-        Log.d("Intent", "Intent received!");
         super.onNewIntent(intent);
         // TODO: Make a selection on drawer
         // Get Intent extras and start Fragment replacing

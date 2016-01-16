@@ -1,8 +1,9 @@
 package es.smartidea.android.legalalerts.dbCursorAdapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
-import android.support.design.widget.Snackbar;
+import android.net.Uri;
 import android.support.v4.widget.ResourceCursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +12,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import es.smartidea.android.legalalerts.R;
+import es.smartidea.android.legalalerts.boeHandler.BoeXMLHandler;
 import es.smartidea.android.legalalerts.dbHelper.DBContract;
 
 public class DBHistoryCursorAdapter extends ResourceCursorAdapter {
@@ -21,11 +23,11 @@ public class DBHistoryCursorAdapter extends ResourceCursorAdapter {
 
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup viewGroup) {
-        return LayoutInflater.from(context).inflate(R.layout.history_list_item, viewGroup, false);
+        return LayoutInflater.from(context).inflate(R.layout.list_item_history, viewGroup, false);
     }
 
     @Override
-    public void bindView(View view, Context context, Cursor cursor) {
+    public void bindView(View view, final Context context, Cursor cursor) {
         // Find a reference fields to inflate template
         TextView textViewHistoryListItemRelatedAlert = (TextView) view.findViewById(R.id.textViewHistoryListItemRelatedAlert);
         TextView textViewHistoryListItemDocumentName = (TextView)view.findViewById(R.id.textViewHistoryListItemDocumentName);
@@ -41,8 +43,10 @@ public class DBHistoryCursorAdapter extends ResourceCursorAdapter {
         buttonDeleteHistoryListItem.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Should (web) intent to: " + relatedPdfDocumentURL, Snackbar.LENGTH_SHORT)
-                        .setAction("Action", null).show();
+                context.startActivity(
+                        new Intent(Intent.ACTION_VIEW).setData(
+                                Uri.parse(BoeXMLHandler.BOE_BASE_URL + relatedPdfDocumentURL))
+                );
             }
         });
     }

@@ -51,7 +51,6 @@ public class DBAlertsCursorAdapter extends ResourceCursorAdapter {
                 break;
         }
 
-        Log.d("AlertsAdapter", "ID: " + cursor.getLong(cursor.getColumnIndex(DBContract.Alerts._ID)));
         // Set onClick() methods fot buttons TODO: Check deletion implementation
         buttonAlertListItem.setOnClickListener(new View.OnClickListener() {
             @Override

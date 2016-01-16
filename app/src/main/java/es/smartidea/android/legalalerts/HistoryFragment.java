@@ -1,7 +1,6 @@
 package es.smartidea.android.legalalerts;
 
 
-import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -10,7 +9,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -49,13 +47,15 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
     // Declare DBAdapter
     private DBHistoryCursorAdapter historyAdapter;
 
+    private FloatingActionButton fab;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_history, container, false);
         if (view != null){
             // Get FAB reference with getActivity() to access MainActivity's FAB in CoordinatorLayout
-            FloatingActionButton fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
+            fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
             // Hide fab button for this fragment
             fab.hide();
 
@@ -67,7 +67,7 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
 
     // Attach alertsAdapter to ListViewAlerts
     private void initHistoryLoader() {
-        historyAdapter = new DBHistoryCursorAdapter(getActivity(), R.layout.history_list_item, null, 0);
+        historyAdapter = new DBHistoryCursorAdapter(getActivity(), R.layout.list_item_history, null, 0);
         listViewHistory.setAdapter(historyAdapter);
         // Prepare the loader.  Either re-connect with an existing one or start a new one.
         getActivity().getSupportLoaderManager().initLoader(HISTORY_LOADER_ID, null, this);
@@ -92,6 +92,13 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
     public void onPause() {
         super.onPause();
         getActivity().getSupportLoaderManager().destroyLoader(HISTORY_LOADER_ID);
+    }
+
+    @Override
+    public void onDestroyView() {
+        // Show fab before destroy view
+        fab.show();
+        super.onDestroyView();
     }
 
     // Returns a new loader after the initAlertsLoader() call
