@@ -80,6 +80,7 @@ public class BoeXMLHandler {
 
         void onSearchQueryCompleted(int searchQueryResults, String searchTerm, boolean isLiteralSearch);
 
+        // Send error tag data
         void onFoundXMLErrorTag(String description);
     }
 

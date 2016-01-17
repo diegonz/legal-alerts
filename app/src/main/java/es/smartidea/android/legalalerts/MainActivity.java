@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity
             // Get Intent extras from the intent which started activity
             startOnFragment = getIntent().getIntExtra("start_on_fragment", FRAGMENT_ALERTS);
             // Check/set the Alerts alarm if cold start
-            setAlertsAlarmFromActivity();
+            sendBroadcast(new Intent(this, AlertsAlarmReceiver.class));
         }
 
         setContentView(R.layout.activity_main);
@@ -220,12 +220,5 @@ public class MainActivity extends AppCompatActivity
             setTitle(VIEW_TITLE);
             RUNNING_FRAGMENT = fragmentID;
         }
-    }
-
-    // setAlertsAlarmFromActivity void method, sends broadcast to setup alarm
-    private void setAlertsAlarmFromActivity(){
-        Intent setAlarmIntent = new Intent(this, AlertsAlarmReceiver.class).setAction(
-                AlertsAlarmReceiver.SET_ALARM_FROM_ACTIVITY);
-        sendBroadcast(setAlarmIntent);
     }
 }

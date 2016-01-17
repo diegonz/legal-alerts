@@ -1,23 +1,20 @@
 package es.smartidea.android.legalalerts;
 
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import es.smartidea.android.legalalerts.alertsBuilders.AlertsNotificationBuilder;
 import es.smartidea.android.legalalerts.boeHandler.BoeXMLHandler;
 import es.smartidea.android.legalalerts.dbContentProvider.DBContentProvider;
 import es.smartidea.android.legalalerts.dbHelper.DBContract;
@@ -45,10 +42,9 @@ public class AlertsService extends Service {
     private BoeXMLHandler boeXMLHandler;
 
     // Shared preferences
-    private SharedPreferences sharedPreferences;
-    // boolean preferences
     private boolean notifyON = false;
     private boolean vibrateON = false;
+    private String notificationSoundPath;
 
     /*
     * Start of Service´s lifecycle
@@ -56,27 +52,35 @@ public class AlertsService extends Service {
 
     @Override
     public void onCreate() {
-
-        Log.d("Service", "Starting AlertsService...");
-
-        // Set TRUE to serviceRunning flag
-        serviceRunning = true;
-        // Get shared preferences
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        // Set user preference flags
-        notifyON = sharedPreferences.getBoolean("notifications_new_message", true);
-        vibrateON = sharedPreferences.getBoolean("notifications_new_message_vibrate", true);
-
-        //setup BoeHandler and BoeHandler.Listeners
-        setupBoeHandler();
-
         // Start up the thread running the service.  Note that we create a
         // separate thread because the service normally runs in the process's
         // main thread, which we don't want to block.  We also make it
         // background priority so CPU-intensive work will not disrupt our UI.
 
-        // Start fetching summary
-        boeFetchSummaryThread.start();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Log.d("Service", "Starting AlertsService...");
+
+                // Set TRUE to serviceRunning flag
+                serviceRunning = true;
+                // Get shared preferences
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                // Set user preference flags
+                notificationSoundPath = sharedPreferences.getString(
+                        "notifications_new_message_ringtone",
+                        "content://settings/system/notification_sound"
+                );
+                notifyON = sharedPreferences.getBoolean("notifications_new_message", true);
+                vibrateON = sharedPreferences.getBoolean("notifications_new_message_vibrate", true);
+
+                //setup BoeHandler and BoeHandler.Listeners
+                setupBoeHandler();
+
+                // Start fetching summary
+                boeFetchSummaryThread.start();
+            }
+        }).start();
     }
 
     @Override
@@ -120,7 +124,9 @@ public class AlertsService extends Service {
         boeXMLHandler.setBoeXMLHandlerEvents(new BoeXMLHandler.BoeXMLHandlerEvents() {
             @Override
             public void onBoeSummaryFetchCompleted(boolean xmlError) {
-                if (!xmlError){
+                if (xmlError){
+                    stopSelf();
+                } else {
                     Log.d("Service", "BOE´s summary fetching completed");
                     boeFetchAttachmentThread.start();
                 }
@@ -144,7 +150,6 @@ public class AlertsService extends Service {
                 Log.d("Service", "ERROR TAG found on XML summary.");
                 showAlertNotification("ERROR TAG FOUND", description);
                 Log.d("Service", "Requesting service stop...");
-                stopSelf();
             }
         });
     }
@@ -238,42 +243,56 @@ public class AlertsService extends Service {
      * @param title   String corresponding to Notification´s title
      * @param message String corresponding to Notification´s message
      **/
-    public void showAlertNotification(String title, String message) {
+    public void showAlertNotification(final String title, final String message) {
 
         // If notification not enabled on user preferences return
-        if (!notifyON){ return; }
+        if (notifyON) {
 
-        // Notification ID
-        final int ALERT_NOTIFICATION_ID = 0;
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    new AlertsNotificationBuilder.Builder(getApplicationContext())
+                            .setTitle(title)
+                            .setMessage(message)
+                            .setVibrate(vibrateON)
+                            .setSound(notificationSoundPath)
+                            .send();
 
-        // Define notification´s associated intent action
-        Intent intent = new Intent(getBaseContext(), MainActivity.class);
-
-        // Put Fragment (int) identifier on "start_on_fragment" (where to start if app is not running)
-        intent.putExtra("start_on_fragment", MainActivity.FRAGMENT_HISTORY);
-        intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        Resources resources = getResources();
-        NotificationCompat.Builder notification = new NotificationCompat.Builder(this);
-        notification.setTicker(resources.getString(R.string.app_name) + " - " + title)
-                    .setSmallIcon(android.R.drawable.ic_popup_reminder)
-                    .setContentTitle(title)
-                    .setContentText(message);
-        notification.setSound(
-                Uri.parse(
-                        sharedPreferences.getString(
-                                "notifications_new_message_ringtone",
-                                "content://settings/system/notification_sound"))
-        );
-        // Check vibrate from preferences
-        if (vibrateON){
-            notification.setVibrate(new long[]{0, 500, 250, 500});
+                }
+            }).start();
         }
-        notification.setContentIntent(pendingIntent)
-                    .setAutoCancel(true);
-        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        notificationManager.notify(ALERT_NOTIFICATION_ID, notification.build());
+
+//        // Notification ID
+//        final int ALERT_NOTIFICATION_ID = 0;
+//
+//        // Define notification´s associated intent action
+//        Intent intent = new Intent(getBaseContext(), MainActivity.class);
+//
+//        // Put Fragment (int) identifier on "start_on_fragment" (where to start if app is not running)
+//        intent.putExtra("start_on_fragment", MainActivity.FRAGMENT_HISTORY);
+//        intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+//
+//        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+//        Resources resources = getResources();
+//        NotificationCompat.Builder notification = new NotificationCompat.Builder(this);
+//        notification.setTicker(resources.getString(R.string.app_name) + " - " + title)
+//                    .setSmallIcon(android.R.drawable.ic_popup_reminder)
+//                    .setContentTitle(title)
+//                    .setContentText(message);
+//        notification.setSound(
+//                Uri.parse(
+//                        sharedPreferences.getString(
+//                                "notifications_new_message_ringtone",
+//                                "content://settings/system/notification_sound"))
+//        );
+//        // Check vibrate from preferences
+//        if (vibrateON){
+//            notification.setVibrate(new long[]{0, 500, 250, 500});
+//        }
+//        notification.setContentIntent(pendingIntent)
+//                    .setAutoCancel(true);
+//        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+//        notificationManager.notify(ALERT_NOTIFICATION_ID, notification.build());
     }
 
     public static boolean isRunning(){
