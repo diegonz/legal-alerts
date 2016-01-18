@@ -81,10 +81,6 @@ public class AlertsService extends Service {
                         }
                         Log.d("Service", "List size: " + resultUrlsAndAlerts.size());
                         if (!resultUrlsAndAlerts.isEmpty()) {
-                            int contador = 0;
-                            for (Map.Entry<String, String> eachResult : resultUrlsAndAlerts.entrySet()) {
-                                Log.d("TEST", contador++ + " - " + eachResult.getKey() + " : " + eachResult.getValue());
-                            }
                             // Store found alerts on DB
                             storeResultsOnDB(resultUrlsAndAlerts, boeXMLHandler.urls);
                             showAlertNotification(
