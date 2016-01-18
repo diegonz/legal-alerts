@@ -55,6 +55,14 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     // Required empty public constructor
     public AlertsFragment() {}
 
+    // Set alertsAdapter to ListViewAlerts
+    private void initAlertsLoader() {
+        alertsAdapter = new DBAlertsCursorAdapter(getActivity(), R.layout.list_item_alert, null, 0);
+        listViewAlerts.setAdapter(alertsAdapter);
+        // Prepare the loader.  Either re-connect with an existing one or start a new one.
+        getActivity().getSupportLoaderManager().initLoader(ALERTS_LOADER_ID, null, this);
+    }
+
     /**
      * Start of fragment lifecycle
      * */
@@ -160,13 +168,5 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     public void onLoaderReset(Loader loader) {
         // data is not available anymore, delete reference
         alertsAdapter.swapCursor(null);
-    }
-
-    // Set alertsAdapter to ListViewAlerts
-    private void initAlertsLoader() {
-        alertsAdapter = new DBAlertsCursorAdapter(((AppCompatActivity) getActivity()), R.layout.list_item_alert, null, 0);
-        listViewAlerts.setAdapter(alertsAdapter);
-        // Prepare the loader.  Either re-connect with an existing one or start a new one.
-        getActivity().getSupportLoaderManager().initLoader(ALERTS_LOADER_ID, null, this);
     }
 }

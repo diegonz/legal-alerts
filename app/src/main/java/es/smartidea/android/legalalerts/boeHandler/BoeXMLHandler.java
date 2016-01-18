@@ -11,6 +11,7 @@ package es.smartidea.android.legalalerts.boeHandler;
  * */
 
 import android.annotation.SuppressLint;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -42,30 +43,31 @@ public class BoeXMLHandler {
     // XML error flag, only write-accessed from summary thread
     private boolean xmlError = false;
 
-    // Public Constructor with empty arguments
-    public BoeXMLHandler() {
-
-        // Set null or default listener
+    // Public Constructor with @Nullable String argument
+    public BoeXMLHandler(@Nullable String receivedDate) {
+        // Set null this listener
         this.boeXMLHandlerEvents = null;
-
         // Setup base data
-        boeSetup();
+        boeSetup(receivedDate);
     }
 
-    // Creates new currentBoeSummaryURLString string with current date (yyyyMMdd)
+    /*
+    * Creates new currentBoeSummaryURLString string with current date
+    * or according to given String receivedDate (format yyyyMMdd)
+    * */
     @SuppressLint("SimpleDateFormat")
-    private void boeSetup() {
-        Date curDate = new Date();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-        String todayDateString = dateFormat.format(curDate);
-        final String currentBoeURL = BOE_BASE_ID + todayDateString;
-
-//        String fakeTodayDate = "20160114";
-//        final String currentBoeURL = BOE_BASE_ID + fakeTodayDate;
-
+    private void boeSetup(@Nullable String receivedDate) {
+        final String currentBoeURL;
+        if (receivedDate == null){
+            Date curDate = new Date();
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+            String todayDateString = dateFormat.format(curDate);
+            currentBoeURL = BOE_BASE_ID + todayDateString;
+        } else {
+            currentBoeURL = BOE_BASE_ID + receivedDate;
+        }
         this.boeBaseURLString = BOE_BASE_URL;
         this.currentBoeSummaryURLString = BOE_BASE_URL + currentBoeURL;
-
         Log.d("BOE", "SummaryURL: " + currentBoeSummaryURLString);
     }
 
@@ -122,7 +124,9 @@ public class BoeXMLHandler {
 
         try {
             event = boeParser.getEventType();
-            final Set<String> rawTextTags = new HashSet<>(Arrays.asList("p", "titulo", "palabra"));
+            final Set<String> rawTextTags = new HashSet<>(
+                    Arrays.asList("alerta", "materia", "p", "palabra", "titulo", "texto")
+            );
 
             // New BoeUrlPair
             BoeUrlPair boeUrlPair = new BoeUrlPair();
@@ -152,10 +156,7 @@ public class BoeXMLHandler {
             if (!isSummary){
                 boeXmlTodayRawData.put(AttachmentUrlXml, rawTextStringBuilder.toString());
             }
-        } catch (Exception e) {
-            Log.d("BOE", "ERROR while parsing attached XML file!");
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     /*
@@ -175,7 +176,6 @@ public class BoeXMLHandler {
                 boeXMLHandlerEvents.onSearchQueryCompleted(resultUrls.size(), searchQuery, true);
                 return resultUrls;
             } catch (Exception e) {
-                Log.d("BOE", "ERROR while searching for: " + searchQuery);
                 e.printStackTrace();
                 // Notify Listeners
                 boeXMLHandlerEvents.onSearchQueryCompleted(resultUrls.size(), searchQuery, true);
@@ -206,8 +206,6 @@ public class BoeXMLHandler {
             } catch (Exception e) {
                 Log.d("BOE", "ERROR while searching for: " + searchQuery);
                 e.printStackTrace();
-                // Notify Listeners
-                boeXMLHandlerEvents.onSearchQueryCompleted(resultUrls.size(), searchQuery, false);
                 return resultUrls;
             }
         }
@@ -241,7 +239,7 @@ public class BoeXMLHandler {
     * fetchXMLSummary() runs a thread to fetch URLs for summary and others, based on OkHttp library
     */
     public void fetchXMLSummary() {
-        Thread fetchThread = new Thread(new Runnable() {
+        new Thread(new Runnable() {
             @Override
             public void run() {
 
@@ -267,15 +265,14 @@ public class BoeXMLHandler {
                 // Notifies summary fetching complete passing xmlError value
                 boeXMLHandlerEvents.onBoeSummaryFetchCompleted(xmlError);
             }
-        });
-        fetchThread.start();
+        }).start();
     }
 
     /*
     * fetchXMLSummary() runs a thread to fetch URLs for summary and others, based on OkHttp library
     */
     public void fetchXMLAttachments() {
-        Thread fetchThread = new Thread(new Runnable() {
+        new Thread(new Runnable() {
             @Override
             public void run() {
                 // Start fetch and parse thread if xmlError flag maintains its FALSE original state.
@@ -302,8 +299,7 @@ public class BoeXMLHandler {
                     boeXMLHandlerEvents.onBoeAttachmentsFetchCompleted();
                 }
             }
-        });
-        fetchThread.start();
+        }).start();
     }
 
     /*

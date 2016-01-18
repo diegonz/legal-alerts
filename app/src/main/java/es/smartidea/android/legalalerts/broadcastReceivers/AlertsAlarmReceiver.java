@@ -13,16 +13,15 @@ public class AlertsAlarmReceiver extends BroadcastReceiver {
     // Setup intent action/s message
     public final static String START_ALARMS_SERVICE = "es.smartidea.legalalerts.START_ALARMS_SERVICE";
 
-
     // AlertsAlarmReceiver public empty constructor
     public AlertsAlarmReceiver() {
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        // This method is called when the BroadcastReceiver is receiving an Intent broadcast.
-        Log.d("AlertsAlarmReceiver", "Receiver started! ");
         /*
+        * This method is called when the BroadcastReceiver is receiving an Intent broadcast.
+        *
         * Check if another PendingIntent (Alarm) exists
         * via creating new one with flag PendingIntent.FLAG_NO_CREATE
         * which returns null if exists, +info check Android documentation:

@@ -7,7 +7,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
-import android.util.Log;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -80,14 +79,11 @@ public class DBContentProvider extends ContentProvider {
                 // Check if alerts already exists
                 if (!alreadyExistCursor.moveToFirst()) {
                     id = db.insert(DBContract.Alerts.TABLE_NAME, null, values);
-                    Log.d("DB", "Inserted into Alerts table, ID: " + id);
                 } else {
-//                    id = alreadyExistCursor.getLong(alreadyExistCursor.getColumnIndex(DBContract.Alerts._ID));
+                    // id = alreadyExistCursor.getLong(alreadyExistCursor.getColumnIndex(DBContract.Alerts._ID));
                     // Set id to -1 if alert exist
                     id = -1;
-                    Log.d("DB", "Inserted into Alerts table, ID: " + id);
                 }
-
                 // Close db cursor
                 alreadyExistCursor.close();
 
@@ -95,7 +91,6 @@ public class DBContentProvider extends ContentProvider {
             case HISTORY:
                 path = HISTORY_PATH;
                 id = db.insert(DBContract.History.TABLE_NAME, null, values);
-                Log.d("DB", "Inserted into History table, ID: " + id);
                 break;
             default:
                 throw new IllegalArgumentException("ERROR - Wrong URI: " + uri);
@@ -144,11 +139,9 @@ public class DBContentProvider extends ContentProvider {
         switch (uriType) {
             case ALERTS:
                 rowsDeleted = db.delete(DBContract.Alerts.TABLE_NAME, selection, selectionArgs);
-                Log.d("DB", rowsDeleted + " row(s) deleted from Alerts table!");
                 break;
             case HISTORY:
                 rowsDeleted = db.delete(DBContract.History.TABLE_NAME, selection, selectionArgs);
-                Log.d("DB", rowsDeleted + " row(s) deleted from History table!");
                 break;
             default:
                 throw new IllegalArgumentException("ERROR - Wrong URI: " + uri);
@@ -167,11 +160,9 @@ public class DBContentProvider extends ContentProvider {
         switch (uriType) {
             case ALERTS:
                 rowsUpdated = db.update(DBContract.Alerts.TABLE_NAME, values, selection, selectionArgs);
-                Log.d("DB", rowsUpdated + "row(s) updated from Alerts table!");
                 break;
             case HISTORY:
                 rowsUpdated = db.update(DBContract.History.TABLE_NAME, values, selection, selectionArgs);
-                Log.d("DB", rowsUpdated + "row(s) updated from History table!");
                 break;
             default:
                 throw new IllegalArgumentException("ERROR - Wrong URI: " + uri);

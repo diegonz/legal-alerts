@@ -65,7 +65,7 @@
     <string name="notification_no_results_title">NO RESULTS FOUND.</string>
     <string name="notification_no_results_description">Any coincidences where found into XML data.</string>
 
-    <string name="notification_ok_results_title"> Alerts found.</string>
-    <string name="notification_ok_results_description">New coincidences where found for your alerts!.</string>
+    <string name="notification_ok_results_title">New alerts found.</string>
+    <string name="notification_ok_results_description">New coincidences where found for your search terms!.</string>
 
 </resources>

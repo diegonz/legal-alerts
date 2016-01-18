@@ -122,32 +122,19 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.nav_alerts) {
             replaceFragment(FRAGMENT_ALERTS);
-            RUNNING_FRAGMENT = FRAGMENT_ALERTS;
         } else if (id == R.id.nav_add_alert) {
             replaceFragment(FRAGMENT_ALERTS);
             // Set start dialog flag after replacing
             afterSelectionTask = START_DIALOG_ALERT;
         } else if (id == R.id.nav_history) {
             replaceFragment(FRAGMENT_HISTORY);
-            RUNNING_FRAGMENT = FRAGMENT_HISTORY;
         } else if (id == R.id.nav_settings) {
             afterSelectionTask = START_SETTINGS_ACTIVITY;
         } else if (id == R.id.nav_share) {
-            replaceFragment(FRAGMENT_ALERTS);
-            RUNNING_FRAGMENT = FRAGMENT_ALERTS;
+//            replaceFragment(FRAGMENT_ALERTS);
         } else if (id == R.id.nav_info) {
-            replaceFragment(FRAGMENT_ALERTS);
-            RUNNING_FRAGMENT = FRAGMENT_ALERTS;
+//            replaceFragment(FRAGMENT_ALERTS);
         }
-
-        // Highlight the selected item and update the title if no afterSelectionTask.
-        // Then close the drawer
-        if (afterSelectionTask == 0){
-            item.setChecked(true);
-            setTitle(item.getTitle());
-        }
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
 
         // Launch afterSelectionTask if there is any
         switch (afterSelectionTask){
@@ -160,7 +147,15 @@ public class MainActivity extends AppCompatActivity
                 // Launch Settings Activity
                 startActivity(new Intent(this, SettingsActivity.class));
                 break;
+            case 0:
+                // Highlight the selected item and update the title if no afterSelectionTask.
+                // Then close the drawer
+                item.setChecked(true);
+                setTitle(item.getTitle());
+                break;
         }
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
         return true;
     }
 
@@ -215,6 +210,7 @@ public class MainActivity extends AppCompatActivity
             }
             // Insert the fragment by replacing any existing fragment
             FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.setCustomAnimations(android.R.anim.slide_in_left, android.R.anim.slide_out_right);
             fragmentTransaction.replace(R.id.fragmentMainPlaceholder, fragment);
             fragmentTransaction.commit();
             setTitle(VIEW_TITLE);

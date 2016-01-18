@@ -21,9 +21,6 @@ import es.smartidea.android.legalalerts.dbHelper.DBContract;
 
 public class AlertsService extends Service {
 
-    // Public boolean flag indicating if service is running.
-    private static boolean serviceRunning = false;
-
     // URI of DB
     private static final Uri ALERTS_URI = DBContentProvider.ALERTS_URI;
     // Static String arguments for querying
@@ -41,13 +38,178 @@ public class AlertsService extends Service {
     private Map<String, Boolean> alertsListFullData;
     private BoeXMLHandler boeXMLHandler;
 
-    // Shared preferences
-    private boolean notifyON = false;
-    private boolean vibrateON = false;
-    private String notificationSoundPath;
+    // Public boolean flag indicating if service is running.
+    private static boolean serviceRunning = false;
 
     /*
-    * Start of Service´s lifecycle
+    * Service Methods START
+    * */
+
+    // Public static method returning service running state
+    public static boolean isRunning() { return serviceRunning; }
+
+    // SetUp new BoeXMLHandler and associated listener methods
+    private void setupBoeHandler() {
+        // Init new boeXMLHandler passing null as String Object
+        // fake valid String date = "20160114"
+        boeXMLHandler = new BoeXMLHandler(null);
+        // Set BoeXMLHandler event listener
+        boeXMLHandler.setBoeXMLHandlerEvents(new BoeXMLHandler.BoeXMLHandlerEvents() {
+            @Override
+            public void onBoeSummaryFetchCompleted(boolean xmlError) {
+                if (xmlError) {
+                    stopSelf();
+                } else {
+                    boeXMLHandler.fetchXMLAttachments();
+                }
+            }
+
+            @Override
+            public void onBoeAttachmentsFetchCompleted() {
+                Log.d("Service", "Fetching " + boeXMLHandler.getURLsCount() + " XMLs completed");
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // Get alerts from DB
+                        getAlertsFromDB();
+
+                        Map<String, String> resultUrlsAndAlerts = new HashMap<>();
+                        for (Map.Entry<String, Boolean> eachAlert : alertsListFullData.entrySet()) {
+                            resultUrlsAndAlerts.putAll(
+                                    boeXMLHandler.boeRawDataQuery(eachAlert.getKey(), eachAlert.getValue())
+                            );
+                        }
+                        Log.d("Service", "List size: " + resultUrlsAndAlerts.size());
+                        if (!resultUrlsAndAlerts.isEmpty()) {
+                            int contador = 0;
+                            for (Map.Entry<String, String> eachResult : resultUrlsAndAlerts.entrySet()) {
+                                Log.d("TEST", contador++ + " - " + eachResult.getKey() + " : " + eachResult.getValue());
+                            }
+                            // Store found alerts on DB
+                            storeResultsOnDB(resultUrlsAndAlerts, boeXMLHandler.urls);
+                            showAlertNotification(
+                                    getString(R.string.notification_ok_results_title),
+                                    getString(R.string.notification_ok_results_description)
+                            );
+                        } else {
+                            showAlertNotification(
+                                    getString(R.string.notification_no_results_title),
+                                    getString(R.string.notification_no_results_description)
+                            );
+                        }
+                        // Stop Service after search completed and Notification sent.
+                        stopSelf();
+                    }
+                }).start();
+            }
+
+            @Override
+            public void onSearchQueryCompleted(int searchQueryResults, String searchTerm, boolean isLiteralSearch) {
+                Log.d("Service", searchQueryResults + " results for: " + searchTerm + " - Literal " + isLiteralSearch);
+            }
+
+            @Override
+            public void onFoundXMLErrorTag(String description) {
+                Log.d("Service", "ERROR TAG found on XML summary.");
+                showAlertNotification("ERROR TAG FOUND", description);
+            }
+        });
+    }
+
+    // Get Alerts list from DB
+    private void getAlertsFromDB() {
+        // Get current Alerts to look for from DB
+        Cursor alertsCursor = getApplicationContext().getContentResolver().query(ALERTS_URI,
+                ALERTS_PROJECTION, ALERTS_SELECTION_NOTNULL, null, ALERTS_ORDER_ASC_BY_NAME);
+        if (alertsCursor != null) {
+            try {
+                alertsListFullData = new HashMap<>();
+                while (alertsCursor.moveToNext()) {
+                    // Reversing value from int to boolean
+                    // reverseBooleanValue = eval( COL_ALERT_SEARCH_NOT_LITERAL == 0 )
+                    alertsListFullData.put(
+                            alertsCursor.getString(alertsCursor.getColumnIndexOrThrow(
+                                    DBContract.Alerts.COL_ALERT_NAME)),
+                            alertsCursor.getInt(alertsCursor.getColumnIndexOrThrow(
+                                    DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL)) == 0
+                    );
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                alertsCursor.close();
+            }
+        }
+    }
+
+    /**
+     * Void method storeResultsOnDB(final Map<String, String> resultUrlsAndAlerts)
+     *
+     * Stores search results on DB running a new Runnable() Object
+     *
+     * @param resultUrlsAndAlerts HashMap<String,String> corresponding to search results
+     **/
+    private void storeResultsOnDB(final Map<String, String> resultUrlsAndAlerts, final Map<String, String> urls) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // URI of DB
+                final Uri HISTORY_URI = DBContentProvider.HISTORY_URI;
+                ContentValues values = new ContentValues();
+                for (Map.Entry<String, String> eachResult : resultUrlsAndAlerts.entrySet()) {
+                    values.put(DBContract.History.COL_HISTORY_DOCUMENT_NAME,
+                            eachResult.getKey().substring(eachResult.getKey().indexOf("=") + 1));
+                    values.put(DBContract.History.COL_HISTORY_RELATED_ALERT_NAME, eachResult.getValue());
+                    values.put(DBContract.History.COL_HISTORY_DOCUMENT_URL, urls.get(eachResult.getKey()));
+                    // Do the C(RUD).
+                    getApplicationContext().getContentResolver().insert(HISTORY_URI, values);
+                }
+
+            }
+        }).start();
+    }
+
+    /**
+     * Void method showAlertNotification(String title, String message)
+     *
+     * Build and Shows a notification in a new Runnable() Object
+     * according to given parameters.
+     *
+     * @param title   String corresponding to Notification´s title
+     * @param message String corresponding to Notification´s message
+     **/
+    public void showAlertNotification(final String title, final String message) {
+
+        // If notification not enabled on user preferences return
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // Set TRUE to serviceRunning flag
+                serviceRunning = true;
+                // Get shared preferences
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                // Set user preference flags if notifyON
+                if (sharedPreferences.getBoolean("notifications_new_message", true)) {
+                    new AlertsNotificationBuilder
+                            .Builder(getApplicationContext())
+                            .setTitle(title)
+                            .setMessage(message)
+                            .setVibrate(sharedPreferences.getBoolean("notifications_new_message_vibrate", true))
+                            .setSound(sharedPreferences.getString(
+                                    "notifications_new_message_ringtone",
+                                    "content://settings/system/notification_sound"))
+                            .send();
+                }
+            }
+        }).start();
+    }
+
+    /*
+    * Service Methods END
+    * */
+
+    /*
+    * Lifecycle events START
     * */
 
     @Override
@@ -56,29 +218,13 @@ public class AlertsService extends Service {
         // separate thread because the service normally runs in the process's
         // main thread, which we don't want to block.  We also make it
         // background priority so CPU-intensive work will not disrupt our UI.
-
         new Thread(new Runnable() {
             @Override
             public void run() {
-                Log.d("Service", "Starting AlertsService...");
-
-                // Set TRUE to serviceRunning flag
-                serviceRunning = true;
-                // Get shared preferences
-                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-                // Set user preference flags
-                notificationSoundPath = sharedPreferences.getString(
-                        "notifications_new_message_ringtone",
-                        "content://settings/system/notification_sound"
-                );
-                notifyON = sharedPreferences.getBoolean("notifications_new_message", true);
-                vibrateON = sharedPreferences.getBoolean("notifications_new_message_vibrate", true);
-
                 //setup BoeHandler and BoeHandler.Listeners
                 setupBoeHandler();
-
                 // Start fetching summary
-                boeFetchSummaryThread.start();
+                boeXMLHandler.fetchXMLSummary();
             }
         }).start();
     }
@@ -87,7 +233,6 @@ public class AlertsService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
         Log.d("Service", "Service started!");
-
         // If we get killed, after returning from here, AVOID restarting
         return START_NOT_STICKY;
     }
@@ -113,189 +258,6 @@ public class AlertsService extends Service {
     }
 
     /*
-    * End of Service´s lifecycle
+    * Lifecycle events END
     * */
-
-    private void setupBoeHandler(){
-        // Init new boeXMLHandler
-        boeXMLHandler = new BoeXMLHandler();
-
-        // Set BoeXMLHandler event listener
-        boeXMLHandler.setBoeXMLHandlerEvents(new BoeXMLHandler.BoeXMLHandlerEvents() {
-            @Override
-            public void onBoeSummaryFetchCompleted(boolean xmlError) {
-                if (xmlError){
-                    stopSelf();
-                } else {
-                    Log.d("Service", "BOE´s summary fetching completed");
-                    boeFetchAttachmentThread.start();
-                }
-            }
-
-            @Override
-            public void onBoeAttachmentsFetchCompleted() {
-                Log.d("Service", "Fetching " + boeXMLHandler.getURLsCount() + " XMLs completed");
-                // Get alerts from DB to start search thread
-                getAlertsFromDB();
-                boeSearchThread.start();
-            }
-
-            @Override
-            public void onSearchQueryCompleted(int searchQueryResults, String searchTerm, boolean isLiteralSearch) {
-                Log.d("Service", searchQueryResults + " results for: " + searchTerm + " - Literal " + isLiteralSearch);
-            }
-
-            @Override
-            public void onFoundXMLErrorTag(String description) {
-                Log.d("Service", "ERROR TAG found on XML summary.");
-                showAlertNotification("ERROR TAG FOUND", description);
-                Log.d("Service", "Requesting service stop...");
-            }
-        });
-    }
-
-    private Thread boeFetchSummaryThread = new Thread(new Runnable() {
-        @Override
-        public void run() {
-            boeXMLHandler.fetchXMLSummary();
-        }
-    });
-
-    private Thread boeFetchAttachmentThread = new Thread(new Runnable() {
-        @Override
-        public void run() {
-            boeXMLHandler.fetchXMLAttachments();
-        }
-    });
-
-    private Thread boeSearchThread = new Thread(new Runnable() {
-        @Override
-        public void run() {
-            Map<String, String> resultUrlsAndAlerts = new HashMap<>();
-            for (Map.Entry<String, Boolean> eachAlert : alertsListFullData.entrySet()){
-                resultUrlsAndAlerts.putAll(boeXMLHandler.boeRawDataQuery(eachAlert.getKey(), eachAlert.getValue()));
-            }
-            Log.d("Service", "List size:" + resultUrlsAndAlerts.size());
-            if (!resultUrlsAndAlerts.isEmpty()) {
-                // Store found alerts on DB
-                storeResultsOnDB(resultUrlsAndAlerts);
-                showAlertNotification(
-                        resultUrlsAndAlerts.size() + " " +
-                        getString(R.string.notification_ok_results_title),
-                        getString(R.string.notification_ok_results_description)
-                );
-            } else {
-                showAlertNotification(
-                        getString(R.string.notification_no_results_title),
-                        getString(R.string.notification_no_results_description)
-                );
-            }
-            // Stop Service after search completed and Notification sent.
-            stopSelf();
-        }
-    });
-
-    private void getAlertsFromDB() {
-        // Get current Alerts to look for from DB
-        Cursor alertsCursor = getApplicationContext().getContentResolver().query(ALERTS_URI,
-                ALERTS_PROJECTION, ALERTS_SELECTION_NOTNULL, null, ALERTS_ORDER_ASC_BY_NAME);
-        if (alertsCursor != null) {
-            try {
-                alertsListFullData = new HashMap<>();
-                while (alertsCursor.moveToNext()) {
-                    boolean isLiteralSearch = (alertsCursor.getInt(
-                            alertsCursor.getColumnIndexOrThrow(
-                                    DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL)) == 0);
-                    alertsListFullData.put(
-                            alertsCursor.getString(alertsCursor.getColumnIndexOrThrow(
-                            DBContract.Alerts.COL_ALERT_NAME)), isLiteralSearch);
-                }
-                for (Map.Entry<String, Boolean> eachAlert : alertsListFullData.entrySet()) {
-                    Log.d("Service", "Alert to search: " + eachAlert.getKey() + " literal search: " + eachAlert.getValue());
-                }
-                } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                alertsCursor.close();
-            }
-        }
-    }
-
-    private void storeResultsOnDB(Map<String, String> resultUrlsAndAlerts) {
-        // URI of DB
-        final Uri HISTORY_URI = DBContentProvider.HISTORY_URI;
-        for (Map.Entry<String, String> eachResult : resultUrlsAndAlerts.entrySet()) {
-            ContentValues values = new ContentValues();
-            values.put(DBContract.History.COL_HISTORY_DOCUMENT_NAME,
-                    eachResult.getKey().substring(eachResult.getKey().indexOf("=") + 1));
-            values.put(DBContract.History.COL_HISTORY_RELATED_ALERT_NAME, eachResult.getValue());
-            values.put(DBContract.History.COL_HISTORY_DOCUMENT_URL, boeXMLHandler.urls.get(eachResult.getKey()));
-
-            getApplicationContext().getContentResolver().insert(HISTORY_URI, values);
-        }
-    }
-
-    /**
-     * Void method showAlertNotification(String title, String message)
-     *
-     * Build and Shows a notification, according to given parameters
-     *
-     * @param title   String corresponding to Notification´s title
-     * @param message String corresponding to Notification´s message
-     **/
-    public void showAlertNotification(final String title, final String message) {
-
-        // If notification not enabled on user preferences return
-        if (notifyON) {
-
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    new AlertsNotificationBuilder.Builder(getApplicationContext())
-                            .setTitle(title)
-                            .setMessage(message)
-                            .setVibrate(vibrateON)
-                            .setSound(notificationSoundPath)
-                            .send();
-
-                }
-            }).start();
-        }
-
-//        // Notification ID
-//        final int ALERT_NOTIFICATION_ID = 0;
-//
-//        // Define notification´s associated intent action
-//        Intent intent = new Intent(getBaseContext(), MainActivity.class);
-//
-//        // Put Fragment (int) identifier on "start_on_fragment" (where to start if app is not running)
-//        intent.putExtra("start_on_fragment", MainActivity.FRAGMENT_HISTORY);
-//        intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-//
-//        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-//        Resources resources = getResources();
-//        NotificationCompat.Builder notification = new NotificationCompat.Builder(this);
-//        notification.setTicker(resources.getString(R.string.app_name) + " - " + title)
-//                    .setSmallIcon(android.R.drawable.ic_popup_reminder)
-//                    .setContentTitle(title)
-//                    .setContentText(message);
-//        notification.setSound(
-//                Uri.parse(
-//                        sharedPreferences.getString(
-//                                "notifications_new_message_ringtone",
-//                                "content://settings/system/notification_sound"))
-//        );
-//        // Check vibrate from preferences
-//        if (vibrateON){
-//            notification.setVibrate(new long[]{0, 500, 250, 500});
-//        }
-//        notification.setContentIntent(pendingIntent)
-//                    .setAutoCancel(true);
-//        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-//        notificationManager.notify(ALERT_NOTIFICATION_ID, notification.build());
-    }
-
-    public static boolean isRunning(){
-        return serviceRunning;
-    }
 }

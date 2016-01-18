@@ -5,7 +5,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.ResourceCursorAdapter;
-import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,7 +20,7 @@ public class DBAlertsCursorAdapter extends ResourceCursorAdapter {
     // URI of DB
     private static final Uri ALERTS_URI = DBContentProvider.ALERTS_URI;
 
-    public DBAlertsCursorAdapter(AppCompatActivity context, int layout, Cursor c, int flags) {
+    public DBAlertsCursorAdapter(Context context, int layout, Cursor c, int flags) {
         super(context,layout, c, flags);
     }
 
@@ -55,11 +54,6 @@ public class DBAlertsCursorAdapter extends ResourceCursorAdapter {
             @Override
             public void onClick(View view) {
                 final String SELECTION = DBContract.Alerts.COL_ALERT_NAME + "='" + alertName + "'";
-
-//                final String[] SELECTION_ARGS = new String[]{
-//                        DBContract.Alerts._ID + "='" +
-//                        cursor.getLong(cursor.getColumnIndex(DBContract.Alerts._ID)) + "'"
-//                };
 
                 // Perform deletion according to SELECTION
                 int hits = context.getContentResolver().delete(ALERTS_URI, SELECTION, null);

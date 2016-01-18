@@ -55,9 +55,6 @@
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
             android:parentActivityName=".MainActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="es.smartidea.android.legalalerts.MainActivity" />
         </activity>
 
         <receiver
