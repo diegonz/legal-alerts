@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.widget.SwitchCompat;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -29,10 +28,9 @@ public class AlertDialog extends DialogFragment {
 
         // Use the Builder class for convenient dialog construction
         android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(getActivity());
-        LayoutInflater inflater = getActivity().getLayoutInflater();
         // Annotation to disable warning on inflating dialog
         @SuppressLint("InflateParams")
-        final View view = inflater.inflate(R.layout.dialog_alert, null);
+        final View view = getActivity().getLayoutInflater().inflate(R.layout.dialog_alert, null, false);
         final EditText editTextDialogAlert = (EditText)view.findViewById(R.id.editTextDialogAlert);
         final TextView textViewLiteralInfo = (TextView)view.findViewById(R.id.textViewLiteralInfo);
         final SwitchCompat switchLiteralSearch = (SwitchCompat)view.findViewById(R.id.switchLiteralSearch);

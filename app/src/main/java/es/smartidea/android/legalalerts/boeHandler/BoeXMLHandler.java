@@ -171,7 +171,7 @@ public class BoeXMLHandler {
         if (isLiteralSearch){
             try {
                 for (Map.Entry<String,String> eachBoe : boeXmlTodayRawData.entrySet()) {
-                    if (normalizedStringSearch(eachBoe.getValue(), searchQuery)){
+                    if (normalizedStringFinder(eachBoe.getValue(), searchQuery)){
                         resultUrls.put(eachBoe.getKey(), searchQuery);
                     }
                 }
@@ -190,7 +190,7 @@ public class BoeXMLHandler {
                     // Flag that indicates every search query where successful
                     boolean hasAllSearchItems = true;
                     for (String eachSearchItem : searchItemArray) {
-                        if (!normalizedStringSearch(eachBoe.getValue(), eachSearchItem)) {
+                        if (!normalizedStringFinder(eachBoe.getValue(), eachSearchItem)) {
                             // If item is not contained, set flag to false
                             hasAllSearchItems = false;
                         }
@@ -210,7 +210,7 @@ public class BoeXMLHandler {
     }
 
     /**
-     * boolean method normalizedStringSearch search for searchItem in mainText
+     * boolean method normalizedStringFinder search for searchItem in mainText
      * Normalizes and converts text to lower-case for comparing
      *
      * @param mainText String XML´s raw text, <titulo> and <p> tags
@@ -220,7 +220,7 @@ public class BoeXMLHandler {
      *                 its normalized and converted to lower-case
      *                 for comparing purposes.
      **/
-    private boolean normalizedStringSearch(String mainText, String searchItem){
+    private boolean normalizedStringFinder(String mainText, String searchItem){
         // TODO: Check alternatives like: org.apache.commons.lang3.StringUtils.containsIgnoreCase
         String normalizedMainText =
                 Normalizer

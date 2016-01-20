@@ -27,6 +27,7 @@ public class MainActivity extends AppCompatActivity
     // Running fragment string
     static final String RUNNING_FRAGMENT_STRING = "running_fragment";
     private FloatingActionButton fab;
+    private NavigationView navigationView;
 
 
     @Override
@@ -44,7 +45,7 @@ public class MainActivity extends AppCompatActivity
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         // Get fab reference for showing/hiding purposes
@@ -115,38 +116,37 @@ public class MainActivity extends AppCompatActivity
         final int START_SETTINGS_ACTIVITY = 2;
         int afterSelectionTask = 0;
 
-        if (id == R.id.nav_alerts) {
-            replaceFragment(FRAGMENT_ALERTS);
-        } else if (id == R.id.nav_add_alert) {
-            replaceFragment(FRAGMENT_ALERTS);
-            // Set start dialog flag after replacing
-            afterSelectionTask = START_DIALOG_ALERT;
-        } else if (id == R.id.nav_history) {
-            replaceFragment(FRAGMENT_HISTORY);
-        } else if (id == R.id.nav_settings) {
-            afterSelectionTask = START_SETTINGS_ACTIVITY;
-        } else if (id == R.id.nav_share) {
+        switch (id){
+            case R.id.nav_alerts:
+                replaceFragment(FRAGMENT_ALERTS);
+                break;
+            case R.id.nav_add_alert:
+                afterSelectionTask = START_DIALOG_ALERT;
+                break;
+            case R.id.nav_history:
+                replaceFragment(FRAGMENT_HISTORY);
+                break;
+            case R.id.nav_settings:
+                afterSelectionTask = START_SETTINGS_ACTIVITY;
+                break;
+            case R.id.nav_share:
 //            replaceFragment(FRAGMENT_ALERTS);
-        } else if (id == R.id.nav_info) {
+                break;
+            case R.id.nav_info:
 //            replaceFragment(FRAGMENT_ALERTS);
+                break;
         }
 
         // Launch afterSelectionTask if there is any
         switch (afterSelectionTask){
             case START_DIALOG_ALERT:
                 // Launch Alerts dialog
-                AlertDialog alertDialog = new AlertDialog();
-                alertDialog.show(getSupportFragmentManager(), "dialog_alert");
+                new AlertDialog().show(getSupportFragmentManager(), "dialog_alert");
                 break;
+
             case START_SETTINGS_ACTIVITY:
                 // Launch Settings Activity
                 startActivity(new Intent(this, SettingsActivity.class));
-                break;
-            case 0:
-                // Highlight the selected item and update the title if no afterSelectionTask.
-                // Then close the drawer
-                item.setChecked(true);
-                setTitle(item.getTitle());
                 break;
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -154,14 +154,15 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-//    @Override
-//    protected void onNewIntent(Intent intent) {
-//        super.onNewIntent(intent);
-//        // TODO: Make a selection on drawer
-//        // Get Intent extras and start Fragment replacing
-//
-//        replaceFragment(intent.getIntExtra("start_on_fragment", RUNNING_FRAGMENT));
-//    }
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        // Check intent extras and start fragment replacing
+        if (intent.hasExtra("start_on_fragment")){
+            replaceFragment(intent.getIntExtra("start_on_fragment", FRAGMENT_ALERTS));
+        }
+        setDrawerCheckedItemAndTitle();
+    }
 
     /**
      * replaceFragment (final int fragmentID)
@@ -173,7 +174,6 @@ public class MainActivity extends AppCompatActivity
      **/
     public void replaceFragment(final int fragmentID){
 
-        String VIEW_TITLE;
         // Check if RUNNING_FRAGMENT is the same received
         if (RUNNING_FRAGMENT != fragmentID){
             Fragment fragment = null;
@@ -184,19 +184,16 @@ public class MainActivity extends AppCompatActivity
                     // Show fab button
                     fab.show();
                     fragmentClass = AlertsFragment.class;
-                    VIEW_TITLE = getResources().getString(R.string.nav_alerts);
                     break;
                 case FRAGMENT_HISTORY:
                     // Hide fab button
                     fab.hide();
                     fragmentClass = HistoryFragment.class;
-                    VIEW_TITLE = getResources().getString(R.string.nav_history);
                     break;
                 default:
                     // Show fab button
                     fab.show();
                     fragmentClass = AlertsFragment.class;
-                    VIEW_TITLE = getResources().getString(R.string.nav_alerts);
                     break;
             }
             try {
@@ -209,8 +206,23 @@ public class MainActivity extends AppCompatActivity
             fragmentTransaction.setCustomAnimations(android.R.anim.slide_in_left, android.R.anim.slide_out_right);
             fragmentTransaction.replace(R.id.fragmentMainPlaceholder, fragment);
             fragmentTransaction.commit();
-            setTitle(VIEW_TITLE);
+            // Change running fragment id
             RUNNING_FRAGMENT = fragmentID;
+        }
+        setDrawerCheckedItemAndTitle();
+    }
+
+    private void setDrawerCheckedItemAndTitle(){
+        // Select item on drawer
+        switch (RUNNING_FRAGMENT) {
+            case FRAGMENT_ALERTS:
+                navigationView.setCheckedItem(R.id.nav_alerts);
+                setTitle(getResources().getString(R.string.nav_alerts));
+                break;
+            case FRAGMENT_HISTORY:
+                navigationView.setCheckedItem(R.id.nav_history);
+                setTitle(getResources().getString(R.string.nav_history));
+                break;
         }
     }
 }
