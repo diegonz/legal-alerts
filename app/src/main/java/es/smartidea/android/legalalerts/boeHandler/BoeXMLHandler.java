@@ -76,10 +76,13 @@ public class BoeXMLHandler {
     * This interface defines what type of messages can be communicated to owner object
     */
     public interface BoeXMLHandlerEvents {
+        // Notify fetching summary completed sending error value
         void onBoeSummaryFetchCompleted(boolean xmlSummaryError);
 
+        // Notify fetching attachments completed
         void onBoeAttachmentsFetchCompleted();
 
+        // Search completed, send result data
         void onSearchQueryCompleted(int searchQueryResults, String searchTerm, boolean isLiteralSearch);
 
         // Send error tag data
@@ -161,7 +164,7 @@ public class BoeXMLHandler {
 
     /*
     * boeRawDataQuery is a method to query/search data in the object.
-    * It returns a Map<String,String> with matching BOE´s PDF & XML URLs.
+    * returns a Map<String,String> with matching BOE´s PDF & XML URLs.
     */
     public Map<String, String> boeRawDataQuery(String searchQuery, boolean isLiteralSearch) {
         Map<String,String> resultUrls = new HashMap<>();
@@ -174,12 +177,9 @@ public class BoeXMLHandler {
                 }
                 // Notify Listeners
                 boeXMLHandlerEvents.onSearchQueryCompleted(resultUrls.size(), searchQuery, true);
-                return resultUrls;
             } catch (Exception e) {
                 e.printStackTrace();
-                // Notify Listeners
                 boeXMLHandlerEvents.onSearchQueryCompleted(resultUrls.size(), searchQuery, true);
-                return resultUrls;
             }
         } else {
             // Split alert items by space
@@ -200,15 +200,13 @@ public class BoeXMLHandler {
                         resultUrls.put(eachBoe.getKey(), searchQuery);
                     }
                 }
-                // Notify Listeners
                 boeXMLHandlerEvents.onSearchQueryCompleted(resultUrls.size(), searchQuery, false);
-                return resultUrls;
             } catch (Exception e) {
                 Log.d("BOE", "ERROR while searching for: " + searchQuery);
                 e.printStackTrace();
-                return resultUrls;
             }
         }
+        return resultUrls;
     }
 
     /**

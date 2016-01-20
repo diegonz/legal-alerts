@@ -39,7 +39,7 @@ public class AlertsService extends Service {
     private BoeXMLHandler boeXMLHandler;
 
     // Public boolean flag indicating if service is running.
-    private static boolean serviceRunning = false;
+    private static volatile boolean serviceRunning = false;
 
     /*
     * Service Methods START
@@ -145,7 +145,8 @@ public class AlertsService extends Service {
      *
      * @param resultUrlsAndAlerts HashMap<String,String> corresponding to search results
      **/
-    private void storeResultsOnDB(final Map<String, String> resultUrlsAndAlerts, final Map<String, String> urls) {
+    private void storeResultsOnDB(final Map<String, String> resultUrlsAndAlerts,
+                                  final Map<String, String> urls) {
         new Thread(new Runnable() {
             @Override
             public void run() {

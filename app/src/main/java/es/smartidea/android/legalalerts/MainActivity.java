@@ -33,18 +33,6 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        int startOnFragment;
-
-        // Check activity recreation
-        if (savedInstanceState != null) {
-            startOnFragment = savedInstanceState.getInt(RUNNING_FRAGMENT_STRING);
-        } else {
-            // Get Intent extras from the intent which started activity
-            startOnFragment = getIntent().getIntExtra("start_on_fragment", FRAGMENT_ALERTS);
-            // Check/set the Alerts alarm if cold start
-            sendBroadcast(new Intent(this, AlertsAlarmReceiver.class));
-        }
-
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -64,16 +52,23 @@ public class MainActivity extends AppCompatActivity
         // Hide fab button
         fab.hide();
 
-        // Replace fragment according to intent extras or savedInstanceState
-        // If starting from scratch it defaults to FRAGMENT_ALERTS
-        replaceFragment(startOnFragment);
+        if (savedInstanceState == null) {
+            // Check/start new alarm
+            sendBroadcast(new Intent(this, AlertsAlarmReceiver.class));
+            // Starting from scratch, set FRAGMENT_ALERTS
+            replaceFragment(FRAGMENT_ALERTS);
+        } else {
+            // Replace fragment according to intent extras or savedInstanceState
+            // If starting from scratch it defaults to FRAGMENT_ALERTS
+            replaceFragment(savedInstanceState.getInt(RUNNING_FRAGMENT_STRING, FRAGMENT_ALERTS));
+        }
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
         // Save the user's current running fragment
         outState.putInt(RUNNING_FRAGMENT_STRING, RUNNING_FRAGMENT);
-        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -159,13 +154,14 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        // TODO: Make a selection on drawer
-        // Get Intent extras and start Fragment replacing
-        replaceFragment(intent.getIntExtra("start_on_fragment", FRAGMENT_ALERTS));
-    }
+//    @Override
+//    protected void onNewIntent(Intent intent) {
+//        super.onNewIntent(intent);
+//        // TODO: Make a selection on drawer
+//        // Get Intent extras and start Fragment replacing
+//
+//        replaceFragment(intent.getIntExtra("start_on_fragment", RUNNING_FRAGMENT));
+//    }
 
     /**
      * replaceFragment (final int fragmentID)

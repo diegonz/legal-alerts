@@ -9,7 +9,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -86,7 +85,6 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Get inflated view of this layout´s fragment
         final View view = inflater.inflate(R.layout.fragment_alerts, container, false);
-
         if (view != null){
             // Get FAB reference with getActivity() to access MainActivity's FAB in CoordinatorLayout
             FloatingActionButton fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
@@ -107,7 +105,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         // Set alertsAdapter to ListViewAlerts
-        initAlertsLoader();
+//        initAlertsLoader();
     }
 
     @Override
