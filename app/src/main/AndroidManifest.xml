@@ -49,6 +49,9 @@
             <intent-filter>
                 <action android:name="es.smartidea.legalalerts.SET_ALARM_FROM_ACTIVITY" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="es.smartidea.legalalerts.ALARM_SNOOZE" />
+            </intent-filter>
         </receiver>
 
         <activity
@@ -62,7 +65,7 @@
             android:enabled="true"
             android:exported="false">
             <intent-filter>
-                <action android:name="es.smartidea.legalalerts.START_ALARMS_SERVICE" />
+                <action android:name="es.smartidea.legalalerts.START_ALERTS_SERVICE" />
             </intent-filter>
             <intent-filter>
                 <action android:name="es.smartidea.legalalerts.START_MANUAL_SYNC_SERVICE" />

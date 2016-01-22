@@ -21,7 +21,7 @@ public class AlertsNotificationBuilder {
         private Context context;
         private NotificationCompat.Builder notification;
         // Notification ID
-        private final int ALERT_NOTIFICATION_ID = 0;
+        private static final int ALERT_NOTIFICATION_ID = 0;
 
 
         public Builder(Context context){

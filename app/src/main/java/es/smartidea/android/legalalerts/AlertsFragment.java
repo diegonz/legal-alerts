@@ -90,7 +90,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
             FloatingActionButton fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onClick(View view) {
+                public void onClick(View v) {
                     AlertDialog alertDialog = new AlertDialog();
                     alertDialog.show(getFragmentManager(), "dialog_alert");
                 }

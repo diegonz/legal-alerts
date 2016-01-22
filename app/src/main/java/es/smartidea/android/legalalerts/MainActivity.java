@@ -22,10 +22,11 @@ public class MainActivity extends AppCompatActivity
     // Integer Fragment identifiers
     public static final int FRAGMENT_ALERTS = 0;
     public static final int FRAGMENT_HISTORY = 1;
-    // RUNNING_FRAGMENT initialized to -1, forcing first replacement and RUNNING_FRAGMENT update.
-    private int RUNNING_FRAGMENT = -1;
+    // runningFragment initialized to -1, forcing first replacement and runningFragment update.
+    private int runningFragment = -1;
     // Running fragment string
-    static final String RUNNING_FRAGMENT_STRING = "running_fragment";
+    private static final String RUNNING_FRAGMENT_STRING = "running_fragment";
+    private static final String SET_ALARM_FROM_ACTIVITY = AlertsAlarmReceiver.SET_ALARM_FROM_ACTIVITY;
     private FloatingActionButton fab;
     private NavigationView navigationView;
 
@@ -55,7 +56,9 @@ public class MainActivity extends AppCompatActivity
 
         if (savedInstanceState == null) {
             // Check/start new alarm
-            sendBroadcast(new Intent(this, AlertsAlarmReceiver.class));
+            sendBroadcast(new Intent(this, AlertsAlarmReceiver.class)
+                    .setAction(SET_ALARM_FROM_ACTIVITY)
+            );
             // Starting from scratch, set FRAGMENT_ALERTS
             replaceFragment(FRAGMENT_ALERTS);
         } else {
@@ -69,7 +72,7 @@ public class MainActivity extends AppCompatActivity
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         // Save the user's current running fragment
-        outState.putInt(RUNNING_FRAGMENT_STRING, RUNNING_FRAGMENT);
+        outState.putInt(RUNNING_FRAGMENT_STRING, runningFragment);
     }
 
     @Override
@@ -174,8 +177,8 @@ public class MainActivity extends AppCompatActivity
      **/
     public void replaceFragment(final int fragmentID){
 
-        // Check if RUNNING_FRAGMENT is the same received
-        if (RUNNING_FRAGMENT != fragmentID){
+        // Check if runningFragment is the same received
+        if (runningFragment != fragmentID){
             Fragment fragment = null;
             Class fragmentClass;
 
@@ -207,14 +210,14 @@ public class MainActivity extends AppCompatActivity
             fragmentTransaction.replace(R.id.fragmentMainPlaceholder, fragment);
             fragmentTransaction.commit();
             // Change running fragment id
-            RUNNING_FRAGMENT = fragmentID;
+            runningFragment = fragmentID;
         }
         setDrawerCheckedItemAndTitle();
     }
 
     private void setDrawerCheckedItemAndTitle(){
         // Select item on drawer
-        switch (RUNNING_FRAGMENT) {
+        switch (runningFragment) {
             case FRAGMENT_ALERTS:
                 navigationView.setCheckedItem(R.id.nav_alerts);
                 setTitle(getResources().getString(R.string.nav_alerts));

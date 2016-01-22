@@ -10,22 +10,20 @@ package es.smartidea.android.legalalerts.boeHandler;
  *
  * */
 
-import android.annotation.SuppressLint;
-import android.support.annotation.Nullable;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
 
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
 import java.text.Normalizer;
-import java.util.Date;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import es.smartidea.android.legalalerts.okHttp.OkHttpGetURL;
 
@@ -33,6 +31,7 @@ public class BoeXMLHandler {
 
     public final static String BOE_BASE_URL = "http://www.boe.es";
     public final static String BOE_BASE_ID = "/diario_boe/xml.php?id=BOE-S-";
+    private final static Pattern SPACE_REGEXP = Pattern.compile("\\s");
 
     private XmlPullParserFactory xmlFactoryObject;
     // String HashMap where raw data are stored
@@ -43,31 +42,16 @@ public class BoeXMLHandler {
     // XML error flag, only write-accessed from summary thread
     private boolean xmlError = false;
 
-    // Public Constructor with @Nullable String argument
-    public BoeXMLHandler(@Nullable String receivedDate) {
-        // Set null this listener
-        this.boeXMLHandlerEvents = null;
-        // Setup base data
-        boeSetup(receivedDate);
-    }
-
     /*
+    * Public Constructor with @NonNull String argument
     * Creates new currentBoeSummaryURLString string with current date
     * or according to given String receivedDate (format yyyyMMdd)
     * */
-    @SuppressLint("SimpleDateFormat")
-    private void boeSetup(@Nullable String receivedDate) {
-        final String currentBoeURL;
-        if (receivedDate == null){
-            Date curDate = new Date();
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-            String todayDateString = dateFormat.format(curDate);
-            currentBoeURL = BOE_BASE_ID + todayDateString;
-        } else {
-            currentBoeURL = BOE_BASE_ID + receivedDate;
-        }
+    public BoeXMLHandler(@NonNull String receivedDate) {
+        // Set null this listener
+        this.boeXMLHandlerEvents = null;
         this.boeBaseURLString = BOE_BASE_URL;
-        this.currentBoeSummaryURLString = BOE_BASE_URL + currentBoeURL;
+        this.currentBoeSummaryURLString = BOE_BASE_URL + BOE_BASE_ID + receivedDate;
         Log.d("BOE", "SummaryURL: " + currentBoeSummaryURLString);
     }
 
@@ -77,16 +61,18 @@ public class BoeXMLHandler {
     */
     public interface BoeXMLHandlerEvents {
         // Notify fetching summary completed sending error value
-        void onBoeSummaryFetchCompleted(boolean xmlSummaryError);
+        void onBoeSummaryFetchCompleted(final boolean xmlSummaryError);
 
         // Notify fetching attachments completed
         void onBoeAttachmentsFetchCompleted();
 
         // Search completed, send result data
-        void onSearchQueryCompleted(int searchQueryResults, String searchTerm, boolean isLiteralSearch);
+        void onSearchQueryCompleted(final int searchQueryResults,
+                                    final String searchTerm,
+                                    final boolean isLiteralSearch);
 
         // Send error tag data
-        void onFoundXMLErrorTag(String description);
+        void onFoundXMLErrorTag(final String description);
     }
 
     // Assign the listener implementing events interface that will receive the events
@@ -182,8 +168,8 @@ public class BoeXMLHandler {
                 boeXMLHandlerEvents.onSearchQueryCompleted(resultUrls.size(), searchQuery, true);
             }
         } else {
-            // Split alert items by space
-            String[] searchItemArray = searchQuery.split("\\s");
+            // Split alert items by space with pre-compiled regexp
+            String[] searchItemArray = SPACE_REGEXP.split(searchQuery);
             try {
                 // For eachBoe item
                 for (Map.Entry<String, String> eachBoe : boeXmlTodayRawData.entrySet()) {
@@ -220,7 +206,7 @@ public class BoeXMLHandler {
      *                 its normalized and converted to lower-case
      *                 for comparing purposes.
      **/
-    private boolean normalizedStringFinder(String mainText, String searchItem){
+    private static boolean normalizedStringFinder(String mainText, String searchItem){
         // TODO: Check alternatives like: org.apache.commons.lang3.StringUtils.containsIgnoreCase
         String normalizedMainText =
                 Normalizer
@@ -275,10 +261,11 @@ public class BoeXMLHandler {
             public void run() {
                 // Start fetch and parse thread if xmlError flag maintains its FALSE original state.
                 if (!xmlError && !urls.isEmpty()) {
+                    OkHttpGetURL okHttpGetURL = new OkHttpGetURL();
                     // Fetches each rawXML and passes each one to parse and store data
                     for (Map.Entry<String, String> eachUrlPair : urls.entrySet()){
                         try {
-                            InputStream boeStream = new OkHttpGetURL().run(boeBaseURLString + eachUrlPair.getKey());
+                            InputStream boeStream = okHttpGetURL.run(boeBaseURLString + eachUrlPair.getKey());
                             xmlFactoryObject = XmlPullParserFactory.newInstance();
                             XmlPullParser boeParser = xmlFactoryObject.newPullParser();
                             boeParser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
