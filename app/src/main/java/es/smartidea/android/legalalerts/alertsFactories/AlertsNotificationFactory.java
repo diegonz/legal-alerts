@@ -1,4 +1,4 @@
-package es.smartidea.android.legalalerts.alertsBuilders;
+package es.smartidea.android.legalalerts.alertsFactories;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -10,10 +10,10 @@ import android.support.v7.app.NotificationCompat;
 import es.smartidea.android.legalalerts.MainActivity;
 import es.smartidea.android.legalalerts.R;
 
-public class AlertsNotificationBuilder {
+public class AlertsNotificationFactory {
 
     // Private empty constructor
-    private AlertsNotificationBuilder() {
+    private AlertsNotificationFactory() {
     }
 
     public static class Builder {

@@ -1,15 +1,5 @@
 package es.smartidea.android.legalalerts.boeHandler;
 
-/**
- * @BoeXMLHandler
- *
- * Manages downloading BOE´s XML summary parse it looking for other links,
- * then downloads all BOE´s announcements & dispositions found in XML format too.
- * Also extracts documents paragraphs (<p> tags) to a HashMap<>,
- * and holds it to offer a query by containing text method.
- *
- * */
-
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -27,6 +17,16 @@ import java.util.regex.Pattern;
 
 import es.smartidea.android.legalalerts.okHttp.OkHttpGetURL;
 
+/*
+ * BoeXMLHandler class
+ *
+ * Manages downloading BOE´s XML summary parse it looking for other links,
+ * then downloads all BOE´s announcements & dispositions found in XML format too.
+ * Also extracts documents paragraphs (<p> tags) to a HashMap<>,
+ * and holds it to offer a query by containing text method.
+ *
+ * */
+
 public class BoeXMLHandler {
 
     public final static String BOE_BASE_URL = "http://www.boe.es";
@@ -43,16 +43,11 @@ public class BoeXMLHandler {
     private boolean xmlError = false;
 
     /*
-    * Public Constructor with @NonNull String argument
-    * Creates new currentBoeSummaryURLString string with current date
-    * or according to given String receivedDate (format yyyyMMdd)
+    * Public Constructor with empty arguments
     * */
-    public BoeXMLHandler(@NonNull String receivedDate) {
+    public BoeXMLHandler() {
         // Set null this listener
         this.boeXMLHandlerEvents = null;
-        this.boeBaseURLString = BOE_BASE_URL;
-        this.currentBoeSummaryURLString = BOE_BASE_URL + BOE_BASE_ID + receivedDate;
-        Log.d("BOE", "SummaryURL: " + currentBoeSummaryURLString);
     }
 
     /*
@@ -60,22 +55,59 @@ public class BoeXMLHandler {
     * This interface defines what type of messages can be communicated to owner object
     */
     public interface BoeXMLHandlerEvents {
-        // Notify fetching summary completed sending error value
+        /**
+         * Notify fetching summary completed sending error value
+         *
+         * @param xmlSummaryError flag indicating summary fetching
+         *                        has encountered errors or not during execution
+         */
         void onBoeSummaryFetchCompleted(final boolean xmlSummaryError);
 
-        // Notify fetching attachments completed
+        /**
+         * Notify fetching attachments completed
+         */
         void onBoeAttachmentsFetchCompleted();
 
-        // Search completed, send result data
+        /**
+         * Notifies search completed successfully, sends result data to the listener
+         * through defined parameters
+         *
+         * @param searchQueryResults number of results found for given searchTerm
+         * @param searchTerm term which was used as pattern to search for
+         * @param isLiteralSearch flag indicating if searchQuery has to be
+         *                        searched literally or term by term splitting
+         *                        by searchQuery words.
+         */
         void onSearchQueryCompleted(final int searchQueryResults,
                                     final String searchTerm,
                                     final boolean isLiteralSearch);
 
-        // Send error tag data
+        /**
+         * Notifies and sends the associated description of BOE XML summary's error tag
+         *
+         * @param description associated description of BOE XML summary's error tag
+         */
         void onFoundXMLErrorTag(final String description);
     }
 
-    // Assign the listener implementing events interface that will receive the events
+    /**
+     * Sets receivedDate as suffix to boeBaseURLString, creating currentBoeSummaryURLString
+     * which references to BOE´s summary according to receivedDate.
+     *
+     * @param receivedDate received string containing a date in yyyyMMdd format
+     */
+    public void setDate(@NonNull String receivedDate){
+        this.boeBaseURLString = BOE_BASE_URL;
+        this.currentBoeSummaryURLString = BOE_BASE_URL + BOE_BASE_ID + receivedDate;
+        Log.d("BOE", "SummaryURL: " + currentBoeSummaryURLString);
+    }
+
+    /**
+     * Assign the listener implementing events interface that will receive the events
+     * Binds given listener to internal (this) listener
+     *
+     * @param listener received listener to reference in (bind)
+     */
     public void setBoeXMLHandlerEvents(BoeXMLHandlerEvents listener) {
         this.boeXMLHandlerEvents = listener;
     }
@@ -152,6 +184,17 @@ public class BoeXMLHandler {
     * boeRawDataQuery is a method to query/search data in the object.
     * returns a Map<String,String> with matching BOE´s PDF & XML URLs.
     */
+
+    /**
+     * Query/search data in the object for given pattern searchQuery
+     * handling if isLiteralSearch is enabled
+     *
+     * @param searchQuery search term to look for into downloaded data
+     * @param isLiteralSearch flag indicating if searchQuery has to be
+     *                        searched literally or term by term splitting
+     *                        by searchQuery words.
+     * @return Map containing matching BOE´s PDF & XML URLs.
+     */
     public Map<String, String> boeRawDataQuery(String searchQuery, boolean isLiteralSearch) {
         Map<String,String> resultUrls = new HashMap<>();
         if (isLiteralSearch){
@@ -196,8 +239,7 @@ public class BoeXMLHandler {
     }
 
     /**
-     * boolean method isNormalizedStringContained search for searchItem in mainText
-     * Normalizes and converts text to lower-case for comparing
+     * Normalizes and converts text to lower-case to look for searchItem into mainText
      *
      * @param mainText String XML´s raw text, <titulo> and <p> tags
      *                 its normalized and converted to lower-case
@@ -205,7 +247,7 @@ public class BoeXMLHandler {
      * @param searchItem String item to search into mainText
      *                 its normalized and converted to lower-case
      *                 for comparing purposes.
-     * @return boolean value if second @param is contained onto first
+     * @return boolean value if second parameter is contained onto first
      **/
     private static boolean isNormalizedStringContained(String mainText, String searchItem){
         // TODO: Check alternatives like: org.apache.commons.lang3.StringUtils.containsIgnoreCase

@@ -14,12 +14,13 @@ import android.util.Log;
 import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import es.smartidea.android.legalalerts.alertsBuilders.AlertsNotificationBuilder;
+import es.smartidea.android.legalalerts.alertsFactories.AlertsNotificationFactory;
 import es.smartidea.android.legalalerts.boeHandler.BoeXMLHandler;
 import es.smartidea.android.legalalerts.dbContentProvider.DBContentProvider;
 import es.smartidea.android.legalalerts.dbHelper.DBContract;
@@ -40,8 +41,8 @@ public class AlertsService extends Service {
 
     private static final String ALERTS_ORDER_ASC_BY_NAME = DBContract.Alerts.COL_ALERT_NAME + " ASC";
     private static final String LOG_TAG = "Service";
+    private static final long DAY_MILLISECONDS = 86400000L;
     private static final String LAST_SUCCESSFUL_SYNC = "last_successful_sync";
-    private Map<String, Boolean> alertsListFullData;
     private BoeXMLHandler boeXMLHandler;
     // boolean flag indicating if service is running.
     private static volatile boolean serviceRunning = false;
@@ -58,24 +59,34 @@ public class AlertsService extends Service {
         // Init new boeXMLHandler passing todayDateString or null as String object
         // fake valid String date = "20160114"
         @SuppressLint("SimpleDateFormat")
-        final String todayDateString = new SimpleDateFormat("yyyyMMdd").format(new Date());
-        final String lastSuccessfulSync = PreferenceManager
-                .getDefaultSharedPreferences(getApplicationContext())
-                .getString(LAST_SUCCESSFUL_SYNC, todayDateString);
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+        final Date todayDate = new Date();
 
-        final Date todayDate, lastSuccessfulSyncDate;
+        final String todayDateString = dateFormat.format(todayDate);
+
+//        final String lastSuccessfulSyncString = PreferenceManager
+//                .getDefaultSharedPreferences(getApplicationContext())
+//                .getString(LAST_SUCCESSFUL_SYNC, todayDateString);
+
+        // Fake lastSuccessfulSyncString
+        final String lastSuccessfulSyncString = "20150114";
+
+        Date lastSuccessfulSyncDate;
+
         try {
-            lastSuccessfulSyncDate = new SimpleDateFormat("yyyyMMdd").parse(lastSuccessfulSync);
-            todayDate = new Date();
-            while (todayDate.after(lastSuccessfulSyncDate)){
+            lastSuccessfulSyncDate = dateFormat.parse(lastSuccessfulSyncString);
+            ArrayList<String> daysToCheck = new ArrayList<>(getDifferenceInDays(todayDate, lastSuccessfulSyncDate));
+            while (todayDate.after(lastSuccessfulSyncDate)) {
                 Log.d(LOG_TAG, lastSuccessfulSyncDate.toString());
-                incrementDays(lastSuccessfulSyncDate, 1);
+                lastSuccessfulSyncDate = incrementDays(lastSuccessfulSyncDate, 1);
+                daysToCheck.add(dateFormat.format(lastSuccessfulSyncDate));
             }
-
+            // TODO: Add multiple days handling
         } catch (Exception e){
             e.printStackTrace();
         }
-        boeXMLHandler = new BoeXMLHandler(todayDateString);
+        boeXMLHandler = new BoeXMLHandler();
+        boeXMLHandler.setDate(todayDateString);
         // Set BoeXMLHandler event listener
         boeXMLHandler.setBoeXMLHandlerEvents(new BoeXMLHandler.BoeXMLHandlerEvents() {
             @Override
@@ -90,27 +101,30 @@ public class AlertsService extends Service {
                     @Override
                     public void run() {
                         // Get alerts from DB
-                        getAlertsFromDB();
+                        Map<String, Boolean> alertsListFullData = getAlertsFromDB();
+                        // Check there´s any alert returned from DB
+                        if (!alertsListFullData.isEmpty()){
+                            Map<String, String> resultUrlsAndAlerts = new HashMap<>();
+                            for (Map.Entry<String, Boolean> eachAlert : alertsListFullData.entrySet()) {
+                                resultUrlsAndAlerts.putAll(
+                                        boeXMLHandler.boeRawDataQuery(eachAlert.getKey(), eachAlert.getValue())
+                                );
+                            }
+                            Log.d(LOG_TAG, "List size: " + resultUrlsAndAlerts.size());
+                            if (!resultUrlsAndAlerts.isEmpty()) {
+                                // Store found alerts on DB
+                                storeResultsOnDB(resultUrlsAndAlerts, boeXMLHandler.urls);
 
-                        Map<String, String> resultUrlsAndAlerts = new HashMap<>();
-                        for (Map.Entry<String, Boolean> eachAlert : alertsListFullData.entrySet()) {
-                            resultUrlsAndAlerts.putAll(
-                                    boeXMLHandler.boeRawDataQuery(eachAlert.getKey(), eachAlert.getValue())
-                            );
-                        }
-                        Log.d(LOG_TAG, "List size: " + resultUrlsAndAlerts.size());
-                        if (!resultUrlsAndAlerts.isEmpty()) {
-                            // Store found alerts on DB
-                            storeResultsOnDB(resultUrlsAndAlerts, boeXMLHandler.urls);
-                            showAlertNotification(
-                                    getString(R.string.notification_ok_results_title),
-                                    getString(R.string.notification_ok_results_description)
-                            );
-                        } else {
-                            showAlertNotification(
-                                    getString(R.string.notification_no_results_title),
-                                    getString(R.string.notification_no_results_description)
-                            );
+                                showAlertNotification(
+                                        getString(R.string.notification_ok_results_title),
+                                        getString(R.string.notification_ok_results_description)
+                                );
+                            } else {
+                                showAlertNotification(
+                                        getString(R.string.notification_no_results_title),
+                                        getString(R.string.notification_no_results_description)
+                                );
+                            }
                         }
                         // Stop Service after search completed and Notification sent.
                         stopSelf();
@@ -133,39 +147,80 @@ public class AlertsService extends Service {
         });
     }
 
-    // Get Alerts list from DB
-    private void getAlertsFromDB() {
+    /**
+     * Check difference in days of two given Dates by comparing timestamp
+     * and dividing the resulting difference to change unit (milliseconds -> days)
+     * Returns difference in days of two given Date objects, disregarding call order
+     *
+     * @param firstDate First Date object to check against
+     * @param secondDate Second Date object to check.
+     * @return Returns int difference in days.
+     */
+    public static int getDifferenceInDays(Date firstDate, Date secondDate){
+        if (firstDate.after(secondDate)){
+            return (int) (firstDate.getTime() - secondDate.getTime() / DAY_MILLISECONDS);
+        }
+        return (int) (secondDate.getTime() - firstDate.getTime() / DAY_MILLISECONDS);
+    }
+
+    /**
+     * Increments received Date object by one day and returns the resulting incremented Date
+     *
+     * @param date received date to be incremented
+     * @param days number of days to be added to given date
+     * @return received Date, incremented according to given days parameter
+     */
+    private static Date incrementDays(@NonNull Date date, int days) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.add(Calendar.DATE, days); //minus number would decrement the days
+        return cal.getTime();
+    }
+
+    /**
+     * Get current alerts stored on DB, returns it/them in a Map containing alert text
+     * and associated int value COL_ALERT_SEARCH_NOT_LITERAL converted to "reverse" boolean
+     * by evaluating COL_ALERT_SEARCH_NOT_LITERAL == 0
+     *
+     * @return Map containing all alerts stored onto the application DB.
+     */
+    private Map<String, Boolean> getAlertsFromDB() {
         // Get current Alerts to look for from DB
         Cursor alertsCursor = getApplicationContext().getContentResolver().query(ALERTS_URI,
                 ALERTS_PROJECTION, ALERTS_SELECTION_NOTNULL, null, ALERTS_ORDER_ASC_BY_NAME);
+        Map<String, Boolean> alertsList;
         if (alertsCursor != null) {
+            alertsList = new HashMap<>(alertsCursor.getCount());
             try {
-                alertsListFullData = new HashMap<>();
                 while (alertsCursor.moveToNext()) {
                     // Reversing value from int to boolean
                     // reverseBooleanValue = eval( COL_ALERT_SEARCH_NOT_LITERAL == 0 )
-                    alertsListFullData.put(
+                    alertsList.put(
                             alertsCursor.getString(alertsCursor.getColumnIndexOrThrow(
                                     DBContract.Alerts.COL_ALERT_NAME)),
                             alertsCursor.getInt(alertsCursor.getColumnIndexOrThrow(
                                     DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL)) == 0
                     );
                 }
+                return alertsList;
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
                 alertsCursor.close();
             }
         }
+        return new HashMap<>();
     }
 
     /**
-     * Void method storeResultsOnDB(final Map<String, String> resultUrlsAndAlerts)
+     * Stores search results on DB launching a new Runnable object,
+     * combining alert data from received resultUrlsAndAlerts Map
+     * and related PDF Url from received urls Map,
+     * saving generated combined result data into DB.
      *
-     * Stores search results on DB running a new Runnable() Object
-     *
-     * @param resultUrlsAndAlerts HashMap<String,String> corresponding to search results
-     **/
+     * @param resultUrlsAndAlerts Map<String,String> corresponding to founded search results
+     * @param urls Map<String,String> corresponding to raw today attachment´s urls
+     */
     private void storeResultsOnDB(@NonNull final Map<String, String> resultUrlsAndAlerts,
                                   @NonNull final Map<String, String> urls) {
         new Thread(new Runnable() {
@@ -188,10 +243,8 @@ public class AlertsService extends Service {
     }
 
     /**
-     * Void method showAlertNotification(String title, String message)
-     *
-     * Build and Shows a notification in a new Runnable() Object
-     * according to given parameters.
+     * Build and Shows a notification in a new Runnable object
+     * according to given title and message parameters.
      *
      * @param title   String corresponding to Notification´s title
      * @param message String corresponding to Notification´s message
@@ -206,7 +259,7 @@ public class AlertsService extends Service {
                 SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
                 // Notify if user preference flags if notifyON
                 if (sharedPreferences.getBoolean("notifications_new_message", true)) {
-                    new AlertsNotificationBuilder
+                    new AlertsNotificationFactory
                             .Builder(getApplicationContext())
                             .setTitle(title)
                             .setMessage(message)
@@ -289,11 +342,4 @@ public class AlertsService extends Service {
     /*
     * Lifecycle events END
     * */
-
-    private static Date incrementDays(@NonNull Date date, int days) {
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-        cal.add(Calendar.DATE, days); //minus number would decrement the days
-        return cal.getTime();
-    }
 }

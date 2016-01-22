@@ -153,7 +153,9 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     // Returns a new loader after the initAlertsLoader() call
     @Override
     public CursorLoader onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(getActivity(), ALERTS_URI, PROJECTION, SELECTION_NOTNULL, null, ORDER_ASC_BY_NAME);
+        return new CursorLoader(
+                getActivity(), ALERTS_URI, PROJECTION, SELECTION_NOTNULL, null, ORDER_ASC_BY_NAME
+        );
     }
 
     @Override
