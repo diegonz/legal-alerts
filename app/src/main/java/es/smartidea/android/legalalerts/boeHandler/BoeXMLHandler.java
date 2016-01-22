@@ -157,7 +157,7 @@ public class BoeXMLHandler {
         if (isLiteralSearch){
             try {
                 for (Map.Entry<String,String> eachBoe : boeXmlTodayRawData.entrySet()) {
-                    if (normalizedStringFinder(eachBoe.getValue(), searchQuery)){
+                    if (isNormalizedStringContained(eachBoe.getValue(), searchQuery)){
                         resultUrls.put(eachBoe.getKey(), searchQuery);
                     }
                 }
@@ -176,7 +176,7 @@ public class BoeXMLHandler {
                     // Flag that indicates every search query where successful
                     boolean hasAllSearchItems = true;
                     for (String eachSearchItem : searchItemArray) {
-                        if (!normalizedStringFinder(eachBoe.getValue(), eachSearchItem)) {
+                        if (!isNormalizedStringContained(eachBoe.getValue(), eachSearchItem)) {
                             // If item is not contained, set flag to false
                             hasAllSearchItems = false;
                         }
@@ -196,7 +196,7 @@ public class BoeXMLHandler {
     }
 
     /**
-     * boolean method normalizedStringFinder search for searchItem in mainText
+     * boolean method isNormalizedStringContained search for searchItem in mainText
      * Normalizes and converts text to lower-case for comparing
      *
      * @param mainText String XML´s raw text, <titulo> and <p> tags
@@ -205,16 +205,15 @@ public class BoeXMLHandler {
      * @param searchItem String item to search into mainText
      *                 its normalized and converted to lower-case
      *                 for comparing purposes.
+     * @return boolean value if second @param is contained onto first
      **/
-    private static boolean normalizedStringFinder(String mainText, String searchItem){
+    private static boolean isNormalizedStringContained(String mainText, String searchItem){
         // TODO: Check alternatives like: org.apache.commons.lang3.StringUtils.containsIgnoreCase
         String normalizedMainText =
-                Normalizer
-                        .normalize(mainText, Normalizer.Form.NFD)
+                Normalizer.normalize(mainText, Normalizer.Form.NFD)
                         .replaceAll("[^\\p{ASCII}]", "");
         String normalizedSearchItem =
-                Normalizer
-                        .normalize(searchItem, Normalizer.Form.NFD)
+                Normalizer.normalize(searchItem, Normalizer.Form.NFD)
                         .replaceAll("[^\\p{ASCII}]", "");
         return normalizedMainText.toLowerCase().contains(normalizedSearchItem.toLowerCase());
     }
