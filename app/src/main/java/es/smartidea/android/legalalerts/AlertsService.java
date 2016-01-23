@@ -1,5 +1,6 @@
 package es.smartidea.android.legalalerts;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
 import android.annotation.SuppressLint;
 import android.app.Service;
@@ -20,7 +21,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import es.smartidea.android.legalalerts.alertsFactories.AlertsNotificationFactory;
+import es.smartidea.android.legalalerts.alertsBuilders.AlertsNotificationBuilder;
 import es.smartidea.android.legalalerts.boeHandler.BoeXMLHandler;
 import es.smartidea.android.legalalerts.dbContentProvider.DBContentProvider;
 import es.smartidea.android.legalalerts.dbHelper.DBContract;
@@ -56,42 +57,37 @@ public class AlertsService extends Service {
 
     // SetUp new BoeXMLHandler and associated listener methods
     private void setupBoeHandler() {
-        // Init new boeXMLHandler passing todayDateString or null as String object
-        // fake valid String date = "20160114"
         @SuppressLint("SimpleDateFormat")
         final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
         final Date todayDate = new Date();
-
-        final String todayDateString = dateFormat.format(todayDate);
+        Date lastSuccessfulSyncDate;
+        ArrayList<String> daysToCheck = new ArrayList<>(1);
 
 //        final String lastSuccessfulSyncString = PreferenceManager
 //                .getDefaultSharedPreferences(getApplicationContext())
 //                .getString(LAST_SUCCESSFUL_SYNC, todayDateString);
 
         // Fake lastSuccessfulSyncString
-        final String lastSuccessfulSyncString = "20150114";
-
-        Date lastSuccessfulSyncDate;
+        final String lastSuccessfulSyncString = "20160114";
 
         try {
             lastSuccessfulSyncDate = dateFormat.parse(lastSuccessfulSyncString);
-            ArrayList<String> daysToCheck = new ArrayList<>(getDifferenceInDays(todayDate, lastSuccessfulSyncDate));
             while (todayDate.after(lastSuccessfulSyncDate)) {
-                Log.d(LOG_TAG, lastSuccessfulSyncDate.toString());
                 lastSuccessfulSyncDate = incrementDays(lastSuccessfulSyncDate, 1);
                 daysToCheck.add(dateFormat.format(lastSuccessfulSyncDate));
             }
-            // TODO: Add multiple days handling
+            Log.d(LOG_TAG, "Days to check: " + daysToCheck.toString());
         } catch (Exception e){
             e.printStackTrace();
         }
-        boeXMLHandler = new BoeXMLHandler();
-        boeXMLHandler.setDate(todayDateString);
+        // Add at least today´s date
+        daysToCheck.add(dateFormat.format(todayDate));
+        boeXMLHandler = new BoeXMLHandler(daysToCheck.toArray(new String[daysToCheck.size()]));
         // Set BoeXMLHandler event listener
         boeXMLHandler.setBoeXMLHandlerEvents(new BoeXMLHandler.BoeXMLHandlerEvents() {
             @Override
-            public void onBoeSummaryFetchCompleted(final boolean xmlSummaryError) {
-                if (xmlSummaryError) stopSelf(); else boeXMLHandler.fetchXMLAttachments();
+            public void onBoeSummariesFetchCompleted() {
+                boeXMLHandler.fetchXMLAttachments();
             }
 
             @Override
@@ -101,7 +97,7 @@ public class AlertsService extends Service {
                     @Override
                     public void run() {
                         // Get alerts from DB
-                        Map<String, Boolean> alertsListFullData = getAlertsFromDB();
+                        Map<String, Boolean> alertsListFullData = getAlertsFromDB(getApplicationContext());
                         // Check there´s any alert returned from DB
                         if (!alertsListFullData.isEmpty()){
                             Map<String, String> resultUrlsAndAlerts = new HashMap<>();
@@ -113,7 +109,7 @@ public class AlertsService extends Service {
                             Log.d(LOG_TAG, "List size: " + resultUrlsAndAlerts.size());
                             if (!resultUrlsAndAlerts.isEmpty()) {
                                 // Store found alerts on DB
-                                storeResultsOnDB(resultUrlsAndAlerts, boeXMLHandler.urls);
+                                storeResultsOnDB(getApplicationContext(), resultUrlsAndAlerts, boeXMLHandler.urls);
 
                                 showAlertNotification(
                                         getString(R.string.notification_ok_results_title),
@@ -184,9 +180,9 @@ public class AlertsService extends Service {
      *
      * @return Map containing all alerts stored onto the application DB.
      */
-    private Map<String, Boolean> getAlertsFromDB() {
+    private static Map<String, Boolean> getAlertsFromDB(Context context) {
         // Get current Alerts to look for from DB
-        Cursor alertsCursor = getApplicationContext().getContentResolver().query(ALERTS_URI,
+        Cursor alertsCursor = context.getContentResolver().query(ALERTS_URI,
                 ALERTS_PROJECTION, ALERTS_SELECTION_NOTNULL, null, ALERTS_ORDER_ASC_BY_NAME);
         Map<String, Boolean> alertsList;
         if (alertsCursor != null) {
@@ -209,7 +205,7 @@ public class AlertsService extends Service {
                 alertsCursor.close();
             }
         }
-        return new HashMap<>();
+        return new HashMap<>(0);
     }
 
     /**
@@ -221,7 +217,8 @@ public class AlertsService extends Service {
      * @param resultUrlsAndAlerts Map<String,String> corresponding to founded search results
      * @param urls Map<String,String> corresponding to raw today attachment´s urls
      */
-    private void storeResultsOnDB(@NonNull final Map<String, String> resultUrlsAndAlerts,
+    private static void storeResultsOnDB(@NonNull final Context context,
+                                  @NonNull final Map<String, String> resultUrlsAndAlerts,
                                   @NonNull final Map<String, String> urls) {
         new Thread(new Runnable() {
             @Override
@@ -235,7 +232,7 @@ public class AlertsService extends Service {
                     values.put(DBContract.History.COL_HISTORY_RELATED_ALERT_NAME, eachResult.getValue());
                     values.put(DBContract.History.COL_HISTORY_DOCUMENT_URL, urls.get(eachResult.getKey()));
                     // Do the C(RUD).
-                    getApplicationContext().getContentResolver().insert(HISTORY_URI, values);
+                    context.getContentResolver().insert(HISTORY_URI, values);
                 }
 
             }
@@ -259,7 +256,7 @@ public class AlertsService extends Service {
                 SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
                 // Notify if user preference flags if notifyON
                 if (sharedPreferences.getBoolean("notifications_new_message", true)) {
-                    new AlertsNotificationFactory
+                    new AlertsNotificationBuilder
                             .Builder(getApplicationContext())
                             .setTitle(title)
                             .setMessage(message)

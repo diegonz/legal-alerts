@@ -34,20 +34,38 @@ public class BoeXMLHandler {
     private final static Pattern SPACE_REGEXP = Pattern.compile("\\s");
 
     private XmlPullParserFactory xmlFactoryObject;
-    // String HashMap where raw data are stored
-    private Map<String,String> boeXmlTodayRawData = new HashMap<>();
+    // String HashMaps where raw data are stored
+    private Map<String,String> boeXmlRawTextData;
     // String HashMap where url of xml´s are stored
-    public Map<String,String> urls = new HashMap<>();
-    private String boeBaseURLString, currentBoeSummaryURLString;
-    // XML error flag, only write-accessed from summary thread
-    private boolean xmlError = false;
+    public Map<String,String> urls;
+    private String boeBaseURLString;
+    private String[] currentBoeSummaryURLStrings;
 
-    /*
-    * Public Constructor with empty arguments
-    * */
-    public BoeXMLHandler() {
+    /**
+     * Public constructor, it sets to null internal listener reference and
+     * sets receivedDates elements as suffix to boeBaseURLStrings´ elements,
+     * creating currentBoeSummaryURLStrings which references to BOE´s summary,
+     * according to receivedDates.
+     *
+     * It also initializes other used variables.
+     *
+     * @param receivedDates VarArgs String[] containing dates in yyyyMMdd format
+     */
+    public BoeXMLHandler(@NonNull String... receivedDates) {
         // Set null this listener
         this.boeXMLHandlerEvents = null;
+
+        this.boeXmlRawTextData = new HashMap<>();
+        this.urls = new HashMap<>();
+
+
+        this.boeBaseURLString = BOE_BASE_URL;
+        this.currentBoeSummaryURLStrings = new String[receivedDates.length];
+        for (int i = 0; i < receivedDates.length; i++) {
+            this.currentBoeSummaryURLStrings[i] = BOE_BASE_URL + BOE_BASE_ID + receivedDates[i];
+            Log.d("BOE", "SummaryURL: " + currentBoeSummaryURLStrings[i]);
+        }
+
     }
 
     /*
@@ -57,11 +75,8 @@ public class BoeXMLHandler {
     public interface BoeXMLHandlerEvents {
         /**
          * Notify fetching summary completed sending error value
-         *
-         * @param xmlSummaryError flag indicating summary fetching
-         *                        has encountered errors or not during execution
          */
-        void onBoeSummaryFetchCompleted(final boolean xmlSummaryError);
+        void onBoeSummariesFetchCompleted();
 
         /**
          * Notify fetching attachments completed
@@ -88,18 +103,6 @@ public class BoeXMLHandler {
          * @param description associated description of BOE XML summary's error tag
          */
         void onFoundXMLErrorTag(final String description);
-    }
-
-    /**
-     * Sets receivedDate as suffix to boeBaseURLString, creating currentBoeSummaryURLString
-     * which references to BOE´s summary according to receivedDate.
-     *
-     * @param receivedDate received string containing a date in yyyyMMdd format
-     */
-    public void setDate(@NonNull String receivedDate){
-        this.boeBaseURLString = BOE_BASE_URL;
-        this.currentBoeSummaryURLString = BOE_BASE_URL + BOE_BASE_ID + receivedDate;
-        Log.d("BOE", "SummaryURL: " + currentBoeSummaryURLString);
     }
 
     /**
@@ -135,13 +138,11 @@ public class BoeXMLHandler {
      * @param isSummary boolean flag indicating type of document (summary or not).
      *
      * Attached doc URLs is stored on HashMap<String,String> urls.
-     * Data is stored on HashMap<String,String> boeXmlTodayRawData.
+     * Data is stored on HashMap<String,String> boeXmlRawTextData.
     **/
     public void boeXmlWorker(XmlPullParser boeParser, String AttachmentUrlXml, boolean isSummary){
         // TODO: get docID substring(eachUrlXML.indexOf("=") + 1)
         int event;
-        StringBuilder rawTextStringBuilder = new StringBuilder();
-        String text = null;
 
         try {
             event = boeParser.getEventType();
@@ -149,25 +150,31 @@ public class BoeXMLHandler {
                     Arrays.asList("alerta", "materia", "p", "palabra", "titulo", "texto")
             );
 
+            StringBuilder rawTextStringBuilder = new StringBuilder();
             // New BoeUrlPair
             BoeUrlPair boeUrlPair = new BoeUrlPair();
+            String name, text = null;
 
             while (event != XmlPullParser.END_DOCUMENT) {
-                String name = boeParser.getName();
+                name = boeParser.getName();
                 switch (event) {
                     case XmlPullParser.TEXT:
                         text = boeParser.getText();
                         break;
                     case XmlPullParser.END_TAG:
-                        if (!isSummary && (rawTextTags.contains(name))){
-                            rawTextStringBuilder.append(text);
-                        } else if (isSummary){
-                            if (name.equals("urlPdf")) { boeUrlPair.setUrlPdf(text); }
-                            if (name.equals("urlXml")) { boeUrlPair.setUrlXml(text); }
-                            if (name.equals("error")){
-                                // Set XML error flag and notify listeners
-                                xmlError = true;
-                                boeXMLHandlerEvents.onFoundXMLErrorTag(text);
+                        if (!isSummary){
+                            if (rawTextTags.contains(name)) rawTextStringBuilder.append(text);
+                        } else {
+                            switch (name) {
+                                case "urlPdf":
+                                    boeUrlPair.setUrlPdf(text);
+                                    break;
+                                case "urlXml":
+                                    boeUrlPair.setUrlXml(text);
+                                    break;
+                                case "error":
+                                    boeXMLHandlerEvents.onFoundXMLErrorTag(text);
+                                    break;
                             }
                         }
                         break;
@@ -175,7 +182,7 @@ public class BoeXMLHandler {
                 event = boeParser.next();
             }
             if (!isSummary){
-                boeXmlTodayRawData.put(AttachmentUrlXml, rawTextStringBuilder.toString());
+                boeXmlRawTextData.put(AttachmentUrlXml, rawTextStringBuilder.toString());
             }
         } catch (Exception e) { e.printStackTrace(); }
     }
@@ -196,10 +203,11 @@ public class BoeXMLHandler {
      * @return Map containing matching BOE´s PDF & XML URLs.
      */
     public Map<String, String> boeRawDataQuery(String searchQuery, boolean isLiteralSearch) {
+
         Map<String,String> resultUrls = new HashMap<>();
         if (isLiteralSearch){
             try {
-                for (Map.Entry<String,String> eachBoe : boeXmlTodayRawData.entrySet()) {
+                for (Map.Entry<String,String> eachBoe : boeXmlRawTextData.entrySet()) {
                     if (isNormalizedStringContained(eachBoe.getValue(), searchQuery)){
                         resultUrls.put(eachBoe.getKey(), searchQuery);
                     }
@@ -215,7 +223,7 @@ public class BoeXMLHandler {
             String[] searchItemArray = SPACE_REGEXP.split(searchQuery);
             try {
                 // For eachBoe item
-                for (Map.Entry<String, String> eachBoe : boeXmlTodayRawData.entrySet()) {
+                for (Map.Entry<String, String> eachBoe : boeXmlRawTextData.entrySet()) {
                     // Flag that indicates every search query where successful
                     boolean hasAllSearchItems = true;
                     for (String eachSearchItem : searchItemArray) {
@@ -268,27 +276,30 @@ public class BoeXMLHandler {
             @Override
             public void run() {
 
-                // Fetches XML´s summary URL and sends it to parse rawData URLs
-                try {
-                    InputStream boeSummaryStream = new OkHttpGetURL().run(currentBoeSummaryURLString);
-                    xmlFactoryObject = XmlPullParserFactory.newInstance();
-                    XmlPullParser boeSummaryParser = xmlFactoryObject.newPullParser();
-                    boeSummaryParser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
+                OkHttpGetURL okHttpGetURL = new OkHttpGetURL();
+                for (String currentBoeSummaryURLString : currentBoeSummaryURLStrings) {
+                    // Fetches XML´s summarys URLs and sends it to parse rawData URLs
+                    try {
+                        InputStream boeSummaryStream = okHttpGetURL.run(currentBoeSummaryURLString);
+                        xmlFactoryObject = XmlPullParserFactory.newInstance();
+                        XmlPullParser boeSummaryParser = xmlFactoryObject.newPullParser();
+                        boeSummaryParser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
 
-                    // Set xml´s encoding to latin1
-                    boeSummaryParser.setInput(boeSummaryStream, "ISO-8859-1");
+                        // Set xml´s encoding to latin1
+                        boeSummaryParser.setInput(boeSummaryStream, "ISO-8859-1");
 
-                    // Send parser, BOE´s document id set to null (summary)
-                    // and isSummary flag set to true.
-                    boeXmlWorker(boeSummaryParser, null, true);
-                    boeSummaryStream.close();
-                } catch (Exception e) {
-                    Log.d("BOE", "ERROR while trying to download BOE´s summary!");
-                    e.printStackTrace();
+                        // Send parser, BOE´s document id set to null (summary)
+                        // and isSummary flag set to true.
+                        boeXmlWorker(boeSummaryParser, null, true);
+                        boeSummaryStream.close();
+                    } catch (Exception e) {
+                        Log.d("BOE", "ERROR while trying to download BOE´s summary!");
+                        e.printStackTrace();
+                    }
+
                 }
-
-                // Notifies summary fetching complete passing xmlError value
-                boeXMLHandlerEvents.onBoeSummaryFetchCompleted(xmlError);
+                // Notifies summaries fetching complete passing xmlError value
+                boeXMLHandlerEvents.onBoeSummariesFetchCompleted();
             }
         }).start();
     }
@@ -301,7 +312,7 @@ public class BoeXMLHandler {
             @Override
             public void run() {
                 // Start fetch and parse thread if xmlError flag maintains its FALSE original state.
-                if (!xmlError && !urls.isEmpty()) {
+                if (!urls.isEmpty()) {
                     OkHttpGetURL okHttpGetURL = new OkHttpGetURL();
                     // Fetches each rawXML and passes each one to parse and store data
                     for (Map.Entry<String, String> eachUrlPair : urls.entrySet()){

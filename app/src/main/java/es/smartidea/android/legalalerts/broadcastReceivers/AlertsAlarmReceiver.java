@@ -6,7 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import es.smartidea.android.legalalerts.alertsFactories.AlertsAlarmFactory;
+import es.smartidea.android.legalalerts.alertsBuilders.AlertsAlarmBuilder;
 
 public class AlertsAlarmReceiver extends BroadcastReceiver {
 
@@ -52,10 +52,10 @@ public class AlertsAlarmReceiver extends BroadcastReceiver {
         if (alarmIntent == null) {
             switch (ALARM_TYPE){
                 case ALARM_SNOOZE:
-                    new AlertsAlarmFactory.Builder(context).setRetryAlarm();
+                    new AlertsAlarmBuilder.Builder(context).setRetryAlarm();
                     break;
                 default:
-                    new AlertsAlarmFactory.Builder(context)
+                    new AlertsAlarmBuilder.Builder(context)
                             .setHour(9)
                             .setMinute(30)
                             .setDailyAlarm();

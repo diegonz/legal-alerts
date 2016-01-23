@@ -1,4 +1,4 @@
-package es.smartidea.android.legalalerts.alertsFactories;
+package es.smartidea.android.legalalerts.alertsBuilders;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -10,14 +10,14 @@ import java.util.Calendar;
 
 import es.smartidea.android.legalalerts.broadcastReceivers.AlertServiceLauncherReceiver;
 /*
-* Public pseudo-builder class AlertsAlarmFactory
+* Public pseudo-builder class AlertsAlarmBuilder
 * Sets an alarm according to given hour and minute
 * if any parameter is missing it defaults to 00:00
 * */
-public class AlertsAlarmFactory {
+public class AlertsAlarmBuilder {
 
     // Private empty constructor
-    private AlertsAlarmFactory() {
+    private AlertsAlarmBuilder() {
     }
 
     // Static Builder class
