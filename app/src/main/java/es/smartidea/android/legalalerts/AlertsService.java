@@ -42,7 +42,6 @@ public class AlertsService extends Service {
 
     private static final String ALERTS_ORDER_ASC_BY_NAME = DBContract.Alerts.COL_ALERT_NAME + " ASC";
     private static final String LOG_TAG = "Service";
-    private static final long DAY_MILLISECONDS = 86400000L;
     private static final String LAST_SUCCESSFUL_SYNC = "last_successful_sync";
     private BoeXMLHandler boeXMLHandler;
     // boolean flag indicating if service is running.
@@ -108,22 +107,6 @@ public class AlertsService extends Service {
                 }
             }
         });
-    }
-
-    /**
-     * Check difference in days of two given Dates by comparing timestamp
-     * and dividing the resulting difference to change unit (milliseconds -> days)
-     * Returns difference in days of two given Date objects, disregarding call order
-     *
-     * @param firstDate First Date object to check against
-     * @param secondDate Second Date object to check.
-     * @return Returns int difference in days.
-     */
-    public static int getDifferenceInDays(Date firstDate, Date secondDate){
-        if (firstDate.after(secondDate)){
-            return (int) (firstDate.getTime() - secondDate.getTime() / DAY_MILLISECONDS);
-        }
-        return (int) (secondDate.getTime() - firstDate.getTime() / DAY_MILLISECONDS);
     }
 
     /**

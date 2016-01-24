@@ -108,11 +108,11 @@ public class BoeXMLHandler {
      */
     public void startFetchAndSearch(@NonNull Map<String, Boolean> alertsListFullData) {
         if (!alertsListFullData.isEmpty()) {
-            Map<String, String> xmlPdfUrls = fetchXMLSummaries(new OkHttpGetURL());
+            Map<String, String> xmlPdfUrls = fetchXMLSummaries();
             if (!xmlPdfUrls.isEmpty()){
                 // Send search results to listener
                 boeXMLHandlerEvents.onWorkCompleted(
-                        fetchAttachmentsAndSearch(new OkHttpGetURL(), xmlPdfUrls, alertsListFullData),
+                        fetchAttachmentsAndSearch(xmlPdfUrls, alertsListFullData),
                         xmlPdfUrls);
             }
         }
@@ -260,13 +260,13 @@ public class BoeXMLHandler {
     /*
     * fetchXMLSummaries() fetches URLs for summary and others, based on OkHttp library
     */
-    public Map<String, String> fetchXMLSummaries(OkHttpGetURL okHttpGetURL){
+    public Map<String, String> fetchXMLSummaries(){
         Map<String, String> urlPairs = new HashMap<>();
         InputStream boeSummaryStream = null;
         for (String summaryURLString : boeSummariesURLStrings) {
             // Fetches XML´s summaries URLs and sends it to parse rawData URLs
             try {
-                boeSummaryStream = okHttpGetURL.run(summaryURLString);
+                boeSummaryStream = OkHttpGetURL.run(summaryURLString);
                 xmlFactoryObject = XmlPullParserFactory.newInstance();
                 XmlPullParser boeSummaryParser = xmlFactoryObject.newPullParser();
                 boeSummaryParser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
@@ -295,8 +295,7 @@ public class BoeXMLHandler {
     /*
     * fetchAttachmentsAndSearch()
     */
-    public Map<String, String> fetchAttachmentsAndSearch(@NonNull OkHttpGetURL okHttpGetURL,
-                                                         @NonNull Map<String, String> mUrls,
+    public Map<String, String> fetchAttachmentsAndSearch(@NonNull Map<String, String> mUrls,
                                                          @NonNull Map<String, Boolean> searchTerms) {
         // Fetches each rawXML and passes each one to parse and store data
         Map<String, String> searchResults = new HashMap<>();
@@ -307,7 +306,7 @@ public class BoeXMLHandler {
                 // Reset map if its not empty
                 if (!rawTextData.isEmpty()) rawTextData.clear();
 
-                boeStream = okHttpGetURL.run(boeBaseURLString + eachUrlPair.getKey());
+                boeStream = OkHttpGetURL.run(boeBaseURLString + eachUrlPair.getKey());
                 xmlFactoryObject = XmlPullParserFactory.newInstance();
                 XmlPullParser boeParser = xmlFactoryObject.newPullParser();
                 boeParser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
