@@ -35,7 +35,6 @@ public class BoeXMLHandler {
     private final static Pattern NOT_ASCII_REGEXP = Pattern.compile("[^\\p{ASCII}]");
 
     private XmlPullParserFactory xmlFactoryObject;
-    private String boeBaseURLString;
     private String[] boeSummariesURLStrings;
 
     final static Set<String> rawTextTags = new HashSet<>(
@@ -56,8 +55,6 @@ public class BoeXMLHandler {
     public BoeXMLHandler(@NonNull String... receivedDates) {
         // Set null this listener
         this.boeXMLHandlerEvents = null;
-
-        this.boeBaseURLString = BOE_BASE_URL;
         this.boeSummariesURLStrings = new String[receivedDates.length];
         for (int i = 0; i < receivedDates.length; i++) {
             this.boeSummariesURLStrings[i] = BOE_BASE_URL + BOE_BASE_ID + receivedDates[i];
@@ -108,12 +105,19 @@ public class BoeXMLHandler {
      */
     public void startFetchAndSearch(@NonNull Map<String, Boolean> alertsListFullData) {
         if (!alertsListFullData.isEmpty()) {
-            Map<String, String> xmlPdfUrls = fetchXMLSummaries();
+            OkHttpGetURL okHttpGetURL = new OkHttpGetURL();
+            Map<String, String> xmlPdfUrls = fetchXMLSummaries(okHttpGetURL);
+            // If there is any attachment
             if (!xmlPdfUrls.isEmpty()){
                 // Send search results to listener
                 boeXMLHandlerEvents.onWorkCompleted(
-                        fetchAttachmentsAndSearch(xmlPdfUrls, alertsListFullData),
+                        fetchAttachmentsAndSearch(okHttpGetURL, xmlPdfUrls, alertsListFullData),
                         xmlPdfUrls);
+            } else {
+                boeXMLHandlerEvents.onWorkCompleted(
+                        new HashMap<String, String>(0),
+                        new HashMap<String, String>(0)
+                );
             }
         }
     }
@@ -128,7 +132,7 @@ public class BoeXMLHandler {
      * Attached doc URLs is stored on HashMap<String,String> urls.
      * Data is stored on HashMap<String,String> boeXmlRawTextData.
     **/
-    public static Map<String,String> boeXmlWorker(@NonNull XmlPullParser boeParser,
+    private static Map<String,String> boeXmlWorker(@NonNull XmlPullParser boeParser,
                                            String attachmentUrlXml) {
         // TODO: get docID substring(eachUrlXML.indexOf("=") + 1)
         int event;
@@ -195,7 +199,7 @@ public class BoeXMLHandler {
      *                        by searchQuery words.
      * @return Map containing matching BOE´s PDF & XML URLs.
      */
-    public static Map<String,String> boeRawDataQuery(@NonNull String searchQuery,
+    private static Map<String,String> boeRawDataQuery(@NonNull String searchQuery,
                                                      boolean isLiteralSearch,
                                                      @NonNull String rawText,
                                                      @NonNull String urlXml) {
@@ -248,25 +252,20 @@ public class BoeXMLHandler {
         String normalizedSearchItem = NOT_ASCII_REGEXP
                 .matcher(Normalizer.normalize(searchItem, Normalizer.Form.NFD))
                 .replaceAll("");
-//        String normalizedMainText =
-//                Normalizer.normalize(mainText, Normalizer.Form.NFD)
-//                        .replaceAll("[^\\p{ASCII}]", "");
-//        String normalizedSearchItem =
-//                Normalizer.normalize(searchItem, Normalizer.Form.NFD)
-//                        .replaceAll("[^\\p{ASCII}]", "");
+
         return normalizedMainText.toLowerCase().contains(normalizedSearchItem.toLowerCase());
     }
 
     /*
     * fetchXMLSummaries() fetches URLs for summary and others, based on OkHttp library
     */
-    public Map<String, String> fetchXMLSummaries(){
+    private Map<String, String> fetchXMLSummaries(OkHttpGetURL okHttpGetURL){
         Map<String, String> urlPairs = new HashMap<>();
         InputStream boeSummaryStream = null;
         for (String summaryURLString : boeSummariesURLStrings) {
             // Fetches XML´s summaries URLs and sends it to parse rawData URLs
             try {
-                boeSummaryStream = OkHttpGetURL.run(summaryURLString);
+                boeSummaryStream = okHttpGetURL.run(summaryURLString);
                 xmlFactoryObject = XmlPullParserFactory.newInstance();
                 XmlPullParser boeSummaryParser = xmlFactoryObject.newPullParser();
                 boeSummaryParser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
@@ -295,7 +294,8 @@ public class BoeXMLHandler {
     /*
     * fetchAttachmentsAndSearch()
     */
-    public Map<String, String> fetchAttachmentsAndSearch(@NonNull Map<String, String> mUrls,
+    private Map<String, String> fetchAttachmentsAndSearch(@NonNull OkHttpGetURL okHttpGetURL,
+                                                         @NonNull Map<String, String> mUrls,
                                                          @NonNull Map<String, Boolean> searchTerms) {
         // Fetches each rawXML and passes each one to parse and store data
         Map<String, String> searchResults = new HashMap<>();
@@ -306,7 +306,7 @@ public class BoeXMLHandler {
                 // Reset map if its not empty
                 if (!rawTextData.isEmpty()) rawTextData.clear();
 
-                boeStream = OkHttpGetURL.run(boeBaseURLString + eachUrlPair.getKey());
+                boeStream = okHttpGetURL.run(BOE_BASE_URL + eachUrlPair.getKey());
                 xmlFactoryObject = XmlPullParserFactory.newInstance();
                 XmlPullParser boeParser = xmlFactoryObject.newPullParser();
                 boeParser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);

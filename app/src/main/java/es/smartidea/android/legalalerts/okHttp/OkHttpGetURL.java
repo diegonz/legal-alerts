@@ -8,10 +8,14 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class OkHttpGetURL {
-    public static InputStream run(final String urlString) throws IOException {
-        return new OkHttpClient().newCall(new Request.Builder().url(urlString).build())
-                .execute()
-                .body()
-                .byteStream();
+    OkHttpClient client = new OkHttpClient();
+
+    public InputStream run(String url) throws IOException {
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+        Response response = client.newCall(request).execute();
+
+        return response.body().byteStream();
     }
 }

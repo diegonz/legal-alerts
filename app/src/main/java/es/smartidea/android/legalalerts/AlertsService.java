@@ -43,6 +43,7 @@ public class AlertsService extends Service {
     private static final String ALERTS_ORDER_ASC_BY_NAME = DBContract.Alerts.COL_ALERT_NAME + " ASC";
     private static final String LOG_TAG = "Service";
     private static final String LAST_SUCCESSFUL_SYNC = "last_successful_sync";
+    private String todayDateString;
     private BoeXMLHandler boeXMLHandler;
     // boolean flag indicating if service is running.
     private static volatile boolean serviceRunning = false;
@@ -62,26 +63,22 @@ public class AlertsService extends Service {
         Date lastSuccessfulSyncDate;
         ArrayList<String> daysToCheck = new ArrayList<>(1);
 
-//        final String lastSuccessfulSyncString = PreferenceManager
-//                .getDefaultSharedPreferences(getApplicationContext())
-//                .getString(LAST_SUCCESSFUL_SYNC, todayDateString);
-
-        // Fake lastSuccessfulSyncString
-        final String lastSuccessfulSyncString = "20160114";
+        this.todayDateString = dateFormat.format(todayDate);
+        final String lastSuccessfulSyncString = PreferenceManager
+                .getDefaultSharedPreferences(getApplicationContext())
+                .getString(LAST_SUCCESSFUL_SYNC, todayDateString);
 
         try {
             lastSuccessfulSyncDate = dateFormat.parse(lastSuccessfulSyncString);
+            // Add pending day to list, adding at least today´s date
             while (todayDate.after(lastSuccessfulSyncDate)) {
-                lastSuccessfulSyncDate = incrementDays(lastSuccessfulSyncDate, 1);
                 daysToCheck.add(dateFormat.format(lastSuccessfulSyncDate));
+                lastSuccessfulSyncDate = incrementDays(lastSuccessfulSyncDate, 1);
             }
-            Log.d(LOG_TAG, "Days to check: " + daysToCheck.toString());
         } catch (Exception e){
             e.printStackTrace();
         }
-        // Add at least today´s date
-        daysToCheck.add(dateFormat.format(todayDate));
-        // Initialize BoeXMLHandler
+        // Initialize BoeXMLHandler passing pending days to check as string array
         boeXMLHandler = new BoeXMLHandler(daysToCheck.toArray(new String[daysToCheck.size()]));
         // Set/send BoeXMLHandler event listener
         boeXMLHandler.setBoeXMLHandlerEvents(new BoeXMLHandler.BoeXMLHandlerEvents() {
@@ -91,9 +88,11 @@ public class AlertsService extends Service {
                     storeResultsOnDB(getApplicationContext(), searchResults, xmlPdfUrls);
                     showAlertNotification(
                             getApplicationContext(),
+                            searchResults.size() + " " +
                             getString(R.string.notification_ok_results_title),
                             getString(R.string.notification_ok_results_description)
                     );
+                    Log.d(LOG_TAG, searchResults.size() + " Coincidences found.");
                     // Stop Service after search completed and Notification sent.
                     stopSelf();
                 } else {
@@ -102,6 +101,7 @@ public class AlertsService extends Service {
                             getString(R.string.notification_no_results_title),
                             getString(R.string.notification_no_results_description)
                     );
+                    Log.d(LOG_TAG, "Any coincidence were found.");
                     // Stop Service after search completed and Notification sent.
                     stopSelf();
                 }
@@ -212,15 +212,16 @@ public class AlertsService extends Service {
                 SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
                 // Notify if user preference flags if notifyON
                 if (sharedPreferences.getBoolean("notifications_new_message", true)) {
-                    new AlertsNotificationBuilder
-                            .Builder(getApplicationContext())
-                            .setTitle(title)
-                            .setMessage(message)
-                            .setVibrate(sharedPreferences.getBoolean("notifications_new_message_vibrate", true))
-                            .setSound(sharedPreferences.getString(
-                                    "notifications_new_message_ringtone",
-                                    "content://settings/system/notification_sound"))
-                            .send();
+                    new AlertsNotificationBuilder.Builder(getApplicationContext())
+                        .setTitle(title)
+                        .setMessage(message)
+                        .setVibrate(
+                                sharedPreferences.getBoolean("notifications_new_message_vibrate", true)
+                        )
+                        .setSound(sharedPreferences.getString(
+                                "notifications_new_message_ringtone",
+                                "content://settings/system/notification_sound"))
+                        .send();
                 }
             }
         }).start();
@@ -275,10 +276,10 @@ public class AlertsService extends Service {
                 .putString("snooze_alarm_date", "done")
                 .commit(); // Call commit() to make changes
 
-        // Set snooze_alarm_date to "done"
+        // Set LAST_SUCCESSFUL_SYNC to "done"
         PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
                 .edit()
-                .putString(LAST_SUCCESSFUL_SYNC, "done")
+                .putString(LAST_SUCCESSFUL_SYNC, todayDateString)
                 .commit(); // Call commit() to make changes
 
         Toast.makeText(this, "service done", Toast.LENGTH_SHORT).show();

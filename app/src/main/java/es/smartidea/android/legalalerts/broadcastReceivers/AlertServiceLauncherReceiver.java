@@ -128,6 +128,7 @@ public class AlertServiceLauncherReceiver extends BroadcastReceiver {
             );
             Toast.makeText(context, "Snoozing alarm one hour...", Toast.LENGTH_SHORT).show();
         } else if (!snoozeDateString.equals(todayDateString)){
+            // If day has changed, dismiss snoozed alarm (next check, daily alarm)
             PreferenceManager.getDefaultSharedPreferences(context)
                     .edit()
                     .putString("snooze_alarm_date", "done")
