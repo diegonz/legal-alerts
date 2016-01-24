@@ -82,63 +82,30 @@ public class AlertsService extends Service {
         }
         // Add at least today´s date
         daysToCheck.add(dateFormat.format(todayDate));
+        // Initialize BoeXMLHandler
         boeXMLHandler = new BoeXMLHandler(daysToCheck.toArray(new String[daysToCheck.size()]));
-        // Set BoeXMLHandler event listener
+        // Set/send BoeXMLHandler event listener
         boeXMLHandler.setBoeXMLHandlerEvents(new BoeXMLHandler.BoeXMLHandlerEvents() {
             @Override
-            public void onBoeSummariesFetchCompleted() {
-                boeXMLHandler.fetchXMLAttachments();
-            }
-
-            @Override
-            public void onBoeAttachmentsFetchCompleted() {
-                Log.d(LOG_TAG, "Fetching " + boeXMLHandler.getURLsCount() + " XMLs completed");
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        // Get alerts from DB
-                        Map<String, Boolean> alertsListFullData = getAlertsFromDB(getApplicationContext());
-                        // Check there´s any alert returned from DB
-                        if (!alertsListFullData.isEmpty()){
-                            Map<String, String> resultUrlsAndAlerts = new HashMap<>();
-                            for (Map.Entry<String, Boolean> eachAlert : alertsListFullData.entrySet()) {
-                                resultUrlsAndAlerts.putAll(
-                                        boeXMLHandler.boeRawDataQuery(eachAlert.getKey(), eachAlert.getValue())
-                                );
-                            }
-                            Log.d(LOG_TAG, "List size: " + resultUrlsAndAlerts.size());
-                            if (!resultUrlsAndAlerts.isEmpty()) {
-                                // Store found alerts on DB
-                                storeResultsOnDB(getApplicationContext(), resultUrlsAndAlerts, boeXMLHandler.urls);
-
-                                showAlertNotification(
-                                        getString(R.string.notification_ok_results_title),
-                                        getString(R.string.notification_ok_results_description)
-                                );
-                            } else {
-                                showAlertNotification(
-                                        getString(R.string.notification_no_results_title),
-                                        getString(R.string.notification_no_results_description)
-                                );
-                            }
-                        }
-                        // Stop Service after search completed and Notification sent.
-                        stopSelf();
-                    }
-                }).start();
-            }
-
-            @Override
-            public void onSearchQueryCompleted(final int searchQueryResults,
-                                               final String searchTerm,
-                                               final boolean isLiteralSearch) {
-                Log.d(LOG_TAG, searchQueryResults + " results for: " + searchTerm + " - Literal " + isLiteralSearch);
-            }
-
-            @Override
-            public void onFoundXMLErrorTag(final String description) {
-                Log.d(LOG_TAG, "ERROR TAG found on XML summary.");
-                showAlertNotification("ERROR TAG FOUND", description);
+            public void onWorkCompleted(Map<String, String> searchResults, Map<String, String> xmlPdfUrls) {
+                if (!searchResults.isEmpty()){
+                    storeResultsOnDB(getApplicationContext(), searchResults, xmlPdfUrls);
+                    showAlertNotification(
+                            getApplicationContext(),
+                            getString(R.string.notification_ok_results_title),
+                            getString(R.string.notification_ok_results_description)
+                    );
+                    // Stop Service after search completed and Notification sent.
+                    stopSelf();
+                } else {
+                    showAlertNotification(
+                            getApplicationContext(),
+                            getString(R.string.notification_no_results_title),
+                            getString(R.string.notification_no_results_description)
+                    );
+                    // Stop Service after search completed and Notification sent.
+                    stopSelf();
+                }
             }
         });
     }
@@ -215,11 +182,11 @@ public class AlertsService extends Service {
      * saving generated combined result data into DB.
      *
      * @param resultUrlsAndAlerts Map<String,String> corresponding to founded search results
-     * @param urls Map<String,String> corresponding to raw today attachment´s urls
+     * @param xmlPdfUrls Map<String,String> corresponding to raw today attachment´s urls
      */
     private static void storeResultsOnDB(@NonNull final Context context,
-                                  @NonNull final Map<String, String> resultUrlsAndAlerts,
-                                  @NonNull final Map<String, String> urls) {
+                                         @NonNull final Map<String, String> resultUrlsAndAlerts,
+                                         @NonNull final Map<String, String> xmlPdfUrls) {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -227,14 +194,20 @@ public class AlertsService extends Service {
                 final Uri HISTORY_URI = DBContentProvider.HISTORY_URI;
                 ContentValues values = new ContentValues();
                 for (Map.Entry<String, String> eachResult : resultUrlsAndAlerts.entrySet()) {
-                    values.put(DBContract.History.COL_HISTORY_DOCUMENT_NAME,
+                    values.put(
+                            DBContract.History.COL_HISTORY_DOCUMENT_NAME,
                             eachResult.getKey().substring(eachResult.getKey().indexOf('=') + 1));
-                    values.put(DBContract.History.COL_HISTORY_RELATED_ALERT_NAME, eachResult.getValue());
-                    values.put(DBContract.History.COL_HISTORY_DOCUMENT_URL, urls.get(eachResult.getKey()));
+                    values.put(
+                            DBContract.History.COL_HISTORY_RELATED_ALERT_NAME,
+                            eachResult.getValue()
+                    );
+                    values.put(
+                            DBContract.History.COL_HISTORY_DOCUMENT_URL,
+                            xmlPdfUrls.get(eachResult.getKey())
+                    );
                     // Do the C(RUD).
                     context.getContentResolver().insert(HISTORY_URI, values);
                 }
-
             }
         }).start();
     }
@@ -246,14 +219,14 @@ public class AlertsService extends Service {
      * @param title   String corresponding to Notification´s title
      * @param message String corresponding to Notification´s message
      **/
-    public void showAlertNotification(final String title, final String message) {
+    public void showAlertNotification(final Context context, final String title, final String message) {
 
         // If notification not enabled on user preferences return
         new Thread(new Runnable() {
             @Override
             public void run() {
                 // Get shared preferences
-                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
                 // Notify if user preference flags if notifyON
                 if (sharedPreferences.getBoolean("notifications_new_message", true)) {
                     new AlertsNotificationBuilder
@@ -292,7 +265,7 @@ public class AlertsService extends Service {
                 //setup BoeHandler and BoeHandler.Listeners
                 setupBoeHandler();
                 // Start fetching summary
-                boeXMLHandler.fetchXMLSummary();
+                boeXMLHandler.startFetchAndSearch(getAlertsFromDB(getApplicationContext()));
             }
         }).start();
     }
