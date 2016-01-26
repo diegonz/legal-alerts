@@ -39,7 +39,7 @@ public class LegalAlertsDialog extends DialogFragment {
     @OnCheckedChanged(R.id.switchLiteralSearch)
     public void onIsLiteralChanged(boolean isChecked){
         if (isChecked) {
-            YoYo.with(Techniques.SlideOutLeft).duration(300L).withListener(new Animator.AnimatorListener() {
+            YoYo.with(Techniques.SlideOutRight).duration(150L).withListener(new Animator.AnimatorListener() {
                 @Override
                 public void onAnimationStart(Animator animation) {
 
@@ -48,7 +48,7 @@ public class LegalAlertsDialog extends DialogFragment {
                 @Override
                 public void onAnimationEnd(Animator animation) {
                     textViewLiteralInfo.setText(R.string.info_literal);
-                    YoYo.with(Techniques.SlideInRight).duration(300L).playOn(textViewLiteralInfo);
+                    YoYo.with(Techniques.SlideInLeft).duration(150L).playOn(textViewLiteralInfo);
                 }
 
                 @Override
@@ -63,7 +63,7 @@ public class LegalAlertsDialog extends DialogFragment {
             }).playOn(textViewLiteralInfo);
         }
         else {
-            YoYo.with(Techniques.SlideOutRight).duration(300L).withListener(new Animator.AnimatorListener() {
+            YoYo.with(Techniques.SlideOutLeft).duration(150L).withListener(new Animator.AnimatorListener() {
                 @Override
                 public void onAnimationStart(Animator animation) {
 
@@ -72,7 +72,7 @@ public class LegalAlertsDialog extends DialogFragment {
                 @Override
                 public void onAnimationEnd(Animator animation) {
                     textViewLiteralInfo.setText(R.string.info_not_literal);
-                    YoYo.with(Techniques.SlideInLeft).duration(300L).playOn(textViewLiteralInfo);
+                    YoYo.with(Techniques.SlideInRight).duration(150L).playOn(textViewLiteralInfo);
                 }
 
                 @Override
