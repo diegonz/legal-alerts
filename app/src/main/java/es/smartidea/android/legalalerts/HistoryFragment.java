@@ -13,6 +13,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
 import es.smartidea.android.legalalerts.dbContentProvider.DBContentProvider;
 import es.smartidea.android.legalalerts.dbCursorAdapter.DBHistoryCursorAdapter;
 import es.smartidea.android.legalalerts.dbHelper.DBContract;
@@ -23,10 +25,6 @@ import es.smartidea.android.legalalerts.dbHelper.DBContract;
  */
 public class HistoryFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-
-    // Required empty public constructor
-    public HistoryFragment() {}
-
     // URI of DB
     private static final Uri HISTORY_URI = DBContentProvider.HISTORY_URI;
     // Static String arguments for querying
@@ -36,30 +34,25 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
             DBContract.History.COL_HISTORY_DOCUMENT_NAME,
             DBContract.History.COL_HISTORY_DOCUMENT_URL
     };
-
     private static final String ORDER_ASC_BY_NAME = DBContract.History.COL_HISTORY_DOCUMENT_NAME + " ASC";
     // Unique Loader ID to correct management
     private static final int HISTORY_LOADER_ID = 2;
-
-    // Declare ListView
-    private ListView listViewHistory;
     // Declare DBAdapter
     private DBHistoryCursorAdapter historyAdapter;
+    // Declare and bind ListView
+    // ButterKnife bindings
+    @Bind(R.id.listViewHistory) ListView listViewHistory;
+
+    // Required empty public constructor
+    public HistoryFragment() {}
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_history, container, false);
-        listViewHistory = (ListView) view.findViewById(R.id.listViewHistory);
+        // Bind ButterKnife to view
+        ButterKnife.bind(this, view);
         return view;
-    }
-
-    // Attach alertsAdapter to ListViewAlerts
-    private void initHistoryLoader() {
-        historyAdapter = new DBHistoryCursorAdapter(getActivity(), R.layout.list_item_history, null, 0);
-        listViewHistory.setAdapter(historyAdapter);
-        // Prepare the loader.  Either re-connect with an existing one or start a new one.
-        getActivity().getSupportLoaderManager().initLoader(HISTORY_LOADER_ID, null, this);
     }
 
     @Override
@@ -74,7 +67,6 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
         super.onResume();
         // Launch LoaderManager when onAttach() Fragment;
         initHistoryLoader();
-
     }
 
     @Override
@@ -85,8 +77,9 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
 
     @Override
     public void onDestroyView() {
-        // Show fab before destroy view
         super.onDestroyView();
+        // Unbind ButterKnife
+        ButterKnife.unbind(this);
     }
 
     // Returns a new loader after the initAlertsLoader() call
@@ -107,4 +100,11 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
         historyAdapter.swapCursor(null);
     }
 
+    // Attach alertsAdapter to ListViewAlerts
+    private void initHistoryLoader() {
+        historyAdapter = new DBHistoryCursorAdapter(getActivity(), R.layout.list_item_history, null, 0);
+        listViewHistory.setAdapter(historyAdapter);
+        // Prepare the loader.  Either re-connect with an existing one or start a new one.
+        getActivity().getSupportLoaderManager().initLoader(HISTORY_LOADER_ID, null, this);
+    }
 }

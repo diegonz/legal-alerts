@@ -14,6 +14,10 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+
+import butterknife.Bind;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 import es.smartidea.android.legalalerts.broadcastReceivers.AlertsAlarmReceiver;
 
 public class MainActivity extends AppCompatActivity
@@ -25,32 +29,41 @@ public class MainActivity extends AppCompatActivity
     // runningFragment initialized to -1, forcing first replacement and runningFragment update.
     private int runningFragment = -1;
     // Running fragment string
+    private static final String DIALOG_TAG = "dialog_legal_alerts";
     private static final String RUNNING_FRAGMENT_STRING = "running_fragment";
     private static final String SET_ALARM_FROM_ACTIVITY = AlertsAlarmReceiver.SET_ALARM_FROM_ACTIVITY;
-    private FloatingActionButton fab;
-    private NavigationView navigationView;
+    // ButterKnife bindings
+    @Bind(R.id.nav_view) NavigationView navigationView;
+    @Bind(R.id.drawer_layout) DrawerLayout drawer;
+    @Bind(R.id.toolbar) Toolbar toolbar;
+    @Bind(R.id.fab) FloatingActionButton fab;
 
+    @OnClick(R.id.fab)
+    void fabClickListener() {
+        switch (runningFragment) {
+            case FRAGMENT_ALERTS:
+                new LegalAlertsDialog().show(getSupportFragmentManager(), DIALOG_TAG);
+                break;
+            case FRAGMENT_HISTORY:
+                break;
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        // Bind ButterKnife to activity
+        ButterKnife.bind(this);
+        // Set actionbar
         setSupportActionBar(toolbar);
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         // Set Drawer toggle
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar,
                 R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
-
-        navigationView = (NavigationView) findViewById(R.id.nav_view);
+        // Set NavigationView listener
         navigationView.setNavigationItemSelectedListener(this);
-
-        // Get fab reference for showing/hiding purposes
-        fab = (FloatingActionButton) findViewById(R.id.fab);
         // Hide fab button
         fab.hide();
 
@@ -59,8 +72,9 @@ public class MainActivity extends AppCompatActivity
             sendBroadcast(new Intent(this, AlertsAlarmReceiver.class)
                     .setAction(SET_ALARM_FROM_ACTIVITY)
             );
-            // Starting from scratch, set FRAGMENT_ALERTS
-            replaceFragment(FRAGMENT_ALERTS);
+            // Starting from scratch, getIntExtra from intent to replace
+            // corresponding fragment, defaulting to FRAGMENT_ALERTS
+            replaceFragment(getIntent().getIntExtra("start_on_fragment", FRAGMENT_ALERTS));
         } else {
             // Replace fragment according to intent extras or savedInstanceState
             // If starting from scratch it defaults to FRAGMENT_ALERTS
@@ -77,7 +91,6 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (!drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.openDrawer(GravityCompat.START);
         } else {
@@ -144,15 +157,13 @@ public class MainActivity extends AppCompatActivity
         switch (afterSelectionTask){
             case START_DIALOG_ALERT:
                 // Launch Alerts dialog
-                new AlertDialog().show(getSupportFragmentManager(), "dialog_alert");
+                new LegalAlertsDialog().show(getSupportFragmentManager(), DIALOG_TAG);
                 break;
-
             case START_SETTINGS_ACTIVITY:
                 // Launch Settings Activity
                 startActivity(new Intent(this, SettingsActivity.class));
                 break;
         }
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
@@ -205,10 +216,13 @@ public class MainActivity extends AppCompatActivity
                 e.printStackTrace();
             }
             // Insert the fragment by replacing any existing fragment
-            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-            fragmentTransaction.setCustomAnimations(android.R.anim.slide_in_left, android.R.anim.slide_out_right);
-            fragmentTransaction.replace(R.id.fragmentMainPlaceholder, fragment);
-            fragmentTransaction.commit();
+            FragmentTransaction beginTransaction = getSupportFragmentManager().beginTransaction();
+            beginTransaction.setCustomAnimations(
+                    android.R.anim.slide_in_left,
+                    android.R.anim.slide_out_right
+            );
+            beginTransaction.replace(R.id.fragmentMainPlaceholder, fragment);
+            beginTransaction.commit();
             // Change running fragment id
             runningFragment = fragmentID;
         }

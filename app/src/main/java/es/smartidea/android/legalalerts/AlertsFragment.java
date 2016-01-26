@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -18,6 +17,8 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
 import es.smartidea.android.legalalerts.dbContentProvider.DBContentProvider;
 import es.smartidea.android.legalalerts.dbCursorAdapter.DBAlertsCursorAdapter;
 import es.smartidea.android.legalalerts.dbHelper.DBContract;
@@ -45,22 +46,13 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     private static final String ORDER_ASC_BY_NAME = DBContract.Alerts.COL_ALERT_NAME + " ASC";
     // Unique Loader ID to correct management
     private static final int ALERTS_LOADER_ID = 1;
-
-    // Declare ListView and DBCursor for adapter
-    private ListView listViewAlerts;
     // Declare DBAdapter
     private DBAlertsCursorAdapter alertsAdapter;
+    // ButterKnife bindings
+    @Bind(R.id.listViewAlerts) ListView listViewAlerts;
 
     // Required empty public constructor
     public AlertsFragment() {}
-
-    // Set alertsAdapter to ListViewAlerts
-    private void initAlertsLoader() {
-        alertsAdapter = new DBAlertsCursorAdapter(getActivity(), R.layout.list_item_alert, null, 0);
-        listViewAlerts.setAdapter(alertsAdapter);
-        // Prepare the loader.  Either re-connect with an existing one or start a new one.
-        getActivity().getSupportLoaderManager().initLoader(ALERTS_LOADER_ID, null, this);
-    }
 
     /**
      * Start of fragment lifecycle
@@ -83,21 +75,16 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_alerts, container, false);
+        // Bind ButterKnife to view
+        ButterKnife.bind(this, view);
         // Get inflated view of this layout´s fragment
-        final View view = inflater.inflate(R.layout.fragment_alerts, container, false);
-        if (view != null){
-            // Get FAB reference with getActivity() to access MainActivity's FAB in CoordinatorLayout
-            FloatingActionButton fab = (FloatingActionButton) getActivity().findViewById(R.id.fab);
-            fab.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    AlertDialog alertDialog = new AlertDialog();
-                    alertDialog.show(getFragmentManager(), "dialog_alert");
-                }
-            });
-            // Assign listViewAlerts, setup of adapter and onClick methods are attached on initAlertsLoader()
-            listViewAlerts = (ListView) view.findViewById(R.id.listViewAlerts);
-        }
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                new LegalAlertsDialog().show(getFragmentManager(), "dialog_legal_alerts");
+//            }
+//        });
         return view;
     }
 
@@ -105,7 +92,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         // Set alertsAdapter to ListViewAlerts
-//        initAlertsLoader();
+        initAlertsLoader();
     }
 
     @Override
@@ -121,6 +108,13 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
         super.onPause();
         // Destroy LoaderManager when onPause()
         getActivity().getSupportLoaderManager().destroyLoader(ALERTS_LOADER_ID);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        // Unbind ButterKnife
+        ButterKnife.unbind(this);
     }
 
     @Override
@@ -149,7 +143,6 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
      * End of fragment lifecycle
      * */
 
-
     // Returns a new loader after the initAlertsLoader() call
     @Override
     public CursorLoader onCreateLoader(int id, Bundle args) {
@@ -168,5 +161,13 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     public void onLoaderReset(Loader loader) {
         // data is not available anymore, delete reference
         alertsAdapter.swapCursor(null);
+    }
+
+    // Set alertsAdapter to ListViewAlerts
+    private void initAlertsLoader() {
+        alertsAdapter = new DBAlertsCursorAdapter(getActivity(), R.layout.list_item_alert, null, 0);
+        listViewAlerts.setAdapter(alertsAdapter);
+        // Prepare the loader.  Either re-connect with an existing one or start a new one.
+        getActivity().getSupportLoaderManager().initLoader(ALERTS_LOADER_ID, null, this);
     }
 }

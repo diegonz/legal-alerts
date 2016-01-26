@@ -15,7 +15,7 @@
     <string name="action_settings">Settings</string>
     <string name="action_manual_sync">Sync</string>
     <string name="text_new_alert">New Alert</string>
-    <string name="alert_hint">Enter Alert text here</string>
+    <string name="alert_hint">Alert name</string>
 
     <string name="button_add_alert">Add</string>
     <string name="button_dialog_alert_save">Save</string>
@@ -31,13 +31,14 @@
     <string name="text_image_literal_search">Search literally</string>
     <string name="text_on"><b>ON</b></string>
     <string name="text_off"><b>OFF</b></string>
-
+    <string name="text_history_list_item">Alert Item</string>
     <string name="info_email">dgonzalez.BZ@gmail.com</string>
     <string name="info_not_literal">Literal search is <b>disabled.</b>\n<i>Legal Alerts will search for all occurrences disregarding order or place.</i></string>
     <string name="info_literal">Literal search is <b>enabled.</b>\n<i>Legal Alerts will search for exact match of given Alert pattern.</i></string>
 
-    <string name="test_string">Test</string>
     <string name="title_activity_settings">Alerts Settings</string>
+    <!-- Strings related to Alerts Dialog -->
+    <string name="text_dialog_alert_name_invalid">"Insert at least three characters!"</string>
 
     <!-- Strings related to Settings -->
 
