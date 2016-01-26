@@ -78,13 +78,6 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
         View view = inflater.inflate(R.layout.fragment_alerts, container, false);
         // Bind ButterKnife to view
         ButterKnife.bind(this, view);
-        // Get inflated view of this layout´s fragment
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                new LegalAlertsDialog().show(getFragmentManager(), "dialog_legal_alerts");
-//            }
-//        });
         return view;
     }
 
@@ -100,7 +93,6 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
         super.onResume();
         // Launch LoaderManager when onResume()
         initAlertsLoader();
-
     }
 
     @Override

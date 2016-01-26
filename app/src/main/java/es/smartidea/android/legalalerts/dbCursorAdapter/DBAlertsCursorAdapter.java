@@ -66,4 +66,5 @@ public class DBAlertsCursorAdapter extends ResourceCursorAdapter {
             }
         });
     }
+
 }

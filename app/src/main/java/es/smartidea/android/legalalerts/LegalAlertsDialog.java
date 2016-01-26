@@ -17,6 +17,10 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.daimajia.androidanimations.library.Techniques;
+import com.daimajia.androidanimations.library.YoYo;
+import com.nineoldandroids.animation.Animator;
+
 import butterknife.ButterKnife;
 import butterknife.Bind;
 import butterknife.OnCheckedChanged;
@@ -34,8 +38,54 @@ public class LegalAlertsDialog extends DialogFragment {
     @Bind(R.id.switchLiteralSearch) SwitchCompat switchLiteralSearch;
     @OnCheckedChanged(R.id.switchLiteralSearch)
     public void onIsLiteralChanged(boolean isChecked){
-        if (isChecked) textViewLiteralInfo.setText(R.string.info_literal);
-        else textViewLiteralInfo.setText(R.string.info_not_literal);
+        if (isChecked) {
+            YoYo.with(Techniques.SlideOutLeft).duration(300L).withListener(new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    textViewLiteralInfo.setText(R.string.info_literal);
+                    YoYo.with(Techniques.SlideInRight).duration(300L).playOn(textViewLiteralInfo);
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animation) {
+
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animation) {
+
+                }
+            }).playOn(textViewLiteralInfo);
+        }
+        else {
+            YoYo.with(Techniques.SlideOutRight).duration(300L).withListener(new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    textViewLiteralInfo.setText(R.string.info_not_literal);
+                    YoYo.with(Techniques.SlideInLeft).duration(300L).playOn(textViewLiteralInfo);
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animation) {
+
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animation) {
+
+                }
+            }).playOn(textViewLiteralInfo);
+        }
     }
 
     @Bind(R.id.editTextDialogAlert) EditText editTextDialogAlert;
@@ -115,6 +165,30 @@ public class LegalAlertsDialog extends DialogFragment {
                             }
                             LegalAlertsDialog.this.getDialog().dismiss();
                         } else {
+                            YoYo.with(Techniques.Tada).duration(300L).withListener(new Animator.AnimatorListener() {
+                                @Override
+                                public void onAnimationStart(Animator animation) {
+
+                                }
+
+                                @Override
+                                public void onAnimationEnd(Animator animation) {
+                                    // Set error to true on TextInputLayout after setting error message
+                                    textInputLayout.setError(getString(R.string.text_dialog_alert_name_invalid));
+                                    textInputLayout.setErrorEnabled(true);
+                                }
+
+                                @Override
+                                public void onAnimationCancel(Animator animation) {
+
+                                }
+
+                                @Override
+                                public void onAnimationRepeat(Animator animation) {
+
+                                }
+                            }).playOn(editTextDialogAlert);
+
                             Toast.makeText(
                                     getContext(),
                                     getString(R.string.text_dialog_alert_name_invalid),
