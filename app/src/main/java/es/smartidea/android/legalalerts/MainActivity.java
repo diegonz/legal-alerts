@@ -3,8 +3,6 @@ package es.smartidea.android.legalalerts;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -189,41 +187,38 @@ public class MainActivity extends AppCompatActivity
 
         // Check if runningFragment is the same received
         if (runningFragment != fragmentID){
-            Fragment fragment = null;
-            Class fragmentClass;
-
-            switch (fragmentID) {
-                case FRAGMENT_ALERTS:
-                    // Show fab button
-                    fab.show();
-                    fragmentClass = AlertsFragment.class;
-                    break;
-                case FRAGMENT_HISTORY:
-                    // Hide fab button
-                    fab.hide();
-                    fragmentClass = HistoryFragment.class;
-                    break;
-                default:
-                    // Show fab button
-                    fab.show();
-                    fragmentClass = AlertsFragment.class;
-                    break;
-            }
             try {
-                fragment = (Fragment) fragmentClass.newInstance();
+                switch (fragmentID) {
+                    case FRAGMENT_ALERTS:
+                        getSupportFragmentManager().beginTransaction()
+                                .setCustomAnimations(R.anim.slide_in_left, R.anim.slide_out_right)
+                                .replace(R.id.fragmentMainPlaceholder, AlertsFragment.class.newInstance())
+                                .commit();
+                        // Show fab button after replacing
+                        fab.show();
+                        break;
+                    case FRAGMENT_HISTORY:
+                        // Hide fab button before transaction
+                        fab.hide();
+                        getSupportFragmentManager().beginTransaction()
+                                .setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left)
+                                .replace(R.id.fragmentMainPlaceholder, HistoryFragment.class.newInstance())
+                                .commit();
+                        break;
+                    default:
+                        getSupportFragmentManager().beginTransaction()
+                                .setCustomAnimations(R.anim.slide_in_left, R.anim.slide_out_right)
+                                .replace(R.id.fragmentMainPlaceholder, AlertsFragment.class.newInstance())
+                                .commit();
+                        // Show fab button after replacing
+                        fab.show();
+                        break;
+                }
+                // Change running fragment id
+                runningFragment = fragmentID;
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            // Insert the fragment by replacing any existing fragment
-            FragmentTransaction beginTransaction = getSupportFragmentManager().beginTransaction();
-            beginTransaction.setCustomAnimations(
-                    android.R.anim.slide_in_left,
-                    android.R.anim.slide_out_right
-            );
-            beginTransaction.replace(R.id.fragmentMainPlaceholder, fragment);
-            beginTransaction.commit();
-            // Change running fragment id
-            runningFragment = fragmentID;
         }
         setDrawerCheckedItemAndTitle();
     }
