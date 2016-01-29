@@ -1,6 +1,5 @@
 package es.smartidea.android.legalalerts;
 
-import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -19,6 +18,8 @@ import android.widget.Toast;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import es.smartidea.android.legalalerts.alertsServices.AlertsService;
+import es.smartidea.android.legalalerts.alertsServices.AlertsServiceStarter;
 import es.smartidea.android.legalalerts.dbContentProvider.DBContentProvider;
 import es.smartidea.android.legalalerts.dbCursorAdapter.DBAlertsCursorAdapter;
 import es.smartidea.android.legalalerts.dbHelper.DBContract;
@@ -123,7 +124,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
                 Toast.makeText(getActivity(), "service already running...", Toast.LENGTH_SHORT).show();
             } else {
                 // Starting manual download and search of XML data trough IntentService
-                getActivity().startService(new Intent(getActivity(), AlertsService.class));
+                AlertsServiceStarter.startServiceManual(getContext());
             }
             return true;
         }
@@ -139,7 +140,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     @Override
     public CursorLoader onCreateLoader(int id, Bundle args) {
         return new CursorLoader(
-                getActivity(), ALERTS_URI, PROJECTION, SELECTION_NOTNULL, null, ORDER_ASC_BY_NAME
+            getActivity(), ALERTS_URI, PROJECTION, SELECTION_NOTNULL, null, ORDER_ASC_BY_NAME
         );
     }
 

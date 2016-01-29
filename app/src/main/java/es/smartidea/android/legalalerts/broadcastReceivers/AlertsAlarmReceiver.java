@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import es.smartidea.android.legalalerts.alertsServices.AlertsServiceStarter;
 import es.smartidea.android.legalalerts.alertsBuilders.AlertsAlarmBuilder;
 
 public class AlertsAlarmReceiver extends BroadcastReceiver {
@@ -15,7 +16,7 @@ public class AlertsAlarmReceiver extends BroadcastReceiver {
     public final static String SET_ALARM_FROM_ACTIVITY = "es.smartidea.legalalerts.SET_ALARM_FROM_ACTIVITY";
 
     // ServiceLauncherReceiver related String Broadcast actions & extras
-    private final static String START_ALERTS_SERVICE = AlertServiceLauncherReceiver.START_ALERTS_SERVICE;
+    private final static String START_ALERTS_SERVICE = AlertsServiceStarter.START_ALERTS_SERVICE;
 
 
     // AlertsAlarmReceiver public empty constructor
@@ -46,7 +47,7 @@ public class AlertsAlarmReceiver extends BroadcastReceiver {
 
         // Check if an alarm of same type exists
         PendingIntent alarmIntent = PendingIntent.getBroadcast(context, 0,
-                new Intent(context, AlertServiceLauncherReceiver.class).setAction(ALARM_TYPE),
+                new Intent(context, AlertsServiceStarter.class).setAction(ALARM_TYPE),
                 PendingIntent.FLAG_NO_CREATE);
         // If alarm not exist, create it
         if (alarmIntent == null) {

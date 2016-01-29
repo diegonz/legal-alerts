@@ -8,7 +8,8 @@ import android.os.SystemClock;
 
 import java.util.Calendar;
 
-import es.smartidea.android.legalalerts.broadcastReceivers.AlertServiceLauncherReceiver;
+import es.smartidea.android.legalalerts.alertsServices.AlertsServiceStarter;
+
 /*
 * Public pseudo-builder class AlertsAlarmBuilder
 * Sets an alarm according to given hour and minute
@@ -17,26 +18,26 @@ import es.smartidea.android.legalalerts.broadcastReceivers.AlertServiceLauncherR
 public class AlertsAlarmBuilder {
 
     // Private empty constructor
-    private AlertsAlarmBuilder() {
-    }
+    private AlertsAlarmBuilder() {}
 
     // Static Builder class
     public static class Builder {
 
-        private final static String START_ALERTS_SERVICE = AlertServiceLauncherReceiver.START_ALERTS_SERVICE;
+        private final static String START_ALERTS_SERVICE = AlertsServiceStarter.START_ALERTS_SERVICE;
         private final Context context;
         private final AlarmManager alarmMgr;
         private final PendingIntent alarmIntent;
         private Calendar calendar;
-        private int hour, minute = 0;
+        private int hour = 9, minute = 30;
 
         public Builder(Context mContext) {
             this.context = mContext;
             this.alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
             // Setup the alarm.
-            this.alarmIntent = PendingIntent.getBroadcast(
-                    context, 0,
-                    new Intent(context, AlertServiceLauncherReceiver.class)
+            this.alarmIntent = PendingIntent.getService(
+                    context,
+                    0,
+                    new Intent(context, AlertsServiceStarter.class)
                             .setAction(START_ALERTS_SERVICE),
                     0
             );

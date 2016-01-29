@@ -1,4 +1,4 @@
-package es.smartidea.android.legalalerts;
+package es.smartidea.android.legalalerts.alertsServices;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import es.smartidea.android.legalalerts.R;
 import es.smartidea.android.legalalerts.alertsBuilders.AlertsNotificationBuilder;
 import es.smartidea.android.legalalerts.boeHandler.BoeXMLHandler;
 import es.smartidea.android.legalalerts.dbContentProvider.DBContentProvider;

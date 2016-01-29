@@ -13,8 +13,7 @@ import es.smartidea.android.legalalerts.R;
 public class AlertsNotificationBuilder {
 
     // Private empty constructor
-    private AlertsNotificationBuilder() {
-    }
+    private AlertsNotificationBuilder() {}
 
     public static class Builder {
 
@@ -42,7 +41,7 @@ public class AlertsNotificationBuilder {
 
         public Builder setVibrate(boolean vibrateON){
             if (vibrateON){
-                notification.setVibrate(new long[]{0, 500, 250, 500});
+                notification.setVibrate(new long[]{0L, 500L, 250L, 500L});
             }
             return this;
         }

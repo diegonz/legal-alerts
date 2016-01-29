@@ -35,7 +35,7 @@
             android:exported="false" />
 
         <service
-            android:name=".AlertsService"
+            android:name=".alertsServices.AlertsService"
             android:enabled="true"
             android:exported="false" />
 
@@ -57,21 +57,11 @@
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
-            android:parentActivityName=".MainActivity">
-        </activity>
+            android:parentActivityName=".MainActivity" />
 
-        <receiver
-            android:name=".broadcastReceivers.AlertServiceLauncherReceiver"
-            android:enabled="true"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="es.smartidea.legalalerts.START_ALERTS_SERVICE" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="es.smartidea.legalalerts.START_MANUAL_SYNC_SERVICE" />
-            </intent-filter>
-
-        </receiver>
+        <service
+            android:name=".alertsServices.AlertsServiceStarter"
+            android:exported="false" />
     </application>
 
 </manifest>
