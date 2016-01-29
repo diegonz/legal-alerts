@@ -57,7 +57,7 @@ public class AlertsNotificationBuilder {
             Intent intent = new Intent(context, MainActivity.class);
             // Put Fragment (int) identifier on "start_on_fragment" (where to start if app is not running)
             intent.putExtra("start_on_fragment", MainActivity.FRAGMENT_HISTORY);
-            intent.setFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+            intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
             notification.setContentIntent(pendingIntent)

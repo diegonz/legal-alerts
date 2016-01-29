@@ -82,6 +82,16 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        // Check intent extras and start fragment replacing
+        if (intent.hasExtra("start_on_fragment")) {
+            replaceFragment(intent.getIntExtra("start_on_fragment", FRAGMENT_ALERTS));
+        }
+        setDrawerCheckedItemAndTitle();
+    }
+
+    @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         // Save the user's current running fragment
@@ -165,16 +175,6 @@ public class MainActivity extends AppCompatActivity
         }
         drawer.closeDrawer(GravityCompat.START);
         return true;
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        // Check intent extras and start fragment replacing
-        if (intent.hasExtra("start_on_fragment")){
-            replaceFragment(intent.getIntExtra("start_on_fragment", FRAGMENT_ALERTS));
-        }
-        setDrawerCheckedItemAndTitle();
     }
 
     /**
