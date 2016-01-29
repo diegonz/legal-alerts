@@ -130,6 +130,7 @@ public class LegalAlertsDialog extends DialogFragment {
 
         // Create the LegalAlertsDialog object and override positive button´s click listener
         final android.support.v7.app.AlertDialog alertDialog = builder.create();
+        alertDialog.getWindow().getAttributes().windowAnimations = R.style.dialog_animation;
         alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
             @Override
             public void onShow(DialogInterface dialog) {
