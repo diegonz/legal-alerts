@@ -13,7 +13,6 @@ public class AlertsAlarmReceiver extends BroadcastReceiver {
 
     // Setup intent action/s message
     public final static String ALARM_SNOOZE = "es.smartidea.legalalerts.ALARM_SNOOZE";
-    public final static String SET_ALARM_FROM_ACTIVITY = "es.smartidea.legalalerts.SET_ALARM_FROM_ACTIVITY";
 
     // ServiceLauncherReceiver related String Broadcast actions & extras
     private final static String START_ALERTS_SERVICE = AlertsServiceStarter.START_ALERTS_SERVICE;
@@ -35,28 +34,24 @@ public class AlertsAlarmReceiver extends BroadcastReceiver {
         */
         final String ALARM_TYPE;
 
-        // Get intent action
-        switch (intent.getAction()){
-            case ALARM_SNOOZE:
-                ALARM_TYPE = ALARM_SNOOZE;
-                break;
-            default:
-                ALARM_TYPE = START_ALERTS_SERVICE;
-                break;
+        if (intent.getAction() != null){
+            ALARM_TYPE = intent.getAction();
+        } else {
+            ALARM_TYPE = START_ALERTS_SERVICE;
         }
 
         // Check if an alarm of same type exists
-        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, 0,
+        PendingIntent alarmIntent = PendingIntent.getService(context, 0,
                 new Intent(context, AlertsServiceStarter.class).setAction(ALARM_TYPE),
                 PendingIntent.FLAG_NO_CREATE);
         // If alarm not exist, create it
         if (alarmIntent == null) {
             switch (ALARM_TYPE){
                 case ALARM_SNOOZE:
-                    new AlertsAlarmBuilder.Builder(context).setRetryAlarm();
+                    new AlertsAlarmBuilder.Builder(context, ALARM_TYPE).setRetryAlarm();
                     break;
                 default:
-                    new AlertsAlarmBuilder.Builder(context)
+                    new AlertsAlarmBuilder.Builder(context, ALARM_TYPE)
                             .setHour(9)
                             .setMinute(30)
                             .setDailyAlarm();

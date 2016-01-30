@@ -34,7 +34,7 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
             DBContract.History.COL_HISTORY_DOCUMENT_NAME,
             DBContract.History.COL_HISTORY_DOCUMENT_URL
     };
-    private static final String ORDER_ASC_BY_NAME = DBContract.History.COL_HISTORY_DOCUMENT_NAME + " ASC";
+    private static final String ORDER_DESC_BY_ID = DBContract.History._ID + " DESC";
     // Unique Loader ID to correct management
     private static final int HISTORY_LOADER_ID = 2;
     // Declare DBAdapter
@@ -85,7 +85,7 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
     // Returns a new loader after the initAlertsLoader() call
     @Override
     public CursorLoader onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(getActivity(), HISTORY_URI, PROJECTION, null, null, ORDER_ASC_BY_NAME);
+        return new CursorLoader(getActivity(), HISTORY_URI, PROJECTION, null, null, ORDER_DESC_BY_ID);
     }
 
     @Override

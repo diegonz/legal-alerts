@@ -28,7 +28,6 @@ public class MainActivity extends AppCompatActivity
     // Running fragment string
     private static final String DIALOG_TAG = "dialog_legal_alerts";
     private static final String RUNNING_FRAGMENT_STRING = "running_fragment";
-    private static final String SET_ALARM_FROM_ACTIVITY = AlertsAlarmReceiver.SET_ALARM_FROM_ACTIVITY;
     // ButterKnife bindings
     @Bind(R.id.nav_view) NavigationView navigationView;
     @Bind(R.id.drawer_layout) DrawerLayout drawer;
@@ -66,9 +65,7 @@ public class MainActivity extends AppCompatActivity
 
         if (savedInstanceState == null) {
             // Check/start new alarm
-            sendBroadcast(new Intent(this, AlertsAlarmReceiver.class)
-                    .setAction(SET_ALARM_FROM_ACTIVITY)
-            );
+            sendBroadcast(new Intent(this, AlertsAlarmReceiver.class));
             // Starting from scratch, getIntExtra from intent to replace
             // corresponding fragment, defaulting to FRAGMENT_ALERTS
             replaceFragment(getIntent().getIntExtra("start_on_fragment", FRAGMENT_ALERTS));

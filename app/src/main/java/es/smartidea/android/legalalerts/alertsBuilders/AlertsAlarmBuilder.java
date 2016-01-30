@@ -23,14 +23,13 @@ public class AlertsAlarmBuilder {
     // Static Builder class
     public static class Builder {
 
-        private final static String START_ALERTS_SERVICE = AlertsServiceStarter.START_ALERTS_SERVICE;
         private final Context context;
         private final AlarmManager alarmMgr;
         private final PendingIntent alarmIntent;
         private Calendar calendar;
         private int hour = 9, minute = 30;
 
-        public Builder(Context mContext) {
+        public Builder(Context mContext, final String ALARM_TYPE ) {
             this.context = mContext;
             this.alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
             // Setup the alarm.
@@ -38,7 +37,7 @@ public class AlertsAlarmBuilder {
                     context,
                     0,
                     new Intent(context, AlertsServiceStarter.class)
-                            .setAction(START_ALERTS_SERVICE),
+                            .setAction(ALARM_TYPE),
                     0
             );
         }
