@@ -296,7 +296,7 @@ public class BoeXMLHandler {
     */
     private Map<String, String> fetchAttachmentsAndSearch(@NonNull OkHttpGetURL okHttpGetURL,
                                                          @NonNull Map<String, String> mUrls,
-                                                         @NonNull Map<String, Boolean> searchTerms) {
+                                                         @NonNull Map<String, Boolean> searchTerms){
         // Fetches each rawXML and passes each one to parse and store data
         Map<String, String> searchResults = new HashMap<>();
         Map<String, String> rawTextData = new HashMap<>(1);
@@ -339,8 +339,8 @@ public class BoeXMLHandler {
                 }
             }
         }
-        if (searchResults.isEmpty()) return new HashMap<>(0);
 
+        // Return results, can be empty
         return searchResults;
     }
 }

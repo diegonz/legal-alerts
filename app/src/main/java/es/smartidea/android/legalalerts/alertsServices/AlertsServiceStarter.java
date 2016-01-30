@@ -27,8 +27,10 @@ import es.smartidea.android.legalalerts.okHttp.OkHttpGetURL;
  */
 public class AlertsServiceStarter extends IntentService {
     // ServiceLauncherReceiver related String Broadcast actions & extras
-    public final static String START_ALERTS_SERVICE = "es.smartidea.legalalerts.START_ALERTS_SERVICE";
-    public final static String START_MANUAL_SYNC_SERVICE = "es.smartidea.legalalerts.START_MANUAL_SYNC_SERVICE";
+    public final static String START_ALERTS_SERVICE =
+            "es.smartidea.legalalerts.START_ALERTS_SERVICE";
+    public final static String START_MANUAL_SYNC_SERVICE =
+            "es.smartidea.legalalerts.START_MANUAL_SYNC_SERVICE";
 
     // AlarmReceiver related String Broadcast actions & extras
     private final static String ALARM_SNOOZE = AlertsAlarmReceiver.ALARM_SNOOZE;
@@ -131,7 +133,7 @@ public class AlertsServiceStarter extends IntentService {
 
     // Check charging state
     public static boolean isDeviceCharging(Context context) {
-        // http://developer.android.com/intl/es/training/monitoring-device-state/battery-monitoring.html#DetermineChargeState
+        // developer.android.com/intl/es/training/monitoring-device-state/battery-monitoring.html#DetermineChargeState
         @SuppressWarnings("ConstantConditions")
         int plugged = context.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED))
                 .getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);

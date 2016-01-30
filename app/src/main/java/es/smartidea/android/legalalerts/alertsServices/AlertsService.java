@@ -41,7 +41,8 @@ public class AlertsService extends Service {
             DBContract.Alerts.COL_ALERT_NAME + " NOTNULL) AND (" +
             DBContract.Alerts.COL_ALERT_NAME + " != '' ))";
 
-    private static final String ALERTS_ORDER_ASC_BY_NAME = DBContract.Alerts.COL_ALERT_NAME + " ASC";
+    private static final String ALERTS_ORDER_ASC_BY_NAME =
+            DBContract.Alerts.COL_ALERT_NAME + " ASC";
     private static final String LOG_TAG = "Service";
     private static final String LAST_SUCCESSFUL_SYNC = "last_successful_sync";
     private String todayDateString;
@@ -203,22 +204,24 @@ public class AlertsService extends Service {
      * @param title   String corresponding to Notification´s title
      * @param message String corresponding to Notification´s message
      **/
-    public void showAlertNotification(final Context context, final String title, final String message) {
+    public void showAlertNotification(final Context context,
+                                      final String title,
+                                      final String message) {
 
         // If notification not enabled on user preferences return
         new Thread(new Runnable() {
             @Override
             public void run() {
                 // Get shared preferences
-                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+                SharedPreferences sharedPreferences =
+                        PreferenceManager.getDefaultSharedPreferences(context);
                 // Notify if user preference flags if notifyON
                 if (sharedPreferences.getBoolean("notifications_new_message", true)) {
                     new AlertsNotificationBuilder.Builder(getApplicationContext())
                         .setTitle(title)
                         .setMessage(message)
-                        .setVibrate(
-                                sharedPreferences.getBoolean("notifications_new_message_vibrate", true)
-                        )
+                        .setVibrate(sharedPreferences.getBoolean(
+                                "notifications_new_message_vibrate", true))
                         .setSound(sharedPreferences.getString(
                                 "notifications_new_message_ringtone",
                                 "content://settings/system/notification_sound"))

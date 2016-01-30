@@ -35,9 +35,18 @@ public class DBHistoryCursorAdapter extends ResourceCursorAdapter {
     @Override
     public void bindView(View view, final Context context, Cursor cursor) {
         // Get data from DBCursor
-        final String relatedAlertName = cursor.getString(cursor.getColumnIndexOrThrow(DBContract.History.COL_HISTORY_RELATED_ALERT_NAME));
-        final String relatedDocumentName = cursor.getString(cursor.getColumnIndexOrThrow(DBContract.History.COL_HISTORY_DOCUMENT_NAME));
-        final String relatedPdfDocumentURL = cursor.getString(cursor.getColumnIndexOrThrow(DBContract.History.COL_HISTORY_DOCUMENT_URL));
+        final String relatedAlertName =
+                cursor.getString(cursor.getColumnIndexOrThrow(
+                        DBContract.History.COL_HISTORY_RELATED_ALERT_NAME)
+                );
+        final String relatedDocumentName =
+                cursor.getString(cursor.getColumnIndexOrThrow(
+                        DBContract.History.COL_HISTORY_DOCUMENT_NAME)
+                );
+        final String relatedPdfDocumentURL =
+                cursor.getString(cursor.getColumnIndexOrThrow(
+                        DBContract.History.COL_HISTORY_DOCUMENT_URL)
+                );
         // Bind ButterKnife
         ButterKnife.bind(this, view);
         // Populate the fields

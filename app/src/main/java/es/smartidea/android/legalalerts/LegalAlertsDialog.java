@@ -39,7 +39,8 @@ public class LegalAlertsDialog extends DialogFragment {
     @OnCheckedChanged(R.id.switchLiteralSearch)
     public void onIsLiteralChanged(boolean isChecked){
         if (isChecked) {
-            YoYo.with(Techniques.SlideOutRight).duration(150L).withListener(new Animator.AnimatorListener() {
+            YoYo.with(Techniques.SlideOutRight).duration(150L).withListener(
+                    new Animator.AnimatorListener() {
                 @Override
                 public void onAnimationStart(Animator animation) {
 
@@ -52,22 +53,17 @@ public class LegalAlertsDialog extends DialogFragment {
                 }
 
                 @Override
-                public void onAnimationCancel(Animator animation) {
-
-                }
+                public void onAnimationCancel(Animator animation) {}
 
                 @Override
-                public void onAnimationRepeat(Animator animation) {
-
-                }
+                public void onAnimationRepeat(Animator animation) {}
             }).playOn(textViewLiteralInfo);
         }
         else {
-            YoYo.with(Techniques.SlideOutLeft).duration(150L).withListener(new Animator.AnimatorListener() {
+            YoYo.with(Techniques.SlideOutLeft).duration(150L).withListener(
+                    new Animator.AnimatorListener() {
                 @Override
-                public void onAnimationStart(Animator animation) {
-
-                }
+                public void onAnimationStart(Animator animation) {}
 
                 @Override
                 public void onAnimationEnd(Animator animation) {
@@ -76,14 +72,10 @@ public class LegalAlertsDialog extends DialogFragment {
                 }
 
                 @Override
-                public void onAnimationCancel(Animator animation) {
-
-                }
+                public void onAnimationCancel(Animator animation) {}
 
                 @Override
-                public void onAnimationRepeat(Animator animation) {
-
-                }
+                public void onAnimationRepeat(Animator animation) {}
             }).playOn(textViewLiteralInfo);
         }
     }
@@ -91,7 +83,7 @@ public class LegalAlertsDialog extends DialogFragment {
     @Bind(R.id.editTextDialogAlert) EditText editTextDialogAlert;
     @OnTextChanged(R.id.editTextDialogAlert)
     public void alertNameTextChanged(){
-        if (isAlertNameValid()) textInputLayout.setErrorEnabled(false);
+        if (isAlertNameValid(editTextDialogAlert.length())) textInputLayout.setErrorEnabled(false);
         else {
             // Set error to true on TextInputLayout after setting error message
             textInputLayout.setError(getString(R.string.text_dialog_alert_name_invalid));
@@ -100,7 +92,10 @@ public class LegalAlertsDialog extends DialogFragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater,
+                             ViewGroup container,
+                             Bundle savedInstanceState){
+
         // Get reference to the rootView (container)
         this.container = container;
         return super.onCreateView(inflater, container, savedInstanceState);
@@ -138,7 +133,7 @@ public class LegalAlertsDialog extends DialogFragment {
                         .setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        if (isAlertNameValid()){
+                        if (isAlertNameValid(editTextDialogAlert.length())){
                             ContentValues values = new ContentValues();
                             values.put(
                                     DBContract.Alerts.COL_ALERT_NAME,
@@ -166,28 +161,23 @@ public class LegalAlertsDialog extends DialogFragment {
                             }
                             LegalAlertsDialog.this.getDialog().dismiss();
                         } else {
-                            YoYo.with(Techniques.Tada).duration(300L).withListener(new Animator.AnimatorListener() {
+                            YoYo.with(Techniques.Tada).duration(300L).withListener(
+                                    new Animator.AnimatorListener() {
                                 @Override
-                                public void onAnimationStart(Animator animation) {
-
-                                }
+                                public void onAnimationStart(Animator animation) {}
 
                                 @Override
                                 public void onAnimationEnd(Animator animation) {
-                                    // Set error to true on TextInputLayout after setting error message
+                                    // Set error to TextInputLayout after setting error message
                                     textInputLayout.setError(getString(R.string.text_dialog_alert_name_invalid));
                                     textInputLayout.setErrorEnabled(true);
                                 }
 
                                 @Override
-                                public void onAnimationCancel(Animator animation) {
-
-                                }
+                                public void onAnimationCancel(Animator animation) {}
 
                                 @Override
-                                public void onAnimationRepeat(Animator animation) {
-
-                                }
+                                public void onAnimationRepeat(Animator animation) {}
                             }).playOn(editTextDialogAlert);
 
                             Toast.makeText(
@@ -203,8 +193,9 @@ public class LegalAlertsDialog extends DialogFragment {
         return alertDialog;
     }
 
-    private boolean isAlertNameValid(){
+    // Static method to check alert name length
+    private static boolean isAlertNameValid(int textLength){
         // If alert name has 3 or more char return true
-        return editTextDialogAlert.length() > 2;
+        return textLength > 2;
     }
 }

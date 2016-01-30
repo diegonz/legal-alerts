@@ -16,12 +16,10 @@ public class AlertsNotificationBuilder {
     private AlertsNotificationBuilder() {}
 
     public static class Builder {
-
         private Context context;
         private NotificationCompat.Builder notification;
         // Notification ID
         private static final int ALERT_NOTIFICATION_ID = 0;
-
 
         public Builder(Context context){
             this.context = context;
@@ -55,14 +53,17 @@ public class AlertsNotificationBuilder {
             notification.setSmallIcon(android.R.drawable.ic_popup_reminder);
             // Define notification´s associated intent action
             Intent intent = new Intent(context, MainActivity.class);
-            // Put Fragment (int) identifier on "start_on_fragment" (where to start if app is not running)
+            // Put Fragment (int) identifier
+            // on "start_on_fragment" (where to start if app is not running)
             intent.putExtra("start_on_fragment", MainActivity.FRAGMENT_HISTORY);
             intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent pendingIntent =
+                    PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
             notification.setContentIntent(pendingIntent)
                     .setAutoCancel(true);
-            NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            NotificationManager notificationManager =
+                    (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             notificationManager.notify(ALERT_NOTIFICATION_ID, notification.build());
         }
 

@@ -47,7 +47,10 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
     public HistoryFragment() {}
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater,
+                             ViewGroup container,
+                             Bundle savedInstanceState) {
+
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_history, container, false);
         // Bind ButterKnife to view
@@ -85,7 +88,14 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
     // Returns a new loader after the initAlertsLoader() call
     @Override
     public CursorLoader onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(getActivity(), HISTORY_URI, PROJECTION, null, null, ORDER_DESC_BY_ID);
+        return new CursorLoader(
+                getActivity(),
+                HISTORY_URI,
+                PROJECTION,
+                null,
+                null,
+                ORDER_DESC_BY_ID
+        );
     }
 
     @Override
@@ -102,7 +112,8 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
 
     // Attach alertsAdapter to ListViewAlerts
     private void initHistoryLoader() {
-        historyAdapter = new DBHistoryCursorAdapter(getActivity(), R.layout.list_item_history, null, 0);
+        historyAdapter =
+                new DBHistoryCursorAdapter(getActivity(), R.layout.list_item_history, null, 0);
         listViewHistory.setAdapter(historyAdapter);
         // Prepare the loader.  Either re-connect with an existing one or start a new one.
         getActivity().getSupportLoaderManager().initLoader(HISTORY_LOADER_ID, null, this);

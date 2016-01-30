@@ -30,7 +30,7 @@ public class AlertsAlarmReceiver extends BroadcastReceiver {
         * Check if another PendingIntent (Alarm) exists
         * via creating new one with flag PendingIntent.FLAG_NO_CREATE
         * which returns null if exists, +info check Android documentation:
-        * http://developer.android.com/intl/es/reference/android/app/PendingIntent.html#FLAG_NO_CREATE
+        * developer.android.com/intl/es/reference/android/app/PendingIntent.html#FLAG_NO_CREATE
         */
         final String ALARM_TYPE;
 

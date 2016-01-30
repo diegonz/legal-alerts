@@ -189,7 +189,9 @@ public class MainActivity extends AppCompatActivity
                     case FRAGMENT_ALERTS:
                         getSupportFragmentManager().beginTransaction()
                                 .setCustomAnimations(R.anim.slide_in_left, R.anim.slide_out_right)
-                                .replace(R.id.fragmentMainPlaceholder, AlertsFragment.class.newInstance())
+                                .replace(
+                                        R.id.fragmentMainPlaceholder,
+                                        AlertsFragment.class.newInstance())
                                 .commit();
                         // Show fab button after replacing
                         fab.show();
@@ -199,13 +201,15 @@ public class MainActivity extends AppCompatActivity
                         fab.hide();
                         getSupportFragmentManager().beginTransaction()
                                 .setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left)
-                                .replace(R.id.fragmentMainPlaceholder, HistoryFragment.class.newInstance())
+                                .replace(R.id.fragmentMainPlaceholder,
+                                        HistoryFragment.class.newInstance())
                                 .commit();
                         break;
                     default:
                         getSupportFragmentManager().beginTransaction()
                                 .setCustomAnimations(R.anim.slide_in_left, R.anim.slide_out_right)
-                                .replace(R.id.fragmentMainPlaceholder, AlertsFragment.class.newInstance())
+                                .replace(R.id.fragmentMainPlaceholder,
+                                        AlertsFragment.class.newInstance())
                                 .commit();
                         // Show fab button after replacing
                         fab.show();

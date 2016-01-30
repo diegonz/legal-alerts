@@ -75,7 +75,10 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater,
+                             ViewGroup container,
+                             Bundle savedInstanceState) {
+
         View view = inflater.inflate(R.layout.fragment_alerts, container, false);
         // Bind ButterKnife to view
         ButterKnife.bind(this, view);
@@ -121,7 +124,11 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
         if (id == R.id.action_refresh) {
             // Start manual sync if service is not already running
             if (AlertsService.isRunning()){
-                Toast.makeText(getActivity(), "service already running...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(
+                        getActivity(),
+                        "service already running...",
+                        Toast.LENGTH_SHORT
+                ).show();
             } else {
                 // Starting manual download and search of XML data trough IntentService
                 AlertsServiceStarter.startServiceManual(getContext());

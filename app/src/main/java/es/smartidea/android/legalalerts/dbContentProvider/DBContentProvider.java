@@ -101,7 +101,11 @@ public class DBContentProvider extends ContentProvider {
 
     // query() method queries DB and returns a Cursor to result set
     @Override
-    public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+    public Cursor query(@NonNull Uri uri,
+                        String[] projection,
+                        String selection,
+                        String[] selectionArgs,
+                        String sortOrder) {
 
         // Saves obtained URI type (DB tables)
         int uriType = sUriMatcher.match(uri);
@@ -123,7 +127,8 @@ public class DBContentProvider extends ContentProvider {
                 throw new IllegalArgumentException("ERROR - Wrong URI: " + uri);
         }
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = queryBuilder.query(db, projection, selection, selectionArgs, null, null, sortOrder);
+        Cursor cursor =
+                queryBuilder.query(db, projection, selection, selectionArgs, null, null, sortOrder);
         // Send change notifications to potential listeners (CursorLoader)
         cursor.setNotificationUri(getContext().getContentResolver(), uri);
         return cursor;
@@ -152,17 +157,23 @@ public class DBContentProvider extends ContentProvider {
 
     // update() handles updates on DB records, notifies changes and returns number of updated cells
     @Override
-    public int update(@NonNull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+    public int update(@NonNull Uri uri,
+                      ContentValues values,
+                      String selection,
+                      String[] selectionArgs) {
+
         int uriType = sUriMatcher.match(uri);
         int rowsUpdated;
 
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         switch (uriType) {
             case ALERTS:
-                rowsUpdated = db.update(DBContract.Alerts.TABLE_NAME, values, selection, selectionArgs);
+                rowsUpdated =
+                        db.update(DBContract.Alerts.TABLE_NAME, values, selection, selectionArgs);
                 break;
             case HISTORY:
-                rowsUpdated = db.update(DBContract.History.TABLE_NAME, values, selection, selectionArgs);
+                rowsUpdated =
+                        db.update(DBContract.History.TABLE_NAME, values, selection, selectionArgs);
                 break;
             default:
                 throw new IllegalArgumentException("ERROR - Wrong URI: " + uri);

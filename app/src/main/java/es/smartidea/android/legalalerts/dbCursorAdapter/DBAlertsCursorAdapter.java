@@ -37,13 +37,18 @@ public class DBAlertsCursorAdapter extends ResourceCursorAdapter {
     @Override
     public void bindView(View view, final Context context, final Cursor cursor) {
         // Get data from DBCursor
-        final String alertName = cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Alerts.COL_ALERT_NAME));
+        final String alertName =
+                cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Alerts.COL_ALERT_NAME));
         // Bind ButterKnife
         ButterKnife.bind(this, view);
         // Populate the fields
-        textViewAlertListItem.setText(cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Alerts.COL_ALERT_NAME)));
-        // Change the resource image to an open/closed padlock according if its set to not literal search
-        switch (cursor.getInt(cursor.getColumnIndexOrThrow(DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL))){
+        textViewAlertListItem.setText(
+                cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Alerts.COL_ALERT_NAME))
+        );
+        // Change the resource image to an open/closed padlock
+        // according if its set to not literal search
+        switch (cursor.getInt(
+                cursor.getColumnIndexOrThrow(DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL))){
             case 0:
                 imageViewAlertListItemLiteral.setImageResource(android.R.drawable.ic_secure);
                 break;
@@ -61,8 +66,11 @@ public class DBAlertsCursorAdapter extends ResourceCursorAdapter {
                 // Perform deletion according to SELECTION
                 int hits = context.getContentResolver().delete(ALERTS_URI, SELECTION, null);
 
-                Snackbar.make(v, hits + " Alerts named: " + alertName + " deleted from DB", Snackbar.LENGTH_SHORT)
-                        .setAction("Action", null).show();
+                Snackbar.make(
+                        v,
+                        hits + " Alerts named: " + alertName + " deleted from DB",
+                        Snackbar.LENGTH_SHORT
+                ).setAction("Action", null).show();
             }
         });
     }
