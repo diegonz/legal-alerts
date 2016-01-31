@@ -24,8 +24,8 @@ import java.util.Map;
 import es.smartidea.android.legalalerts.R;
 import es.smartidea.android.legalalerts.alertsBuilders.AlertsNotificationBuilder;
 import es.smartidea.android.legalalerts.boeHandler.BoeXMLHandler;
-import es.smartidea.android.legalalerts.dbContentProvider.DBContentProvider;
-import es.smartidea.android.legalalerts.dbHelper.DBContract;
+import es.smartidea.android.legalalerts.database.dbContentProvider.DBContentProvider;
+import es.smartidea.android.legalalerts.database.dbHelper.DBContract;
 
 public class AlertsService extends Service {
 

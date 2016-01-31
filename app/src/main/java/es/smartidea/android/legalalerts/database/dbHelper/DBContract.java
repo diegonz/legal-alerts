@@ -1,4 +1,4 @@
-package es.smartidea.android.legalalerts.dbHelper;
+package es.smartidea.android.legalalerts.database.dbHelper;
 
 import android.provider.BaseColumns;
 

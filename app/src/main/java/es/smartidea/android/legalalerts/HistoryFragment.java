@@ -15,10 +15,9 @@ import android.widget.ListView;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import es.smartidea.android.legalalerts.dbContentProvider.DBContentProvider;
-import es.smartidea.android.legalalerts.dbCursorAdapter.DBHistoryCursorAdapter;
-import es.smartidea.android.legalalerts.dbHelper.DBContract;
-
+import es.smartidea.android.legalalerts.database.dbContentProvider.DBContentProvider;
+import es.smartidea.android.legalalerts.database.dbCursorAdapter.DBHistoryCursorAdapter;
+import es.smartidea.android.legalalerts.database.dbHelper.DBContract;
 
 /**
  * An simple listView container {@link Fragment} subclass.

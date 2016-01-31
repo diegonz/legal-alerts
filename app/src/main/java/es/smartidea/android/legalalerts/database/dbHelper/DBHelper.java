@@ -1,4 +1,4 @@
-package es.smartidea.android.legalalerts.dbHelper;
+package es.smartidea.android.legalalerts.database.dbHelper;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -10,6 +10,7 @@ import android.util.Log;
  * It contains and handles query and methods to CRUD and upgrade/downgrade DB
  */
 
+@SuppressWarnings("StringConcatenationMissingWhitespace")
 public class DBHelper extends SQLiteOpenHelper {
 
     // String query "tokens"
@@ -29,7 +30,7 @@ public class DBHelper extends SQLiteOpenHelper {
                     DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL + INT_TYPE + DEFAULT_0 + " );";
 
     public static final String SQL_DELETE_ALERTS_TABLE =
-            "DROP TABLE IF EXISTS " + DBContract.Alerts.TABLE_NAME + ";";
+            "DROP TABLE IF EXISTS " + DBContract.Alerts.TABLE_NAME + ';';
     /* End ALERTS table */
 
     /* Start HISTORY table */
@@ -41,7 +42,7 @@ public class DBHelper extends SQLiteOpenHelper {
             DBContract.History.COL_HISTORY_DOCUMENT_URL + TEXT_TYPE + NOT_NULL + " );";
 
     public static final String SQL_DELETE_HISTORY_TABLE =
-            "DROP TABLE IF EXISTS " + DBContract.History.TABLE_NAME + ";";
+            "DROP TABLE IF EXISTS " + DBContract.History.TABLE_NAME + ';';
     /* End HISTORY table */
 
     public DBHelper(Context context) {

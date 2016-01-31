@@ -20,9 +20,9 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import es.smartidea.android.legalalerts.alertsServices.AlertsService;
 import es.smartidea.android.legalalerts.alertsServices.AlertsServiceStarter;
-import es.smartidea.android.legalalerts.dbContentProvider.DBContentProvider;
-import es.smartidea.android.legalalerts.dbCursorAdapter.DBAlertsCursorAdapter;
-import es.smartidea.android.legalalerts.dbHelper.DBContract;
+import es.smartidea.android.legalalerts.database.dbContentProvider.DBContentProvider;
+import es.smartidea.android.legalalerts.database.dbCursorAdapter.DBAlertsCursorAdapter;
+import es.smartidea.android.legalalerts.database.dbHelper.DBContract;
 
 /**
  * A simple {@link Fragment} subclass.

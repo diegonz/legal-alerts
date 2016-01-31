@@ -1,4 +1,4 @@
-package es.smartidea.android.legalalerts.dbContentProvider;
+package es.smartidea.android.legalalerts.database.dbContentProvider;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
@@ -11,8 +11,8 @@ import android.net.Uri;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import es.smartidea.android.legalalerts.dbHelper.DBContract;
-import es.smartidea.android.legalalerts.dbHelper.DBHelper;
+import es.smartidea.android.legalalerts.database.dbHelper.DBContract;
+import es.smartidea.android.legalalerts.database.dbHelper.DBHelper;
 
 import android.support.annotation.NonNull;
 
@@ -33,11 +33,11 @@ public class DBContentProvider extends ContentProvider {
     // Access URI to Alerts table
     private static final int ALERTS = 10;
     private static final String ALERTS_PATH = "alerts_table";
-    public static final Uri ALERTS_URI = Uri.parse("content://" + AUTHORITY + "/" + ALERTS_PATH);
+    public static final Uri ALERTS_URI = Uri.parse("content://" + AUTHORITY + '/' + ALERTS_PATH);
     // Access URI to History table
     private static final int HISTORY = 20;
     private static final String HISTORY_PATH = "history_table";
-    public static final Uri HISTORY_URI = Uri.parse("content://" + AUTHORITY + "/" + HISTORY_PATH);
+    public static final Uri HISTORY_URI = Uri.parse("content://" + AUTHORITY + '/' + HISTORY_PATH);
 
     private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
@@ -69,7 +69,7 @@ public class DBContentProvider extends ContentProvider {
                         DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL
                 };
                 final String SELECTION = DBContract.Alerts.COL_ALERT_NAME + "='" +
-                        values.getAsString(DBContract.Alerts.COL_ALERT_NAME) + "'";
+                        values.getAsString(DBContract.Alerts.COL_ALERT_NAME) + '\'';
 
                 Cursor alreadyExistCursor = db.query(DBContract.Alerts.TABLE_NAME,
                         PROJECTION,
@@ -96,7 +96,7 @@ public class DBContentProvider extends ContentProvider {
                 throw new IllegalArgumentException("ERROR - Wrong URI: " + uri);
         }
         getContext().getContentResolver().notifyChange(uri, null);
-        return Uri.parse(path + "/" + id);
+        return Uri.parse(path + '/' + id);
     }
 
     // query() method queries DB and returns a Cursor to result set
@@ -183,7 +183,7 @@ public class DBContentProvider extends ContentProvider {
     }
 
     // checkColumns() checks if received projection´s columns are valid
-    public void checkColumns(int uriType, String[] projection) {
+    public static void checkColumns(int uriType, String... projection) {
 
         String[] availableC;
         HashSet<String> requested;

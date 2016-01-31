@@ -52,7 +52,7 @@
         </receiver>
 
         <provider
-            android:name=".dbContentProvider.DBContentProvider"
+            android:name=".database.dbContentProvider.DBContentProvider"
             android:authorities="es.smartidea.legalalerts.dbContentProvider"
             android:exported="false" />
 

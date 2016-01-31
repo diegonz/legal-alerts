@@ -25,8 +25,8 @@ import butterknife.ButterKnife;
 import butterknife.Bind;
 import butterknife.OnCheckedChanged;
 import butterknife.OnTextChanged;
-import es.smartidea.android.legalalerts.dbContentProvider.DBContentProvider;
-import es.smartidea.android.legalalerts.dbHelper.DBContract;
+import es.smartidea.android.legalalerts.database.dbContentProvider.DBContentProvider;
+import es.smartidea.android.legalalerts.database.dbHelper.DBContract;
 
 public class LegalAlertsDialog extends DialogFragment {
     // URI of DB
