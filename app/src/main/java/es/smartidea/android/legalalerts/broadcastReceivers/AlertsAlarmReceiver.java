@@ -29,8 +29,7 @@ public class AlertsAlarmReceiver extends BroadcastReceiver {
         *
         * Check if another PendingIntent (Alarm) exists
         * via creating new one with flag PendingIntent.FLAG_NO_CREATE
-        * which returns null if exists, +info check Android documentation:
-        * developer.android.com/intl/es/reference/android/app/PendingIntent.html#FLAG_NO_CREATE
+        * which returns null if exists, +info check Android documentation
         */
         final String ALARM_TYPE;
 
@@ -45,6 +44,7 @@ public class AlertsAlarmReceiver extends BroadcastReceiver {
                 new Intent(context, AlertsServiceStarter.class).setAction(ALARM_TYPE),
                 PendingIntent.FLAG_NO_CREATE);
         // If alarm not exist, create it
+        //noinspection VariableNotUsedInsideIf
         if (alarmIntent == null) {
             switch (ALARM_TYPE){
                 case ALARM_SNOOZE:
@@ -52,8 +52,8 @@ public class AlertsAlarmReceiver extends BroadcastReceiver {
                     break;
                 default:
                     new AlertsAlarmBuilder.Builder(context, ALARM_TYPE)
-                            .setHour(9)
-                            .setMinute(30)
+                            .setHour(20)
+                            .setMinute(7)
                             .setDailyAlarm();
                     break;
             }

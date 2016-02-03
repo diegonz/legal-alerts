@@ -38,13 +38,9 @@
 
         <receiver
             android:name=".broadcastReceivers.AlertsAlarmReceiver"
-            android:enabled="true"
-            android:exported="true">
+            android:enabled="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="es.smartidea.legalalerts.SET_ALARM_FROM_ACTIVITY" />
             </intent-filter>
             <intent-filter>
                 <action android:name="es.smartidea.legalalerts.ALARM_SNOOZE" />

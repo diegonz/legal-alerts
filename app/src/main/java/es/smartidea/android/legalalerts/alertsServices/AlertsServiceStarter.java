@@ -26,6 +26,7 @@ import es.smartidea.android.legalalerts.okHttp.OkHttpGetURL;
  * helper methods.
  */
 public class AlertsServiceStarter extends IntentService {
+    private static final String LOG_TAG = "ServiceLauncher";
     // ServiceLauncherReceiver related String Broadcast actions & extras
     public final static String START_ALERTS_SERVICE =
             "es.smartidea.legalalerts.START_ALERTS_SERVICE";
@@ -82,11 +83,11 @@ public class AlertsServiceStarter extends IntentService {
     private void handleStartServiceDefault() {
         // Launch service if wan is available and user preference requirements are ok
         if (isWanAvailable() && isPreferenceCheckOK(this)) {
-            Log.d("ServiceLauncher", "Preferences requirements OK, launching service.");
+            Log.d(LOG_TAG, "Preferences requirements OK, launching service.");
             // User preferences OK, star service
             startService(new Intent(this, AlertsService.class));
         } else {
-            Log.d("ServiceLauncher", "Don't meet requirements. Snoozing alarm one hour...");
+            Log.d(LOG_TAG, "Don't meet requirements. Snoozing alarm one hour...");
             // Snooze alarm for 1 hour
             snoozeAlarm(this);
         }
@@ -98,11 +99,11 @@ public class AlertsServiceStarter extends IntentService {
      */
     private void handleStartServiceManual() {
         if (isWanAvailable()) {
-            Log.d("ServiceLauncher", "Manual sync started, launching service.");
+            Log.d(LOG_TAG, "Manual sync started, launching service.");
             // Manual sync requested TODO: Add confirm dialog according to user preferences
             startService(new Intent(this, AlertsService.class));
         } else {
-            Log.d("ServiceLauncher", "Manual sync failed, unavailable WAN.");
+            Log.d(LOG_TAG, "Manual sync failed, unavailable WAN.");
             // TODO: Inform user about network unavailable
         }
     }
@@ -119,7 +120,7 @@ public class AlertsServiceStarter extends IntentService {
                     new Intent(context, AlertsAlarmReceiver.class)
                             .setAction(ALARM_SNOOZE)
             );
-            Log.d("ServiceLauncher", "Snoozing alarm one hour...");
+            Log.d(LOG_TAG, "Snoozing alarm one hour...");
         } else if (!snoozeDateString.equals(todayDateString)) {
             // If day has changed, dismiss snoozed alarm (next check, daily alarm)
             PreferenceManager.getDefaultSharedPreferences(context)
@@ -133,7 +134,6 @@ public class AlertsServiceStarter extends IntentService {
 
     // Check charging state
     public static boolean isDeviceCharging(Context context) {
-        // developer.android.com/intl/es/training/monitoring-device-state/battery-monitoring.html#DetermineChargeState
         @SuppressWarnings("ConstantConditions")
         int plugged = context.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED))
                 .getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
@@ -155,8 +155,8 @@ public class AlertsServiceStarter extends IntentService {
         try {
             return new OkHttpGetURL().isWanAvailable();
         } catch (IOException e) {
-            if (Log.isLoggable("ServiceLauncher", Log.DEBUG)){
-                Log.d("ServiceLauncher", "Unreachable WAN: \n" + e);
+            if (Log.isLoggable(LOG_TAG, Log.DEBUG)){
+                Log.d(LOG_TAG, "Unreachable WAN: \n" + e);
             }
             return false;
         }
@@ -170,13 +170,13 @@ public class AlertsServiceStarter extends IntentService {
         // Check charging status
         if (preferences.getBoolean("sync_only_when_charging", true)
                 && !isDeviceCharging(context)) {
-            Log.d("ServiceLauncher", "Device charging required!");
+            Log.d(LOG_TAG, "Device charging required!");
             return false;
         }
         // Check unmetered network
         if (preferences.getBoolean("sync_only_over_unmetered_network", true)
                 && !isUnmeteredNetworkAvailable(context)) {
-            Log.d("ServiceLauncher", "WiFi network required!");
+            Log.d(LOG_TAG, "WiFi network required!");
             return false;
         }
         return true;
