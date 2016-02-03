@@ -7,13 +7,16 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import butterknife.Bind;
@@ -90,6 +93,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
         super.onActivityCreated(savedInstanceState);
         // Set alertsAdapter to ListViewAlerts
         initAlertsLoader();
+        listViewAlerts.setOnItemLongClickListener(new OnAlertItemLongClick());
     }
 
     @Override
@@ -169,5 +173,19 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
         listViewAlerts.setAdapter(alertsAdapter);
         // Prepare the loader.  Either re-connect with an existing one or start a new one.
         getActivity().getSupportLoaderManager().initLoader(ALERTS_LOADER_ID, null, this);
+    }
+
+    private static class OnAlertItemLongClick implements AdapterView.OnItemLongClickListener {
+        @Override
+        public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+            if (Log.isLoggable("AlertsFragment", Log.DEBUG)){
+                Log.d("AlertsFragment", "clicked on position: " + position + " with id: " + id);
+            }
+            TextView textView = ButterKnife.findById(view, R.id.textViewAlertListItem);
+            if (Log.isLoggable("AlertsFragment", Log.DEBUG)) {
+                Log.d("AlertsFragment", "with text: " + textView.getText());
+            }
+            return true;
+        }
     }
 }

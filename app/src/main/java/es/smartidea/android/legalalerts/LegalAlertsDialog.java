@@ -96,6 +96,7 @@ public class LegalAlertsDialog extends DialogFragment {
                              ViewGroup container,
                              Bundle savedInstanceState){
 
+        getArguments();
         // Get reference to the rootView (container)
         this.container = container;
         return super.onCreateView(inflater, container, savedInstanceState);

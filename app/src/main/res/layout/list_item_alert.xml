@@ -6,6 +6,7 @@
     android:padding="@dimen/list_item_alert_margin">
 
     <TextView
+        android:longClickable="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
