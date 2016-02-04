@@ -3,11 +3,13 @@ package es.smartidea.android.legalalerts;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -93,21 +95,15 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
         super.onActivityCreated(savedInstanceState);
         // Set alertsAdapter to ListViewAlerts
         initAlertsLoader();
-        listViewAlerts.setOnItemLongClickListener(new OnAlertItemLongClick());
+        registerForContextMenu(listViewAlerts);
+//        listViewAlerts.setOnItemLongClickListener(new OnAlertItemLongClick());
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        // Launch LoaderManager when onResume()
-        initAlertsLoader();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        // Destroy LoaderManager when onPause()
-        getActivity().getSupportLoaderManager().destroyLoader(ALERTS_LOADER_ID);
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        // Inflate context menu
+        getActivity().getMenuInflater().inflate(R.menu.list_view_alerts_context, menu);
     }
 
     @Override
@@ -115,6 +111,39 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
         super.onDestroyView();
         // Unbind ButterKnife
         ButterKnife.unbind(this);
+        // Destroy LoaderManager when onPause()
+        getActivity().getSupportLoaderManager().destroyLoader(ALERTS_LOADER_ID);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info =
+                (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        TextView textView = ButterKnife.findById(
+                listViewAlerts.getChildAt(info.position), R.id.textViewAlertListItem);
+        switch (item.getItemId()){
+            case R.id.contextMenuListItemAlertsEdit:
+                Log.d("AlertsFragment", "Edit: " + textView.getText());
+                return true;
+            case R.id.contextMenuListItemAlertsDelete:
+                Log.d("AlertsFragment", "Delete: " + textView.getText());
+                int hits = getActivity().getContentResolver().delete(
+                        ALERTS_URI,
+                        DBContract.Alerts.COL_ALERT_NAME + "='" + textView.getText() + '\'',
+                        null
+                );
+                // Set textView (or ListView) as view for the SnackBar as since CoordinatorLayout
+                // manages animations an viewGroup relationship
+                // check url for details: https://goo.gl/XwjDM4
+                Snackbar.make(textView,
+                        hits + " Alerts named: " + textView.getText() + " deleted from DB",
+                        Snackbar.LENGTH_SHORT
+                ).setAction("Action", null).show();
+
+                return true;
+            default:
+                return super.onContextItemSelected(item);
+        }
     }
 
     @Override
@@ -173,19 +202,5 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
         listViewAlerts.setAdapter(alertsAdapter);
         // Prepare the loader.  Either re-connect with an existing one or start a new one.
         getActivity().getSupportLoaderManager().initLoader(ALERTS_LOADER_ID, null, this);
-    }
-
-    private static class OnAlertItemLongClick implements AdapterView.OnItemLongClickListener {
-        @Override
-        public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-            if (Log.isLoggable("AlertsFragment", Log.DEBUG)){
-                Log.d("AlertsFragment", "clicked on position: " + position + " with id: " + id);
-            }
-            TextView textView = ButterKnife.findById(view, R.id.textViewAlertListItem);
-            if (Log.isLoggable("AlertsFragment", Log.DEBUG)) {
-                Log.d("AlertsFragment", "with text: " + textView.getText());
-            }
-            return true;
-        }
     }
 }

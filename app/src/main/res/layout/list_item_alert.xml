@@ -27,16 +27,6 @@
         android:src="@android:drawable/ic_secure"
         android:contentDescription="@string/text_image_literal_search"
         android:layout_centerVertical="true"
-        android:layout_toStartOf="@+id/buttonDeleteAlertListItem"
-        android:layout_toLeftOf="@+id/buttonDeleteAlertListItem" />
-
-    <ImageButton
-        android:src="@android:drawable/ic_menu_delete"
-        android:contentDescription="@string/text_delete"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/buttonDeleteAlertListItem"
-        android:layout_centerVertical="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
 

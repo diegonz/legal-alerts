@@ -65,23 +65,11 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        // Launch LoaderManager when onAttach() Fragment;
-        initHistoryLoader();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        getActivity().getSupportLoaderManager().destroyLoader(HISTORY_LOADER_ID);
-    }
-
-    @Override
     public void onDestroyView() {
         super.onDestroyView();
         // Unbind ButterKnife
         ButterKnife.unbind(this);
+        getActivity().getSupportLoaderManager().destroyLoader(HISTORY_LOADER_ID);
     }
 
     // Returns a new loader after the initAlertsLoader() call

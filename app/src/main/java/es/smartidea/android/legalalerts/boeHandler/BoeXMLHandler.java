@@ -33,6 +33,7 @@ public class BoeXMLHandler {
 
     private XmlPullParserFactory xmlFactoryObject;
     private String[] boeSummariesURLStrings;
+    private String todayDateString;
 
     final static Set<String> rawTextTags = new HashSet<>(
             Arrays.asList("alerta", "materia", "p", "palabra", "titulo", "texto")
@@ -57,6 +58,8 @@ public class BoeXMLHandler {
             this.boeSummariesURLStrings[i] = BOE_BASE_URL + BOE_BASE_ID + receivedDates[i];
             Log.d("BOE", "SummaryURL: " + boeSummariesURLStrings[i]);
         }
+        // Get today´s date in string format
+        this.todayDateString = receivedDates[receivedDates.length - 1];
     }
 
     /*
@@ -73,6 +76,14 @@ public class BoeXMLHandler {
          */
         void onWorkCompleted(final Map<String, String> searchResults,
                              final Map<String, String> xmlPdfUrls);
+
+        /**
+         * Notifies summary fetching completed successfully, sending info about today sync status
+         *
+         * @param todaySyncResultOK boolean flag indicating today´s boe summary
+         *                          was fetched ok and with contents
+         */
+        void todaySummaryResultOK(final boolean todaySyncResultOK);
     }
 
     /**
@@ -111,10 +122,7 @@ public class BoeXMLHandler {
                         fetchAttachmentsAndSearch(okHttpGetURL, xmlPdfUrls, alertsListFullData),
                         xmlPdfUrls);
             } else {
-                boeXMLHandlerEvents.onWorkCompleted(
-                        new HashMap<String, String>(0),
-                        new HashMap<String, String>(0)
-                );
+                boeXMLHandlerEvents.onWorkCompleted(xmlPdfUrls, xmlPdfUrls);
             }
         }
     }
@@ -131,7 +139,6 @@ public class BoeXMLHandler {
     **/
     private static Map<String,String> boeXmlWorker(@NonNull XmlPullParser boeParser,
                                            String attachmentUrlXml) {
-        // TODO: get docID substring(eachUrlXML.indexOf("=") + 1)
         int event;
 
         try {
@@ -206,8 +213,13 @@ public class BoeXMLHandler {
 
                 // Set xml´s encoding to latin1
                 boeSummaryParser.setInput(boeSummaryStream, "ISO-8859-1");
+                int sizeBefore = urlPairs.size();
                 // return parsed document data, sending to parser BOE id set to null (summary)
                 urlPairs.putAll(boeXmlWorker(boeSummaryParser, null));
+                // TODO check void summary check implementation
+                if (summaryURLString.equals(BOE_BASE_URL + BOE_BASE_ID + todayDateString)){
+                    boeXMLHandlerEvents.todaySummaryResultOK(urlPairs.size() > sizeBefore);
+                }
             } catch (Exception e) {
                 Log.d("BOE", "ERROR while trying to download BOE´s summary!");
                 e.printStackTrace();

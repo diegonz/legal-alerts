@@ -48,7 +48,9 @@ public class AlertsService extends Service {
     private String todayDateString;
     private BoeXMLHandler boeXMLHandler;
     // boolean flag indicating if service is running.
-    private static volatile boolean serviceRunning = false;
+    private static boolean serviceRunning = false;
+    // Flag indicating today´s summary sync status
+    private static boolean todaySyncedOK = false;
 
     /*
     * Service Methods START
@@ -107,6 +109,12 @@ public class AlertsService extends Service {
                     // Stop Service after search completed and Notification sent.
                     stopSelf();
                 }
+            }
+
+            @Override
+            public void todaySummaryResultOK(boolean todaySyncResultOK) {
+                todaySyncedOK = todaySyncResultOK;
+                Log.d(LOG_TAG, "Today´s summary fetched OK: " + todaySyncResultOK);
             }
         });
     }
@@ -274,16 +282,17 @@ public class AlertsService extends Service {
 
     @Override
     public void onDestroy() {
+        if (todaySyncedOK){
+            // Set LAST_SUCCESSFUL_SYNC to todayDateString
+            PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
+                    .edit()
+                    .putString(LAST_SUCCESSFUL_SYNC, todayDateString)
+                    .commit(); // Call commit() to make changes
+        }
         // Set snooze_alarm_date to "done"
         PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
                 .edit()
                 .putString("snooze_alarm_date", "done")
-                .commit(); // Call commit() to make changes
-
-        // Set LAST_SUCCESSFUL_SYNC to "done"
-        PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
-                .edit()
-                .putString(LAST_SUCCESSFUL_SYNC, todayDateString)
                 .commit(); // Call commit() to make changes
 
         Toast.makeText(this, "service done", Toast.LENGTH_SHORT).show();

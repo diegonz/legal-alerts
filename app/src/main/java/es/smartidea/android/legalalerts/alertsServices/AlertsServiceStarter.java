@@ -132,7 +132,7 @@ public class AlertsServiceStarter extends IntentService {
 
     /* Methods for checking about user preferences requirements */
 
-    // Check charging state
+    // Check charging state, for warning info about NPE  check: http://goo.gl/DVPW9i
     public static boolean isDeviceCharging(Context context) {
         @SuppressWarnings("ConstantConditions")
         int plugged = context.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED))
@@ -155,9 +155,7 @@ public class AlertsServiceStarter extends IntentService {
         try {
             return new OkHttpGetURL().isWanAvailable();
         } catch (IOException e) {
-            if (Log.isLoggable(LOG_TAG, Log.DEBUG)){
-                Log.d(LOG_TAG, "Unreachable WAN: \n" + e);
-            }
+            Log.d(LOG_TAG, "Unreachable WAN: \n" + e);
             return false;
         }
     }

@@ -28,7 +28,7 @@ import butterknife.OnTextChanged;
 import es.smartidea.android.legalalerts.database.dbContentProvider.DBContentProvider;
 import es.smartidea.android.legalalerts.database.dbHelper.DBContract;
 
-public class LegalAlertsDialog extends DialogFragment {
+public class NewAlertDialogFragment extends DialogFragment {
     // URI of DB
     private static final Uri ALERTS_URI = DBContentProvider.ALERTS_URI;
     private ViewGroup container;
@@ -119,12 +119,12 @@ public class LegalAlertsDialog extends DialogFragment {
                 .setNegativeButton(R.string.button_dialog_alert_cancel,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
-                                LegalAlertsDialog.this.getDialog().cancel();
+                                NewAlertDialogFragment.this.getDialog().cancel();
                             }
                         }
                 ).setTitle(R.string.text_new_alert);
 
-        // Create the LegalAlertsDialog object and override positive button´s click listener
+        // Create the NewAlertDialogFragment object and override positive button´s click listener
         final android.support.v7.app.AlertDialog alertDialog = builder.create();
         alertDialog.getWindow().getAttributes().windowAnimations = R.style.dialog_animation;
         alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
@@ -160,7 +160,7 @@ public class LegalAlertsDialog extends DialogFragment {
                                         resultMessageString, Snackbar.LENGTH_SHORT)
                                         .setAction("Action", null).show();
                             }
-                            LegalAlertsDialog.this.getDialog().dismiss();
+                            NewAlertDialogFragment.this.getDialog().dismiss();
                         } else {
                             YoYo.with(Techniques.Tada).duration(300L).withListener(
                                     new Animator.AnimatorListener() {
