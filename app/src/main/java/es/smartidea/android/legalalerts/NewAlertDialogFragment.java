@@ -1,5 +1,6 @@
 package es.smartidea.android.legalalerts;
 
+import android.annotation.SuppressLint;
 import android.support.annotation.NonNull;
 import android.content.ContentValues;
 import android.app.AlertDialog;
@@ -8,11 +9,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputLayout;
-import android.support.v4.app.DialogFragment;
+import android.support.v7.app.AppCompatDialogFragment;
 import android.support.v7.widget.SwitchCompat;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -28,79 +28,53 @@ import butterknife.OnTextChanged;
 import es.smartidea.android.legalalerts.database.dbContentProvider.DBContentProvider;
 import es.smartidea.android.legalalerts.database.dbHelper.DBContract;
 
-public class NewAlertDialogFragment extends DialogFragment {
+public class NewAlertDialogFragment extends AppCompatDialogFragment {
+
     // URI of DB
     private static final Uri ALERTS_URI = DBContentProvider.ALERTS_URI;
-    private ViewGroup container;
-    // ButterKnife bindings
-    @Bind(R.id.textInputLayoutDialogAlert) TextInputLayout textInputLayout;
-    @Bind(R.id.textViewLiteralInfo) TextView textViewLiteralInfo;
-    @Bind(R.id.switchLiteralSearch) SwitchCompat switchLiteralSearch;
-    @OnCheckedChanged(R.id.switchLiteralSearch)
-    public void onIsLiteralChanged(boolean isChecked){
-        if (isChecked) {
-            YoYo.with(Techniques.SlideOutRight).duration(150L).withListener(
-                    new Animator.AnimatorListener() {
-                @Override
-                public void onAnimationStart(Animator animation) {
 
-                }
+    /*
+    * LOCAL_METHODS - START
+    * */
 
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    textViewLiteralInfo.setText(R.string.info_literal);
-                    YoYo.with(Techniques.SlideInLeft).duration(150L).playOn(textViewLiteralInfo);
-                }
+    /**
+     * Static factory method receiving alertName and returning new instance
+     * with given parameters set to bundle
+     *
+     * @param alertName String representing alert name
+     * @return new instance of NewAlertDialogFragment with given parameter as bundle
+     */
+    @NonNull
+    public static NewAlertDialogFragment newInstance(String alertName, boolean isLiteralSearch) {
+        NewAlertDialogFragment fragment = new NewAlertDialogFragment();
 
-                @Override
-                public void onAnimationCancel(Animator animation) {}
+        // Supply input
+        Bundle bundle = new Bundle();
+        bundle.putString("alert_name", alertName);
+        bundle.putBoolean("is_literal_search", isLiteralSearch);
+        fragment.setArguments(bundle);
 
-                @Override
-                public void onAnimationRepeat(Animator animation) {}
-            }).playOn(textViewLiteralInfo);
-        }
-        else {
-            YoYo.with(Techniques.SlideOutLeft).duration(150L).withListener(
-                    new Animator.AnimatorListener() {
-                @Override
-                public void onAnimationStart(Animator animation) {}
-
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    textViewLiteralInfo.setText(R.string.info_not_literal);
-                    YoYo.with(Techniques.SlideInRight).duration(150L).playOn(textViewLiteralInfo);
-                }
-
-                @Override
-                public void onAnimationCancel(Animator animation) {}
-
-                @Override
-                public void onAnimationRepeat(Animator animation) {}
-            }).playOn(textViewLiteralInfo);
-        }
+        return fragment;
     }
 
-    @Bind(R.id.editTextDialogAlert) EditText editTextDialogAlert;
-    @OnTextChanged(R.id.editTextDialogAlert)
-    public void alertNameTextChanged(){
-        if (isAlertNameValid(editTextDialogAlert.length())) textInputLayout.setErrorEnabled(false);
-        else {
-            // Set error to true on TextInputLayout after setting error message
-            textInputLayout.setError(getString(R.string.text_dialog_alert_name_invalid));
-            textInputLayout.setErrorEnabled(true);
-        }
+    /**
+     * Validates length of alert name
+     *
+     * @param textLength int representing alert name string length
+     * @return true if given textLength is valid according to specifications
+     */
+    private static boolean isAlertNameValid(int textLength) {
+        // Return true if alert name has 3 or more char
+        return textLength > 2;
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater,
-                             ViewGroup container,
-                             Bundle savedInstanceState){
+    /*
+    * LOCAL_METHODS - END
+    * */
 
-        getArguments();
-        // Get reference to the rootView (container)
-        this.container = container;
-        return super.onCreateView(inflater, container, savedInstanceState);
-    }
+    /*
+    * Lifecycle - START
+    * */
 
     @Override
     @NonNull    // Added annotations to avoid warnings and assure not launched with null Bundle
@@ -109,10 +83,18 @@ public class NewAlertDialogFragment extends DialogFragment {
         // Use the Builder class for convenient dialog construction
         final android.support.v7.app.AlertDialog.Builder builder =
                 new android.support.v7.app.AlertDialog.Builder(this.getContext());
-        final View view = LayoutInflater.from(this.getContext())
-                .inflate(R.layout.dialog_legal_alerts, container);
+        @SuppressLint("InflateParams")
+        final View view =
+                LayoutInflater.from(this.getContext()).inflate(R.layout.dialog_legal_alerts, null);
         // ButterKnife bind
         ButterKnife.bind(this, view);
+
+        // Get alert name if are present
+        if (getArguments() != null) {
+            editTextDialogAlert.setText(getArguments().getString("alert_name"));
+            switchLiteralSearch.setChecked(getArguments().getBoolean("is_literal_search"));
+        }
+
         // Set positive button listener to null, will be overridden in setOnShowListener
         builder.setView(view)
                 .setPositiveButton(R.string.button_dialog_alert_save, null)
@@ -124,79 +106,152 @@ public class NewAlertDialogFragment extends DialogFragment {
                         }
                 ).setTitle(R.string.text_new_alert);
 
-        // Create the NewAlertDialogFragment object and override positive button´s click listener
+        /*
+        * Create the NewAlertDialogFragment object to override
+        * positive button´s click listener using setOnShowListener
+        * on the already created AlertDialog
+        * */
         final android.support.v7.app.AlertDialog alertDialog = builder.create();
         alertDialog.getWindow().getAttributes().windowAnimations = R.style.dialog_animation;
         alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
             @Override
             public void onShow(DialogInterface dialog) {
-                alertDialog.getButton(AlertDialog.BUTTON_POSITIVE)
-                        .setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (isAlertNameValid(editTextDialogAlert.length())){
-                            ContentValues values = new ContentValues();
-                            values.put(
-                                    DBContract.Alerts.COL_ALERT_NAME,
-                                    editTextDialogAlert.getText().toString()
-                            );
-                            // Get REVERSE toggle button state by casting a boolean with ternary
-                            // operator expression. If checked returns 0 and if not returns 1
-                            int literalSearchIntValue = (!switchLiteralSearch.isChecked()) ? 1 : 0;
-                            values.put(
-                                    DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL,
-                                    literalSearchIntValue
-                            );
-                            Uri resultID = getActivity().getContentResolver()
-                                    .insert(ALERTS_URI, values);
-                            if (resultID != null) {
-                                String resultMessageString;
-                                if (resultID.getLastPathSegment().equals("-1")){
-                                    resultMessageString = "Alert already existed into DB";
-                                } else {
-                                    resultMessageString = "Alert inserted into DB";
+                alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(
+                    new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            if (isAlertNameValid(editTextDialogAlert.length())) {
+                                ContentValues values = new ContentValues();
+                                values.put(
+                                        DBContract.Alerts.COL_ALERT_NAME,
+                                        editTextDialogAlert.getText().toString()
+                                );
+                                // Get REVERSE toggle button state by casting a boolean with ternary
+                                // operator expression. If checked returns 0 and if not returns 1
+                                int literalSearchIntValue =
+                                        (!switchLiteralSearch.isChecked()) ? 1 : 0;
+                                values.put(
+                                        DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL,
+                                        literalSearchIntValue
+                                );
+                                Uri resultID = getActivity().getContentResolver()
+                                        .insert(ALERTS_URI, values);
+                                if (resultID != null) {
+                                    String resultMessageString;
+                                    if (resultID.getLastPathSegment().equals("-1")) {
+                                        resultMessageString = "Alert already existed into DB";
+                                    } else {
+                                        resultMessageString = "Alert inserted into DB";
+                                    }
+                                    Snackbar.make(
+                                            getActivity().findViewById(R.id.fragmentMainPlaceholder),
+                                            resultMessageString, Snackbar.LENGTH_SHORT
+                                    ).setAction("Action", null).show();
                                 }
-                                Snackbar.make(getActivity().findViewById(R.id.fragmentMainPlaceholder),
-                                        resultMessageString, Snackbar.LENGTH_SHORT)
-                                        .setAction("Action", null).show();
-                            }
-                            NewAlertDialogFragment.this.getDialog().dismiss();
-                        } else {
-                            YoYo.with(Techniques.Tada).duration(300L).withListener(
-                                    new Animator.AnimatorListener() {
-                                @Override
-                                public void onAnimationStart(Animator animation) {}
+                                NewAlertDialogFragment.this.getDialog().dismiss();
+                            } else {
+                                YoYo.with(Techniques.Tada).duration(300L).withListener(
+                                        new Animator.AnimatorListener() {
+                                            @Override
+                                            public void onAnimationStart(Animator animation) {
+                                            }
 
-                                @Override
-                                public void onAnimationEnd(Animator animation) {
-                                    // Set error to TextInputLayout after setting error message
-                                    textInputLayout.setError(getString(R.string.text_dialog_alert_name_invalid));
-                                    textInputLayout.setErrorEnabled(true);
-                                }
+                                            @Override
+                                            public void onAnimationEnd(Animator animation) {
+                                                // Set error to TextInputLayout
+                                                // after setting error message
+                                                textInputLayout.setError(
+                                                        getString(R.string.text_dialog_alert_name_invalid)
+                                                );
+                                                textInputLayout.setErrorEnabled(true);
+                                            }
 
-                                @Override
-                                public void onAnimationCancel(Animator animation) {}
+                                            @Override
+                                            public void onAnimationCancel(Animator animation) {
+                                            }
 
-                                @Override
-                                public void onAnimationRepeat(Animator animation) {}
-                            }).playOn(editTextDialogAlert);
+                                            @Override
+                                            public void onAnimationRepeat(Animator animation) {
+                                            }
+                                        }
+                                ).playOn(editTextDialogAlert);
 
-                            Toast.makeText(
+                                Toast.makeText(
                                     getContext(),
                                     getString(R.string.text_dialog_alert_name_invalid),
-                                    Toast.LENGTH_SHORT).show();
+                                    Toast.LENGTH_SHORT
+                                ).show();
+                            }
                         }
                     }
-                });
+                );
             }
         });
         // Return the alertDialog, only pending to show().
         return alertDialog;
     }
 
-    // Static method to check alert name length
-    private static boolean isAlertNameValid(int textLength){
-        // If alert name has 3 or more char return true
-        return textLength > 2;
+    /*
+    * Lifecycle - END
+    * */
+
+    /*
+    * ButterKnife bindings - START
+    * */
+
+    @Bind(R.id.textInputLayoutDialogAlert) TextInputLayout textInputLayout;
+    @Bind(R.id.textViewLiteralInfo) TextView textViewLiteralInfo;
+    @Bind(R.id.switchLiteralSearch) SwitchCompat switchLiteralSearch;
+    @Bind(R.id.editTextDialogAlert) EditText editTextDialogAlert;
+
+    @OnTextChanged(R.id.editTextDialogAlert)
+    public void alertNameTextChanged() {
+        if (isAlertNameValid(editTextDialogAlert.length())) textInputLayout.setErrorEnabled(false);
+        else {
+            textInputLayout.setError(getString(R.string.text_dialog_alert_name_invalid));
+            textInputLayout.setErrorEnabled(true);
+        }
     }
+
+    @OnCheckedChanged(R.id.switchLiteralSearch)
+    public void onIsLiteralChanged(boolean isChecked) {
+        if (isChecked) {
+            YoYo.with(Techniques.SlideOutRight).duration(150L).withListener(
+                    new Animator.AnimatorListener() {
+                        @Override
+                        public void onAnimationStart(Animator animation) {}
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            textViewLiteralInfo.setText(R.string.info_literal);
+                            YoYo.with(Techniques.SlideInLeft).duration(150L)
+                                    .playOn(textViewLiteralInfo);
+                        }
+                        @Override
+                        public void onAnimationCancel(Animator animation) {}
+                        @Override
+                        public void onAnimationRepeat(Animator animation) {}
+                    }).playOn(textViewLiteralInfo);
+        } else {
+            YoYo.with(Techniques.SlideOutLeft).duration(150L).withListener(
+                    new Animator.AnimatorListener() {
+                        @Override
+                        public void onAnimationStart(Animator animation) {}
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            textViewLiteralInfo.setText(R.string.info_not_literal);
+                            YoYo.with(Techniques.SlideInRight).duration(150L)
+                                    .playOn(textViewLiteralInfo);
+                        }
+                        @Override
+                        public void onAnimationCancel(Animator animation) {}
+                        @Override
+                        public void onAnimationRepeat(Animator animation) {}
+                    }).playOn(textViewLiteralInfo);
+        }
+    }
+
+    /*
+    * ButterKnife bindings - END
+    * */
+
 }

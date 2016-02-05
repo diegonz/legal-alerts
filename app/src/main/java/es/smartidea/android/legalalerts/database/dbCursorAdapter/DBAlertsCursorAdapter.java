@@ -67,10 +67,14 @@ public class DBAlertsCursorAdapter extends ResourceCursorAdapter {
             case 0:
                 holder.imageViewAlertListItemLiteral
                         .setImageResource(android.R.drawable.ic_secure);
+                // Set tag for imageView to TRUE according to literal search setup
+                holder.imageViewAlertListItemLiteral.setTag(true);
                 break;
             case 1:
                 holder.imageViewAlertListItemLiteral
                         .setImageResource(android.R.drawable.ic_partial_secure);
+                // Set tag for imageView to FALSE according to literal search setup
+                holder.imageViewAlertListItemLiteral.setTag(false);
                 break;
         }
     }

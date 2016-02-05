@@ -23,10 +23,10 @@ public class MainActivity extends AppCompatActivity
     // Integer Fragment identifiers
     public static final int FRAGMENT_ALERTS = 0;
     public static final int FRAGMENT_HISTORY = 1;
+    private static final String DIALOG_TAG = "dialog_legal_alerts";
     // runningFragment initialized to -1, forcing first replacement and runningFragment update.
     private int runningFragment = -1;
     // Running fragment string
-    private static final String DIALOG_TAG = "dialog_legal_alerts";
     private static final String RUNNING_FRAGMENT_STRING = "running_fragment";
     // ButterKnife bindings
     @Bind(R.id.nav_view) NavigationView navigationView;

@@ -8,7 +8,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -17,6 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -50,6 +50,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
             DBContract.Alerts.COL_ALERT_NAME + " != '' ))";
 
     private static final String ORDER_ASC_BY_NAME = DBContract.Alerts.COL_ALERT_NAME + " ASC";
+    private static final String DIALOG_TAG = "dialog_legal_alerts";
     // Unique Loader ID to correct management
     private static final int ALERTS_LOADER_ID = 1;
     // Declare DBAdapter
@@ -121,12 +122,19 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
                 (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         TextView textView = ButterKnife.findById(
                 listViewAlerts.getChildAt(info.position), R.id.textViewAlertListItem);
+        ImageView imageView = ButterKnife.findById(
+                listViewAlerts.getChildAt(info.position), R.id.imageViewAlertListItemLiteral);
         switch (item.getItemId()){
             case R.id.contextMenuListItemAlertsEdit:
-                Log.d("AlertsFragment", "Edit: " + textView.getText());
+                // Show dialog passing to the factory method its alertName
+                // and TRUE or FALSE if marked as literal search
+                // on imageView tag´s added on DBAlertsCursorAdapter
+                NewAlertDialogFragment.newInstance(
+                        textView.getText().toString(),
+                        imageView.getTag().equals(true)
+                ).show(getActivity().getSupportFragmentManager(), DIALOG_TAG);
                 return true;
             case R.id.contextMenuListItemAlertsDelete:
-                Log.d("AlertsFragment", "Delete: " + textView.getText());
                 int hits = getActivity().getContentResolver().delete(
                         ALERTS_URI,
                         DBContract.Alerts.COL_ALERT_NAME + "='" + textView.getText() + '\'',
