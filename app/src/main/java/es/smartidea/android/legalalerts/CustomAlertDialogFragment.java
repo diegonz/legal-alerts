@@ -28,7 +28,7 @@ import butterknife.OnTextChanged;
 import es.smartidea.android.legalalerts.database.dbContentProvider.DBContentProvider;
 import es.smartidea.android.legalalerts.database.dbHelper.DBContract;
 
-public class NewAlertDialogFragment extends AppCompatDialogFragment {
+public class CustomAlertDialogFragment extends AppCompatDialogFragment {
 
     // URI of DB
     private static final Uri ALERTS_URI = DBContentProvider.ALERTS_URI;
@@ -42,11 +42,11 @@ public class NewAlertDialogFragment extends AppCompatDialogFragment {
      * with given parameters set to bundle
      *
      * @param alertName String representing alert name
-     * @return new instance of NewAlertDialogFragment with given parameter as bundle
+     * @return new instance of CustomAlertDialogFragment with given parameter as bundle
      */
     @NonNull
-    public static NewAlertDialogFragment newInstance(String alertName, boolean isLiteralSearch) {
-        NewAlertDialogFragment fragment = new NewAlertDialogFragment();
+    public static CustomAlertDialogFragment newInstance(String alertName, boolean isLiteralSearch) {
+        CustomAlertDialogFragment fragment = new CustomAlertDialogFragment();
 
         // Supply input
         Bundle bundle = new Bundle();
@@ -101,13 +101,13 @@ public class NewAlertDialogFragment extends AppCompatDialogFragment {
                 .setNegativeButton(R.string.button_dialog_alert_cancel,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
-                                NewAlertDialogFragment.this.getDialog().cancel();
+                                CustomAlertDialogFragment.this.getDialog().cancel();
                             }
                         }
                 ).setTitle(R.string.text_new_alert);
 
         /*
-        * Create the NewAlertDialogFragment object to override
+        * Create the CustomAlertDialogFragment object to override
         * positive button´s click listener using setOnShowListener
         * on the already created AlertDialog
         * */
@@ -148,7 +148,7 @@ public class NewAlertDialogFragment extends AppCompatDialogFragment {
                                             resultMessageString, Snackbar.LENGTH_SHORT
                                     ).setAction("Action", null).show();
                                 }
-                                NewAlertDialogFragment.this.getDialog().dismiss();
+                                CustomAlertDialogFragment.this.getDialog().dismiss();
                             } else {
                                 YoYo.with(Techniques.Tada).duration(300L).withListener(
                                         new Animator.AnimatorListener() {

@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity
     void fabClickListener() {
         switch (runningFragment) {
             case FRAGMENT_ALERTS:
-                new NewAlertDialogFragment().show(getSupportFragmentManager(), DIALOG_TAG);
+                new CustomAlertDialogFragment().show(getSupportFragmentManager(), DIALOG_TAG);
                 break;
             case FRAGMENT_HISTORY:
                 break;
@@ -161,7 +161,7 @@ public class MainActivity extends AppCompatActivity
         switch (afterSelectionTask){
             case START_DIALOG_ALERT:
                 // Launch Alerts dialog
-                new NewAlertDialogFragment().show(getSupportFragmentManager(), DIALOG_TAG);
+                new CustomAlertDialogFragment().show(getSupportFragmentManager(), DIALOG_TAG);
                 break;
             case START_SETTINGS_ACTIVITY:
                 // Launch Settings Activity

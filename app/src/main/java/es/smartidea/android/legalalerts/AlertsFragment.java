@@ -129,7 +129,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
                 // Show dialog passing to the factory method its alertName
                 // and TRUE or FALSE if marked as literal search
                 // on imageView tag´s added on DBAlertsCursorAdapter
-                NewAlertDialogFragment.newInstance(
+                CustomAlertDialogFragment.newInstance(
                         textView.getText().toString(),
                         imageView.getTag().equals(true)
                 ).show(getActivity().getSupportFragmentManager(), DIALOG_TAG);
