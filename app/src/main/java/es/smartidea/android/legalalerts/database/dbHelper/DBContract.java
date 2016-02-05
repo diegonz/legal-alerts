@@ -3,16 +3,15 @@ package es.smartidea.android.legalalerts.database.dbHelper;
 import android.provider.BaseColumns;
 
 /*
- * DBContract class
- * database structure handler class
- * Defines DB structure (Tables, Columns, etc...)
- * Contains publicly accessible Strings describing DB
- * Changes on DB structure are managed from here, applying on whole app.
+ * DBContract class Defines DB structure (Tables, Columns, etc...)
+ *
+ * Database structure definer class using android BaseColumns
+ * Contains publicly accessible constant Strings referring DB names
+ * Changes on DB versions and structure are managed from here.
  */
 public final class DBContract {
     // void constructor to avoid instantiation
-    public DBContract() {
-    }
+    public DBContract() {}
 
     // Database name and version
     public static final int DATABASE_VERSION = 1;

@@ -2,10 +2,8 @@ package es.smartidea.android.legalalerts;
 
 import android.annotation.SuppressLint;
 import android.support.annotation.NonNull;
-import android.content.ContentValues;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputLayout;
@@ -25,13 +23,8 @@ import butterknife.ButterKnife;
 import butterknife.Bind;
 import butterknife.OnCheckedChanged;
 import butterknife.OnTextChanged;
-import es.smartidea.android.legalalerts.database.dbContentProvider.DBContentProvider;
-import es.smartidea.android.legalalerts.database.dbHelper.DBContract;
 
 public class CustomAlertDialogFragment extends AppCompatDialogFragment {
-
-    // URI of DB
-    private static final Uri ALERTS_URI = DBContentProvider.ALERTS_URI;
 
     /*
     * LOCAL_METHODS - START
@@ -89,10 +82,13 @@ public class CustomAlertDialogFragment extends AppCompatDialogFragment {
         // ButterKnife bind
         ButterKnife.bind(this, view);
 
-        // Get alert name if are present
-        if (getArguments() != null) {
-            editTextDialogAlert.setText(getArguments().getString("alert_name"));
-            switchLiteralSearch.setChecked(getArguments().getBoolean("is_literal_search"));
+        int dialogTitleInt = R.string.text_dialog_new_alert;
+        // Get alert name if are present and set dialog title
+        Bundle bundle = getArguments();
+        if (bundle != null) {
+            editTextDialogAlert.setText(bundle.getString("alert_name"));
+            switchLiteralSearch.setChecked(bundle.getBoolean("is_literal_search"));
+            dialogTitleInt = R.string.text_dialog_edit_alert;
         }
 
         // Set positive button listener to null, will be overridden in setOnShowListener
@@ -104,7 +100,7 @@ public class CustomAlertDialogFragment extends AppCompatDialogFragment {
                                 CustomAlertDialogFragment.this.getDialog().cancel();
                             }
                         }
-                ).setTitle(R.string.text_new_alert);
+                ).setTitle(dialogTitleInt);
 
         /*
         * Create the CustomAlertDialogFragment object to override
@@ -121,34 +117,31 @@ public class CustomAlertDialogFragment extends AppCompatDialogFragment {
                         @Override
                         public void onClick(View v) {
                             if (isAlertNameValid(editTextDialogAlert.length())) {
-                                ContentValues values = new ContentValues();
-                                values.put(
-                                        DBContract.Alerts.COL_ALERT_NAME,
-                                        editTextDialogAlert.getText().toString()
-                                );
-                                // Get REVERSE toggle button state by casting a boolean with ternary
-                                // operator expression. If checked returns 0 and if not returns 1
-                                int literalSearchIntValue =
-                                        (!switchLiteralSearch.isChecked()) ? 1 : 0;
-                                values.put(
-                                        DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL,
-                                        literalSearchIntValue
-                                );
-                                Uri resultID = getActivity().getContentResolver()
-                                        .insert(ALERTS_URI, values);
-                                if (resultID != null) {
-                                    String resultMessageString;
-                                    if (resultID.getLastPathSegment().equals("-1")) {
-                                        resultMessageString = "Alert already existed into DB";
-                                    } else {
-                                        resultMessageString = "Alert inserted into DB";
-                                    }
-                                    Snackbar.make(
-                                            getActivity().findViewById(R.id.fragmentMainPlaceholder),
-                                            resultMessageString, Snackbar.LENGTH_SHORT
-                                    ).setAction("Action", null).show();
+                                int result =
+                                        ((MainActivity)getActivity()).insertNewAlert(
+                                                editTextDialogAlert.getText().toString(),
+                                                switchLiteralSearch.isChecked());
+                                switch (result){
+                                    case -1:
+                                        // Show the user there was an error
+                                        // and do not dismiss the dialog
+                                        Toast.makeText(getContext(),
+                                                getString(R.string.text_dialog_error_inserting),
+                                                Toast.LENGTH_SHORT
+                                        ).show();
+                                        break;
+                                    default:
+                                        //noinspection StringConcatenationMissingWhitespace
+                                        Snackbar.make(
+                                                getActivity().findViewById(R.id.fragmentMainPlaceholder),
+                                                getString(R.string.text_dialog_inserted_ok_with_id) + result,
+                                                Snackbar.LENGTH_SHORT
+                                        ).setAction("Action", null).show();
+                                        // Dismiss the dialog after successful insert
+                                        // and showing snackBar with DB ID
+                                        CustomAlertDialogFragment.this.getDialog().dismiss();
+                                        break;
                                 }
-                                CustomAlertDialogFragment.this.getDialog().dismiss();
                             } else {
                                 YoYo.with(Techniques.Tada).duration(300L).withListener(
                                         new Animator.AnimatorListener() {
@@ -176,8 +169,7 @@ public class CustomAlertDialogFragment extends AppCompatDialogFragment {
                                         }
                                 ).playOn(editTextDialogAlert);
 
-                                Toast.makeText(
-                                    getContext(),
+                                Toast.makeText(getContext(),
                                     getString(R.string.text_dialog_alert_name_invalid),
                                     Toast.LENGTH_SHORT
                                 ).show();
@@ -222,7 +214,7 @@ public class CustomAlertDialogFragment extends AppCompatDialogFragment {
                         public void onAnimationStart(Animator animation) {}
                         @Override
                         public void onAnimationEnd(Animator animation) {
-                            textViewLiteralInfo.setText(R.string.info_literal);
+                            textViewLiteralInfo.setText(R.string.text_dialog_info_literal_yes);
                             YoYo.with(Techniques.SlideInLeft).duration(150L)
                                     .playOn(textViewLiteralInfo);
                         }
@@ -238,7 +230,7 @@ public class CustomAlertDialogFragment extends AppCompatDialogFragment {
                         public void onAnimationStart(Animator animation) {}
                         @Override
                         public void onAnimationEnd(Animator animation) {
-                            textViewLiteralInfo.setText(R.string.info_not_literal);
+                            textViewLiteralInfo.setText(R.string.text_dialog_info_not_literal);
                             YoYo.with(Techniques.SlideInRight).duration(150L)
                                     .playOn(textViewLiteralInfo);
                         }

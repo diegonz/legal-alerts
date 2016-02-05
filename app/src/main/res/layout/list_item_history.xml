@@ -9,7 +9,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/text_history_list_item"
+        android:text="@string/fragment_history_text_list_item"
         android:id="@+id/textViewHistoryListItemRelatedAlert"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
@@ -18,7 +18,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/text_history_list_item"
+        android:text="@string/fragment_history_text_list_item"
         android:id="@+id/textViewHistoryListItemDocumentName"
         android:layout_below="@+id/textViewHistoryListItemRelatedAlert"
         android:layout_alignParentLeft="true"
@@ -26,7 +26,7 @@
 
     <ImageButton
         android:src="@android:drawable/ic_menu_view"
-        android:contentDescription="@string/text_delete"
+        android:contentDescription="@string/list_item_history_text_delete"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/buttonViewHistoryListItem"

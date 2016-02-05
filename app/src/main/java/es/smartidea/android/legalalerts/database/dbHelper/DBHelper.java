@@ -22,7 +22,10 @@ public class DBHelper extends SQLiteOpenHelper {
 
     // Create and delete table sentences
 
-    /* Start ALERTS table */
+    /*
+    *  Start ALERTS table
+    * */
+
     public static final String SQL_CREATE_ALERTS_TABLE =
             "CREATE TABLE " + DBContract.Alerts.TABLE_NAME + " (" +
                     DBContract.Alerts._ID + " INTEGER PRIMARY KEY," +
@@ -31,9 +34,15 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public static final String SQL_DELETE_ALERTS_TABLE =
             "DROP TABLE IF EXISTS " + DBContract.Alerts.TABLE_NAME + ';';
-    /* End ALERTS table */
 
-    /* Start HISTORY table */
+    /*
+    *  End ALERTS table
+    * */
+
+    /*
+    *  Start HISTORY table
+    * */
+
     public static final String SQL_CREATE_HISTORY_TABLE =
             "CREATE TABLE " + DBContract.History.TABLE_NAME + " (" +
             DBContract.History._ID + " INTEGER PRIMARY KEY," +
@@ -43,11 +52,17 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public static final String SQL_DELETE_HISTORY_TABLE =
             "DROP TABLE IF EXISTS " + DBContract.History.TABLE_NAME + ';';
-    /* End HISTORY table */
 
+    /*
+    * End HISTORY table
+    * */
+
+    // Public constructor
     public DBHelper(Context context) {
         super(context, DBContract.DATABASE_NAME, null, DBContract.DATABASE_VERSION);
     }
+
+    // onCreate, onUpgrade and onDowngrade implementations
 
     @Override
     public void onCreate(SQLiteDatabase db) {
@@ -63,12 +78,13 @@ public class DBHelper extends SQLiteOpenHelper {
         Log.d("DB", "Deleting Database tables on upgrade...");
         db.execSQL(SQL_DELETE_ALERTS_TABLE);
         db.execSQL(SQL_DELETE_HISTORY_TABLE);
-        Log.d("DB", "Deleted!");
+        Log.d("DB", "Database dump complete!");
         onCreate(db);
     }
 
     @Override
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        // Call onUpgrade to dump database
         onUpgrade(db, oldVersion, newVersion);
     }
 

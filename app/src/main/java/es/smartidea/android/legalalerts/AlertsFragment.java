@@ -32,8 +32,7 @@ import es.smartidea.android.legalalerts.database.dbHelper.DBContract;
 /**
  * A simple {@link Fragment} subclass.
  * Displays ListView showing alerts stored on DB
- * Shows delete button
- * TODO: Add edit-on-click behaviour
+ * Shows context menu to edit or delete selected alert
  */
 public class AlertsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -61,7 +60,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     // Required empty public constructor
     public AlertsFragment() {}
 
-    /**
+    /*
      * Start of fragment lifecycle
      * */
 
@@ -81,10 +80,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater,
-                             ViewGroup container,
-                             Bundle savedInstanceState) {
-
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         View view = inflater.inflate(R.layout.fragment_alerts, container, false);
         // Bind ButterKnife to view
         ButterKnife.bind(this, view);
@@ -97,7 +93,6 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
         // Set alertsAdapter to ListViewAlerts
         initAlertsLoader();
         registerForContextMenu(listViewAlerts);
-//        listViewAlerts.setOnItemLongClickListener(new OnAlertItemLongClick());
     }
 
     @Override
@@ -159,15 +154,11 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_refresh) {
+        if (item.getItemId() == R.id.action_refresh) {
             // Start manual sync if service is not already running
             if (AlertsService.isRunning()){
-                Toast.makeText(
-                        getActivity(),
-                        "service already running...",
+                Toast.makeText(getContext(),
+                        getString(R.string.text_toast_service_already_running),
                         Toast.LENGTH_SHORT
                 ).show();
             } else {
@@ -180,7 +171,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
         return super.onOptionsItemSelected(item);
     }
 
-    /**
+    /*
      * End of fragment lifecycle
      * */
 
@@ -204,7 +195,9 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
         alertsAdapter.swapCursor(null);
     }
 
-    // Set alertsAdapter to ListViewAlerts
+    /**
+     * Set alertsAdapter to ListViewAlerts and initialize Loader via LoaderManager
+     */
     private void initAlertsLoader() {
         alertsAdapter = new DBAlertsCursorAdapter(getActivity(), R.layout.list_item_alert, null, 0);
         listViewAlerts.setAdapter(alertsAdapter);

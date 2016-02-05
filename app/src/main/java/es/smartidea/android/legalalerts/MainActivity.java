@@ -1,6 +1,8 @@
 package es.smartidea.android.legalalerts;
 
+import android.content.ContentValues;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -16,9 +18,14 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import es.smartidea.android.legalalerts.broadcastReceivers.AlertsAlarmReceiver;
+import es.smartidea.android.legalalerts.database.dbContentProvider.DBContentProvider;
+import es.smartidea.android.legalalerts.database.dbHelper.DBContract;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    // URI of Alerts table into DB
+    private static final Uri ALERTS_URI = DBContentProvider.ALERTS_URI;
 
     // Integer Fragment identifiers
     public static final int FRAGMENT_ALERTS = 0;
@@ -114,19 +121,14 @@ public class MainActivity extends AppCompatActivity
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (item.getItemId() == R.id.action_settings) {
             // Start Settings activity
             startActivity(new Intent(this, SettingsActivity.class));
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
@@ -224,6 +226,7 @@ public class MainActivity extends AppCompatActivity
         setDrawerCheckedItemAndTitle();
     }
 
+    // Sets current title and navigation drawer item
     private void setDrawerCheckedItemAndTitle(){
         // Select item on drawer
         switch (runningFragment) {
@@ -236,5 +239,27 @@ public class MainActivity extends AppCompatActivity
                 setTitle(getResources().getString(R.string.nav_history));
                 break;
         }
+    }
+
+    /**
+     * Activity method to insert new Alerts into Database
+     *
+     * @param alertName String representing the search term to be stored
+     * @param isLiteralSearch boolean flag indicating if search
+     *                        term has literal search set to TRUE
+     * @return int indicating DB ID, returns minus one (-1) if there was an
+     * error or same search term already existed into DB
+     */
+    public int insertNewAlert(final String alertName, final boolean isLiteralSearch){
+        ContentValues values = new ContentValues();
+        values.put(DBContract.Alerts.COL_ALERT_NAME, alertName);
+        values.put(DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL, isLiteralSearch);
+        Uri resultID = getContentResolver().insert(ALERTS_URI, values);
+        if (resultID != null) {
+            // Return last item of Uri (ID)
+            return Integer.parseInt(resultID.getLastPathSegment());
+        }
+        // If not inserted return -1
+        return -1;
     }
 }

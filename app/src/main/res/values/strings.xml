@@ -1,9 +1,16 @@
 <resources>
     <string name="app_name">Legal Alerts</string>
 
+    <string name="fragment_alerts_text_list_item">Alert Item</string>
+    <string name="fragment_alerts_text_image_literal_search">Search literally</string>
+    <string name="fragment_history_text_list_item">Alert Item</string>
+    <string name="list_item_history_text_delete">Delete</string>
+
+    <!-- Strings related to NavDrawer -->
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
+    <string name="nav_header_info_email">dgonzalez.BZ@gmail.com</string>
     <string name="nav_alerts">Legal Alerts</string>
     <string name="nav_new_alert">New Alert</string>
     <string name="nav_history">History</string>
@@ -12,65 +19,49 @@
     <string name="nav_share">Share App</string>
     <string name="nav_info">About</string>
 
+    <!-- Strings related to ToolBar (ActionBar) -->
     <string name="action_settings">Settings</string>
     <string name="action_manual_sync">Sync</string>
-    <string name="text_new_alert">New Alert</string>
-    <string name="alert_hint">Alert name</string>
 
-    <string name="button_add_alert">Add</string>
-    <string name="button_dialog_alert_save">Save</string>
-    <string name="button_delete_alert">Delete</string>
-    <string name="button_dialog_alert_cancel">Cancel</string>
-
-    <string name="button_notify_alert">Notify</string>
-
-    <string name="text_alert_colon">Alert:</string>
-    <string name="text_literal_search"><b>Literal Search</b></string>
-    <string name="text_alert_list_item">Alert Item</string>
-    <string name="text_delete">Delete</string>
-    <string name="text_image_literal_search">Search literally</string>
-    <string name="text_on"><b>ON</b></string>
-    <string name="text_off"><b>OFF</b></string>
-    <string name="text_history_list_item">Alert Item</string>
-    <string name="info_email">dgonzalez.BZ@gmail.com</string>
-    <string name="info_not_literal">Literal search is <b>disabled.</b>\n<i>Legal Alerts will search for all occurrences disregarding order or place.</i></string>
-    <string name="info_literal">Literal search is <b>enabled.</b>\n<i>Legal Alerts will search for exact match of given Alert pattern.</i></string>
-
-    <string name="title_activity_settings">Alerts Settings</string>
-    <!-- Strings related to Alerts ListView items context menu -->
+    <!-- Strings related to Alerts ListView items ContextMenu -->
     <string name="list_view_alerts_context_menu_option_delete">Delete</string>
     <string name="list_view_alerts_context_menu_option_edit">Edit</string>
 
     <!-- Strings related to Alerts Dialog -->
-    <string name="text_dialog_alert_name_invalid">"Insert at least three characters!"</string>
+    <string name="button_dialog_alert_save">Save</string>
+    <string name="button_dialog_alert_cancel">Cancel</string>
+    <string name="text_dialog_new_alert">New Alert</string>
+    <string name="text_dialog_edit_alert">Edit Alert</string>
+    <string name="text_dialog_literal_search_title"><b>Literal Search</b></string>
+    <string name="text_dialog_alert_hint">Alert name</string>
+    <string name="text_dialog_alert_name_invalid">Insert at least three characters!</string>
+    <string name="text_dialog_error_inserting">Error or alert already existed into DB</string>
+    <string name="text_dialog_inserted_ok_with_id">Alert inserted into DB with ID: </string>
+    <string name="text_dialog_info_not_literal">Literal search is <b>disabled.</b>\n<i>Legal Alerts will search for all occurrences disregarding order or place.</i></string>
+    <string name="text_dialog_info_literal_yes">Literal search is <b>enabled.</b>\n<i>Legal Alerts will search for exact match of given Alert pattern.</i></string>
+
+    <!-- Toast Messages Strings -->
+    <string name="text_toast_no_wan">Manual sync failed, no active network was found!.</string>
+    <string name="text_toast_service_already_running">service already running&#8230;</string>
+
+    <!-- Strings related notifications messages -->
+    <string name="notification_no_results_title">NO RESULTS FOUND</string>
+    <string name="notification_no_results_description">Any coincidences where found into XML data.</string>
+    <string name="notification_ok_results_title">New alerts found</string>
+    <string name="notification_ok_results_description">new coincidences where found for your search terms!.</string>
 
     <!-- Strings related to Settings -->
-
+    <string name="title_activity_settings">Alerts Settings</string>
     <!-- Example settings for Data & Sync -->
     <string name="pref_header_data_sync">Data &amp; sync</string>
-
     <string name="pref_title_sync_charging_only">Sync only while charging</string>
     <string name="pref_title_sync_unmetered_only">Sync only over unmetered networks</string>
 
-
     <!-- Example settings for Notifications -->
     <string name="pref_header_notifications">Notifications</string>
-
     <string name="pref_title_new_message_notifications">New message notifications</string>
-
     <string name="pref_title_ringtone">Ringtone</string>
     <string name="pref_ringtone_silent">Silent</string>
-
     <string name="pref_title_vibrate">Vibrate</string>
-
-    <!-- Toast Message Strings -->
-    <string name="toast_no_wan">Manual sync failed, no active network was found!.</string>
-
-    <!-- Notifications Message Strings -->
-    <string name="notification_no_results_title">NO RESULTS FOUND</string>
-    <string name="notification_no_results_description">Any coincidences where found into XML data.</string>
-
-    <string name="notification_ok_results_title">New alerts found</string>
-    <string name="notification_ok_results_description">new coincidences where found for your search terms!.</string>
 
 </resources>
