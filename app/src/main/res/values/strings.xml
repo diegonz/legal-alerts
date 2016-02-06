@@ -34,9 +34,11 @@
     <string name="text_dialog_edit_alert">Edit Alert</string>
     <string name="text_dialog_literal_search_title"><b>Literal Search</b></string>
     <string name="text_dialog_alert_hint">Alert name</string>
+    <string name="text_dialog_default_switch_on">Enabled</string>
+    <string name="text_dialog_default_switch_off">Disabled</string>
     <string name="text_dialog_alert_name_invalid">Insert at least three characters!</string>
-    <string name="text_dialog_error_inserting">Error or alert already existed into DB</string>
-    <string name="text_dialog_inserted_ok_with_id">Alert inserted into DB with ID: </string>
+    <string name="text_dialog_error_inserting_or_updating">Alert could not be inserted or updated</string>
+    <string name="text_dialog_inserted_or_updated_ok">Alert successfully inserted or updated</string>
     <string name="text_dialog_info_not_literal">Literal search is <b>disabled.</b>\n<i>Legal Alerts will search for all occurrences disregarding order or place.</i></string>
     <string name="text_dialog_info_literal_yes">Literal search is <b>enabled.</b>\n<i>Legal Alerts will search for exact match of given Alert pattern.</i></string>
 

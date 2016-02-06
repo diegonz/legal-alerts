@@ -13,27 +13,31 @@ import android.util.Log;
 @SuppressWarnings("StringConcatenationMissingWhitespace")
 public class DBHelper extends SQLiteOpenHelper {
 
-    // String query "tokens"
-    private static final String TEXT_TYPE = " TEXT";
-    private static final String INT_TYPE = " INT";
-    private static final String NOT_NULL = " NOT NULL";
+    // String query "tokens" with preceding space
+    private static final String TEXT_TYPE = " TEXT", INT_TYPE = " INT", NOT_NULL = " NOT NULL";
+    private static final String ON_CONFLICT_IGNORE = " ON CONFLICT IGNORE";
     private static final String DEFAULT_0 = " DEFAULT 0";
-    private static final String COMMA_SEP = ",";
-
-    // Create and delete table sentences
+    private static final String SPACE_OPEN_BRACKET = " (", SPACE_CLOSE_BRACKET_SEMICOLON = " );";
+    // String query "tokens" with later space
+    private static final String UNIQUE = "UNIQUE ", COMMA_SEP = ", ";
+    // String query "tokens" with space before and after
+    private static final String INT_PRIMARY_KEY = " INTEGER PRIMARY KEY, ";
+    private static final String CLOSE_BRACKET_SPACE = ") ";
 
     /*
     *  Start ALERTS table
     * */
 
     public static final String SQL_CREATE_ALERTS_TABLE =
-            "CREATE TABLE " + DBContract.Alerts.TABLE_NAME + " (" +
-                    DBContract.Alerts._ID + " INTEGER PRIMARY KEY," +
-                    DBContract.Alerts.COL_ALERT_NAME + TEXT_TYPE + NOT_NULL + COMMA_SEP +
-                    DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL + INT_TYPE + DEFAULT_0 + " );";
+        "CREATE TABLE " + DBContract.Alerts.TABLE_NAME + SPACE_OPEN_BRACKET +
+            DBContract.Alerts._ID + INT_PRIMARY_KEY +
+            DBContract.Alerts.COL_ALERT_NAME + TEXT_TYPE + NOT_NULL + COMMA_SEP +
+            DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL + INT_TYPE + DEFAULT_0 + COMMA_SEP +
+            UNIQUE + SPACE_OPEN_BRACKET + DBContract.Alerts.COL_ALERT_NAME + CLOSE_BRACKET_SPACE +
+                ON_CONFLICT_IGNORE + SPACE_CLOSE_BRACKET_SEMICOLON;
 
     public static final String SQL_DELETE_ALERTS_TABLE =
-            "DROP TABLE IF EXISTS " + DBContract.Alerts.TABLE_NAME + ';';
+        "DROP TABLE IF EXISTS " + DBContract.Alerts.TABLE_NAME + ';';
 
     /*
     *  End ALERTS table
@@ -44,14 +48,17 @@ public class DBHelper extends SQLiteOpenHelper {
     * */
 
     public static final String SQL_CREATE_HISTORY_TABLE =
-            "CREATE TABLE " + DBContract.History.TABLE_NAME + " (" +
-            DBContract.History._ID + " INTEGER PRIMARY KEY," +
+        "CREATE TABLE " + DBContract.History.TABLE_NAME + SPACE_OPEN_BRACKET +
+            DBContract.History._ID + INT_PRIMARY_KEY +
             DBContract.History.COL_HISTORY_RELATED_ALERT_NAME + TEXT_TYPE + NOT_NULL + COMMA_SEP +
             DBContract.History.COL_HISTORY_DOCUMENT_NAME + TEXT_TYPE + NOT_NULL + COMMA_SEP +
-            DBContract.History.COL_HISTORY_DOCUMENT_URL + TEXT_TYPE + NOT_NULL + " );";
+            DBContract.History.COL_HISTORY_DOCUMENT_URL + TEXT_TYPE + NOT_NULL + COMMA_SEP +
+            UNIQUE + SPACE_OPEN_BRACKET + DBContract.History.COL_HISTORY_RELATED_ALERT_NAME +
+                COMMA_SEP + DBContract.History.COL_HISTORY_DOCUMENT_NAME + CLOSE_BRACKET_SPACE +
+                ON_CONFLICT_IGNORE + SPACE_CLOSE_BRACKET_SEMICOLON;
 
     public static final String SQL_DELETE_HISTORY_TABLE =
-            "DROP TABLE IF EXISTS " + DBContract.History.TABLE_NAME + ';';
+        "DROP TABLE IF EXISTS " + DBContract.History.TABLE_NAME + ';';
 
     /*
     * End HISTORY table

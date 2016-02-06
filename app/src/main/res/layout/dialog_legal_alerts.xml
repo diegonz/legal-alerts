@@ -76,8 +76,8 @@
             android:layout_height="wrap_content"
             android:id="@+id/switchLiteralSearch"
             android:checked="true"
-            android:textOff="@string/text_off"
-            android:textOn="@string/text_literal_search"
+            android:textOff="@string/text_dialog_default_switch_off"
+            android:textOn="@string/text_dialog_default_switch_on"
             android:layout_gravity="center_vertical" />
 
     </LinearLayout>

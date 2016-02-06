@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity
 
     // URI of Alerts table into DB
     private static final Uri ALERTS_URI = DBContentProvider.ALERTS_URI;
+    private static final String WHERE_NAME_EQUALS = DBContract.Alerts.COL_ALERT_NAME + '=';
 
     // Integer Fragment identifiers
     public static final int FRAGMENT_ALERTS = 0;
@@ -253,7 +254,10 @@ public class MainActivity extends AppCompatActivity
     public int insertNewAlert(final String alertName, final boolean isLiteralSearch){
         ContentValues values = new ContentValues();
         values.put(DBContract.Alerts.COL_ALERT_NAME, alertName);
-        values.put(DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL, isLiteralSearch);
+        // Get REVERSE toggle button state by casting a boolean with ternary operator expression.
+        // If checked returns 0, if not returns 1
+        int literalSearchIntValue = (isLiteralSearch) ? 0 : 1;
+        values.put(DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL, literalSearchIntValue);
         Uri resultID = getContentResolver().insert(ALERTS_URI, values);
         if (resultID != null) {
             // Return last item of Uri (ID)
@@ -261,5 +265,29 @@ public class MainActivity extends AppCompatActivity
         }
         // If not inserted return -1
         return -1;
+    }
+
+    /**
+     * Activity method to update Alerts into Database
+     *
+     * @param oldName       String representing previous alertName to be updated
+     * @param newName       String representing new alertName to update
+     * @param isLiteralSearch boolean flag indicating if search
+     *                        term has literal search set to TRUE
+     * @return int representing updating success, 1 if updated ok, -1 if no update was produced
+     */
+    public int updateAlert(final String oldName, final String newName, final boolean isLiteralSearch){
+        ContentValues values = new ContentValues();
+        values.put(DBContract.Alerts.COL_ALERT_NAME, newName);
+        // Get REVERSE toggle button state by casting a boolean with ternary operator expression.
+        // If checked returns 0, if not returns 1
+        int literalSearchIntValue = (isLiteralSearch) ? 0 : 1;
+        values.put(DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL, literalSearchIntValue);
+        // Set WHERE clause between single quotes to avoid being
+        // identified by SQLite as a table +info: http://stackoverflow.com/a/13173792/3799840
+        return getContentResolver()
+                .update(ALERTS_URI, values, WHERE_NAME_EQUALS + '\'' + oldName + '\'', null) < 1
+                ? -1
+                : 1;
     }
 }

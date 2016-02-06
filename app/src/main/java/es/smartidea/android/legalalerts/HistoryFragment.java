@@ -27,12 +27,7 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
     // URI of DB
     private static final Uri HISTORY_URI = DBContentProvider.HISTORY_URI;
     // Static String arguments for querying
-    private static final String[] PROJECTION = new String[]{
-            DBContract.History._ID,
-            DBContract.History.COL_HISTORY_RELATED_ALERT_NAME,
-            DBContract.History.COL_HISTORY_DOCUMENT_NAME,
-            DBContract.History.COL_HISTORY_DOCUMENT_URL
-    };
+    private static final String[] PROJECTION = DBContract.HISTORY_PROJECTION;
     private static final String ORDER_DESC_BY_ID = DBContract.History._ID + " DESC";
     // Unique Loader ID to correct management
     private static final int HISTORY_LOADER_ID = 2;

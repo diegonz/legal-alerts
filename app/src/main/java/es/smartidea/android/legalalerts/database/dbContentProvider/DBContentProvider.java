@@ -31,19 +31,19 @@ public class DBContentProvider extends ContentProvider {
     //UriMatcher values
     private static final String AUTHORITY = "es.smartidea.legalalerts.dbContentProvider";
     // Access URI to Alerts table
-    private static final int ALERTS = 10;
+    private static final int ALERTS_URI_INT = 10;
     private static final String ALERTS_PATH = "alerts_table";
     public static final Uri ALERTS_URI = Uri.parse("content://" + AUTHORITY + '/' + ALERTS_PATH);
     // Access URI to History table
-    private static final int HISTORY = 20;
+    private static final int HISTORY_URI_INT = 20;
     private static final String HISTORY_PATH = "history_table";
     public static final Uri HISTORY_URI = Uri.parse("content://" + AUTHORITY + '/' + HISTORY_PATH);
 
     private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
     static {
-        sUriMatcher.addURI(AUTHORITY, ALERTS_PATH, ALERTS);
-        sUriMatcher.addURI(AUTHORITY, HISTORY_PATH, HISTORY);
+        sUriMatcher.addURI(AUTHORITY, ALERTS_PATH, ALERTS_URI_INT);
+        sUriMatcher.addURI(AUTHORITY, HISTORY_PATH, HISTORY_URI_INT);
     }
 
     @Override
@@ -61,37 +61,30 @@ public class DBContentProvider extends ContentProvider {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
         switch (uriType) {
-            case ALERTS:
+            case ALERTS_URI_INT:
                 path = ALERTS_PATH;
-                final String[] PROJECTION = new String[]{
-                        DBContract.Alerts._ID,
-                        DBContract.Alerts.COL_ALERT_NAME,
-                        DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL
-                };
                 final String SELECTION = DBContract.Alerts.COL_ALERT_NAME + "='" +
                         values.getAsString(DBContract.Alerts.COL_ALERT_NAME) + '\'';
 
                 Cursor alreadyExistCursor = db.query(DBContract.Alerts.TABLE_NAME,
-                        PROJECTION,
+                        DBContract.ALERTS_PROJECTION,
                         SELECTION,
                         null, null, null, null);
 
-                // Check if alerts already exists
+                // Do the real insert if alerts NOT exists
                 if (!alreadyExistCursor.moveToFirst()) {
                     id = db.insert(DBContract.Alerts.TABLE_NAME, null, values);
-                } else {
-                    // id = alreadyExistCursor.getLong(alreadyExistCursor.getColumnIndex(DBContract.Alerts._ID));
-                    // Set id to -1 if alert exist
-                    id = -1;
-                }
-                // Close db cursor
-                alreadyExistCursor.close();
+                } else id = -1L; // Set id to -1 if alert exist
 
+                // Close existing alert db cursor checker
+                alreadyExistCursor.close();
                 break;
-            case HISTORY:
+
+            case HISTORY_URI_INT:
                 path = HISTORY_PATH;
                 id = db.insert(DBContract.History.TABLE_NAME, null, values);
                 break;
+
             default:
                 throw new IllegalArgumentException("ERROR - Wrong URI: " + uri);
         }
@@ -117,10 +110,10 @@ public class DBContentProvider extends ContentProvider {
         checkColumns(uriType, projection);
 
         switch (uriType) {
-            case ALERTS:
+            case ALERTS_URI_INT:
                 queryBuilder.setTables(DBContract.Alerts.TABLE_NAME);
                 break;
-            case HISTORY:
+            case HISTORY_URI_INT:
                 queryBuilder.setTables(DBContract.History.TABLE_NAME);
                 break;
             default:
@@ -142,10 +135,10 @@ public class DBContentProvider extends ContentProvider {
 
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         switch (uriType) {
-            case ALERTS:
+            case ALERTS_URI_INT:
                 rowsDeleted = db.delete(DBContract.Alerts.TABLE_NAME, selection, selectionArgs);
                 break;
-            case HISTORY:
+            case HISTORY_URI_INT:
                 rowsDeleted = db.delete(DBContract.History.TABLE_NAME, selection, selectionArgs);
                 break;
             default:
@@ -167,11 +160,11 @@ public class DBContentProvider extends ContentProvider {
 
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         switch (uriType) {
-            case ALERTS:
+            case ALERTS_URI_INT:
                 rowsUpdated =
                         db.update(DBContract.Alerts.TABLE_NAME, values, selection, selectionArgs);
                 break;
-            case HISTORY:
+            case HISTORY_URI_INT:
                 rowsUpdated =
                         db.update(DBContract.History.TABLE_NAME, values, selection, selectionArgs);
                 break;
@@ -183,43 +176,27 @@ public class DBContentProvider extends ContentProvider {
     }
 
     // checkColumns() checks if received projection´s columns are valid
-    public static void checkColumns(int uriType, String... projection) {
-
-        String[] availableC;
+    public static void checkColumns(int uriType, @NonNull String... projection) {
         HashSet<String> requested;
         HashSet<String> available;
+        switch (uriType) {
+            case ALERTS_URI_INT:
+                requested = new HashSet<>(Arrays.asList(projection));
+                available = new HashSet<>(Arrays.asList(DBContract.ALERTS_PROJECTION));
+                // Checks if all columns are available
+                if (!available.containsAll(requested)) {
+                    throw new IllegalArgumentException("Invalid columns on projection");
+                }
+                break;
 
-        if (projection != null) {
-
-            switch (uriType) {
-                case ALERTS:
-                    availableC = new String[]{
-                            DBContract.Alerts._ID,
-                            DBContract.Alerts.COL_ALERT_NAME,
-                            DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL
-                    };
-                    requested = new HashSet<>(Arrays.asList(projection));
-                    available = new HashSet<>(Arrays.asList(availableC));
-                    // Checks if all columns are available
-                    if (!available.containsAll(requested)) {
-                        throw new IllegalArgumentException("Invalid columns on projection");
-                    }
-                    break;
-                case HISTORY:
-                    availableC = new String[]{
-                            DBContract.History._ID,
-                            DBContract.History.COL_HISTORY_RELATED_ALERT_NAME,
-                            DBContract.History.COL_HISTORY_DOCUMENT_NAME,
-                            DBContract.History.COL_HISTORY_DOCUMENT_URL
-                    };
-                    requested = new HashSet<>(Arrays.asList(projection));
-                    available = new HashSet<>(Arrays.asList(availableC));
-                    // Checks if all columns are available
-                    if (!available.containsAll(requested)) {
-                        throw new IllegalArgumentException("Invalid columns on projection");
-                    }
-                    break;
-            }
+            case HISTORY_URI_INT:
+                requested = new HashSet<>(Arrays.asList(projection));
+                available = new HashSet<>(Arrays.asList(DBContract.HISTORY_PROJECTION));
+                // Checks if all columns are available
+                if (!available.containsAll(requested)) {
+                    throw new IllegalArgumentException("Invalid columns on projection");
+                }
+                break;
         }
     }
 
