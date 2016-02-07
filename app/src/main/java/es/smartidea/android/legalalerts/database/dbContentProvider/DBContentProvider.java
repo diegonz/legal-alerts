@@ -202,6 +202,7 @@ public class DBContentProvider extends ContentProvider {
 
     @Override
     public String getType(@NonNull Uri uri) {
+        //noinspection ReturnOfNull
         return null;
     }
 }

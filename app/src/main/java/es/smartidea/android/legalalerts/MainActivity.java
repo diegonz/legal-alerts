@@ -3,9 +3,13 @@ package es.smartidea.android.legalalerts;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -13,6 +17,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -26,14 +31,14 @@ public class MainActivity extends AppCompatActivity
 
     // URI of Alerts table into DB
     private static final Uri ALERTS_URI = DBContentProvider.ALERTS_URI;
+    private static final Uri HISTORY_URI = DBContentProvider.HISTORY_URI;
     private static final String WHERE_NAME_EQUALS = DBContract.Alerts.COL_ALERT_NAME + '=';
 
     // Integer Fragment identifiers
     public static final int FRAGMENT_ALERTS = 0;
     public static final int FRAGMENT_HISTORY = 1;
+    private int runningFragment = -1;   // initialized to -1, forcing first replacement and update.
     private static final String DIALOG_TAG = "dialog_legal_alerts";
-    // runningFragment initialized to -1, forcing first replacement and runningFragment update.
-    private int runningFragment = -1;
     // Running fragment string
     private static final String RUNNING_FRAGMENT_STRING = "running_fragment";
     // ButterKnife bindings
@@ -41,17 +46,22 @@ public class MainActivity extends AppCompatActivity
     @Bind(R.id.drawer_layout) DrawerLayout drawer;
     @Bind(R.id.toolbar) Toolbar toolbar;
     @Bind(R.id.fab) FloatingActionButton fab;
-
     @OnClick(R.id.fab)
-    void fabClickListener() {
+    void fabClickListener(View view) {
         switch (runningFragment) {
             case FRAGMENT_ALERTS:
                 new CustomAlertDialogFragment().show(getSupportFragmentManager(), DIALOG_TAG);
                 break;
             case FRAGMENT_HISTORY:
+                // Delete all items
+                showSnackBar(view, "Deleted " + deleteHistory(null) + " item(s).");
                 break;
         }
     }
+
+    /*
+    * LIFECYCLE
+    * */
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,8 +78,6 @@ public class MainActivity extends AppCompatActivity
         toggle.syncState();
         // Set NavigationView listener
         navigationView.setNavigationItemSelectedListener(this);
-        // Hide fab button
-        fab.hide();
 
         if (savedInstanceState == null) {
             // Check/start new alarm
@@ -91,7 +99,7 @@ public class MainActivity extends AppCompatActivity
         if (intent.hasExtra("start_on_fragment")) {
             replaceFragment(intent.getIntExtra("start_on_fragment", FRAGMENT_ALERTS));
         }
-        setDrawerCheckedItemAndTitle();
+        setDrawerCheckedItemAndTitle(runningFragment);
     }
 
     @Override
@@ -175,72 +183,11 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    /**
-     * replaceFragment (final int fragmentID)
-     *
-     * Replaces Fragment given by fragmentID on main fragment placeholder
-     *
-     * @param fragmentID : Numeric ID of objective fragment
-     *
-     **/
-    public void replaceFragment(final int fragmentID){
+    /*
+    * LOCAL METHODS
+    * */
 
-        // Check if runningFragment is the same received
-        if (runningFragment != fragmentID){
-            try {
-                switch (fragmentID) {
-                    case FRAGMENT_ALERTS:
-                        getSupportFragmentManager().beginTransaction()
-                                .setCustomAnimations(R.anim.slide_in_left, R.anim.slide_out_right)
-                                .replace(
-                                        R.id.fragmentMainPlaceholder,
-                                        AlertsFragment.class.newInstance())
-                                .commit();
-                        // Show fab button after replacing
-                        fab.show();
-                        break;
-                    case FRAGMENT_HISTORY:
-                        // Hide fab button before transaction
-                        fab.hide();
-                        getSupportFragmentManager().beginTransaction()
-                                .setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left)
-                                .replace(R.id.fragmentMainPlaceholder,
-                                        HistoryFragment.class.newInstance())
-                                .commit();
-                        break;
-                    default:
-                        getSupportFragmentManager().beginTransaction()
-                                .setCustomAnimations(R.anim.slide_in_left, R.anim.slide_out_right)
-                                .replace(R.id.fragmentMainPlaceholder,
-                                        AlertsFragment.class.newInstance())
-                                .commit();
-                        // Show fab button after replacing
-                        fab.show();
-                        break;
-                }
-                // Change running fragment id
-                runningFragment = fragmentID;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        setDrawerCheckedItemAndTitle();
-    }
-
-    // Sets current title and navigation drawer item
-    private void setDrawerCheckedItemAndTitle(){
-        // Select item on drawer
-        switch (runningFragment) {
-            case FRAGMENT_ALERTS:
-                navigationView.setCheckedItem(R.id.nav_alerts);
-                setTitle(getResources().getString(R.string.nav_alerts));
-                break;
-            case FRAGMENT_HISTORY:
-                navigationView.setCheckedItem(R.id.nav_history);
-                setTitle(getResources().getString(R.string.nav_history));
-                break;
-        }
-    }
+    // DB
 
     /**
      * Activity method to insert new Alerts into Database
@@ -272,8 +219,8 @@ public class MainActivity extends AppCompatActivity
      *
      * @param oldName       String representing previous alertName to be updated
      * @param newName       String representing new alertName to update
-     * @param isLiteralSearch boolean flag indicating if search
-     *                        term has literal search set to TRUE
+     * @param isLiteralSearch   boolean flag indicating if search
+     *                          term has literal search set to TRUE
      * @return int representing updating success, 1 if updated ok, -1 if no update was produced
      */
     public int updateAlert(final String oldName, final String newName, final boolean isLiteralSearch){
@@ -289,5 +236,113 @@ public class MainActivity extends AppCompatActivity
                 .update(ALERTS_URI, values, WHERE_NAME_EQUALS + '\'' + oldName + '\'', null) < 1
                 ? -1
                 : 1;
+    }
+
+    /**
+     * Delete items from history table according to given parameters
+     *
+     * @param historyItem    @Nullable String representing history item to delete
+     *                       if NULL received deleted all entries in the table
+     * @return  int indicating number of items deleted.
+     */
+    public int deleteHistory(@Nullable final String historyItem){
+        // Deletes item according to received String, if null received deletes all records
+        return getContentResolver().delete(HISTORY_URI, historyItem, null);
+    }
+
+    // UI
+
+    /**
+     * replaceFragment (final int fragmentID)
+     * <p>
+     * Replaces Fragment given by fragmentID on main fragment placeholder
+     *
+     * @param fragmentID : Numeric ID of objective fragment
+     **/
+    public void replaceFragment(final int fragmentID) {
+
+        // Check if runningFragment is the same received
+        if (runningFragment != fragmentID) {
+            try {
+                switch (fragmentID) {
+                    case FRAGMENT_ALERTS:
+                        getSupportFragmentManager().beginTransaction()
+                                .setCustomAnimations(R.anim.slide_in_left, R.anim.slide_out_right)
+                                .replace(
+                                        R.id.fragmentMainPlaceholder,
+                                        AlertsFragment.class.newInstance())
+                                .commit();
+                        // Set FAB icon after replacing
+                        setFabIcon(android.R.drawable.ic_input_add);
+                        break;
+                    case FRAGMENT_HISTORY:
+                        getSupportFragmentManager().beginTransaction()
+                                .setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left)
+                                .replace(R.id.fragmentMainPlaceholder,
+                                        HistoryFragment.class.newInstance())
+                                .commit();
+                        // Set FAB icon after replacing
+                        setFabIcon(android.R.drawable.ic_menu_delete);
+                        break;
+                    default:
+                        getSupportFragmentManager().beginTransaction()
+                                .setCustomAnimations(R.anim.slide_in_left, R.anim.slide_out_right)
+                                .replace(R.id.fragmentMainPlaceholder,
+                                        AlertsFragment.class.newInstance())
+                                .commit();
+                        // Set FAB icon after replacing
+                        setFabIcon(android.R.drawable.ic_input_add);
+                        break;
+                }
+                // Change running fragment id
+                runningFragment = fragmentID;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        setDrawerCheckedItemAndTitle(runningFragment);
+    }
+
+    /**
+     * Sets title and checked navigation drawer item according to given fragment ID
+     *
+     * @param fragmentID int containing fragment ID
+     */
+    private void setDrawerCheckedItemAndTitle(final int fragmentID) {
+        // Select item on drawer
+        switch (fragmentID) {
+            case FRAGMENT_ALERTS:
+                navigationView.setCheckedItem(R.id.nav_alerts);
+                setTitle(getResources().getString(R.string.nav_alerts));
+                break;
+            case FRAGMENT_HISTORY:
+                navigationView.setCheckedItem(R.id.nav_history);
+                setTitle(getResources().getString(R.string.nav_history));
+                break;
+        }
+    }
+
+    /**
+     * Sets FAB icon according to given int resource ID
+     *
+     * @param iconID    int ID of drawable resource to set as FAB icon
+     */
+    private void setFabIcon(final int iconID){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            fab.setImageDrawable(getResources().getDrawable(iconID, getTheme()));
+        } else {
+            //noinspection deprecation
+            fab.setImageDrawable(getResources().getDrawable(iconID));
+        }
+    }
+
+    /**
+     * Shows a SnackBar with given text
+     *
+     * @param view  Parent view to show the SnackBar on.
+     * @param message   String containing message to show
+     */
+    private static void showSnackBar(@NonNull final View view, @NonNull final String message){
+        Snackbar.make(view, message, Snackbar.LENGTH_SHORT).setAction("Action", null).show();
     }
 }
