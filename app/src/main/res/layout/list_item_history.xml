@@ -8,32 +8,21 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:id="@+id/textViewHistoryListItemRelatedAlert"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="@string/fragment_history_text_list_item"
-        android:id="@+id/textViewHistoryListItemRelatedAlert"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:layout_toStartOf="@+id/textViewHistoryListItemDocumentName"
+        android:layout_toLeftOf="@+id/textViewHistoryListItemDocumentName" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/fragment_history_text_list_item"
         android:id="@+id/textViewHistoryListItemDocumentName"
-        android:layout_below="@+id/textViewHistoryListItemRelatedAlert"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
-
-    <ImageButton
-        android:src="@android:drawable/ic_menu_view"
-        android:contentDescription="@string/list_item_history_text_delete"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/buttonViewHistoryListItem"
-        android:layout_alignRight="@+id/textViewHistoryListItemDocumentName"
-        android:layout_alignEnd="@+id/textViewHistoryListItemDocumentName"
-        android:layout_centerVertical="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/fragment_history_text_list_item"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true" />
 
 </RelativeLayout>

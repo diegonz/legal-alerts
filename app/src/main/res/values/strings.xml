@@ -6,6 +6,10 @@
     <string name="fragment_history_text_list_item">Alert Item</string>
     <string name="list_item_history_text_delete">Delete</string>
 
+    <!-- Strings related to FAB Button -->
+    <string name="fab_description_alerts">Create new alert</string>
+    <string name="fab_description_history">Delete all records</string>
+
     <!-- Strings related to NavDrawer -->
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
@@ -18,6 +22,9 @@
     <string name="nav_more">More</string>
     <string name="nav_share">Share App</string>
     <string name="nav_info">About</string>
+
+    <!-- Strings related to History fragment -->
+    <string name="fragment_history_context_menu_view">View on external app</string>
 
     <!-- Strings related to ToolBar (ActionBar) -->
     <string name="action_settings">Settings</string>

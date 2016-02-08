@@ -21,6 +21,7 @@
         <item name="android:windowBackground">@drawable/background_splash</item>
     </style>
 
+    <!-- AlertDialog animation. -->
     <style name="dialog_animation">
         <item name="android:windowEnterAnimation">@anim/slide_in_from_bottom</item>
         <item name="android:windowExitAnimation">@anim/slide_out_to_bottom</item>

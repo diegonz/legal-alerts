@@ -272,8 +272,8 @@ public class MainActivity extends AppCompatActivity
                                         R.id.fragmentMainPlaceholder,
                                         AlertsFragment.class.newInstance())
                                 .commit();
-                        // Set FAB icon after replacing
-                        setFabIcon(android.R.drawable.ic_input_add);
+                        // Setup FAB button after replacing
+                        setupFabButton(android.R.drawable.ic_input_add, R.string.fab_description_alerts);
                         break;
                     case FRAGMENT_HISTORY:
                         getSupportFragmentManager().beginTransaction()
@@ -282,7 +282,7 @@ public class MainActivity extends AppCompatActivity
                                         HistoryFragment.class.newInstance())
                                 .commit();
                         // Set FAB icon after replacing
-                        setFabIcon(android.R.drawable.ic_menu_delete);
+                        setupFabButton(android.R.drawable.ic_menu_delete, R.string.fab_description_history);
                         break;
                     default:
                         getSupportFragmentManager().beginTransaction()
@@ -290,8 +290,8 @@ public class MainActivity extends AppCompatActivity
                                 .replace(R.id.fragmentMainPlaceholder,
                                         AlertsFragment.class.newInstance())
                                 .commit();
-                        // Set FAB icon after replacing
-                        setFabIcon(android.R.drawable.ic_input_add);
+                        // Setup FAB button after replacing
+                        setupFabButton(android.R.drawable.ic_input_add, R.string.fab_description_alerts);
                         break;
                 }
                 // Change running fragment id
@@ -300,6 +300,7 @@ public class MainActivity extends AppCompatActivity
                 e.printStackTrace();
             }
         }
+        // Set drawer and title after replacing
         setDrawerCheckedItemAndTitle(runningFragment);
     }
 
@@ -326,14 +327,18 @@ public class MainActivity extends AppCompatActivity
      * Sets FAB icon according to given int resource ID
      *
      * @param iconID    int ID of drawable resource to set as FAB icon
+     * @param contentDescription    int ID of string resource to set
+     *                              as FAB´s content description
      */
-    private void setFabIcon(final int iconID){
+    private void setupFabButton(final int iconID, final int contentDescription){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             fab.setImageDrawable(getResources().getDrawable(iconID, getTheme()));
         } else {
             //noinspection deprecation
             fab.setImageDrawable(getResources().getDrawable(iconID));
         }
+        // Set content description
+        fab.setContentDescription(getString(contentDescription));
     }
 
     /**
