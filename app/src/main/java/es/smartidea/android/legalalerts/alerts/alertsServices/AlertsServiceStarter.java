@@ -1,4 +1,4 @@
-package es.smartidea.android.legalalerts.alertsServices;
+package es.smartidea.android.legalalerts.alerts.alertsServices;
 
 import android.annotation.SuppressLint;
 import android.app.IntentService;
@@ -9,14 +9,17 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.BatteryManager;
+import android.os.PowerManager;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import es.smartidea.android.legalalerts.broadcastReceivers.AlertsAlarmReceiver;
+import es.smartidea.android.legalalerts.alerts.AlertsWakeLock;
+import es.smartidea.android.legalalerts.receivers.AlertsAlarmReceiver;
 import es.smartidea.android.legalalerts.okHttp.OkHttpGetURL;
 
 /**
@@ -41,44 +44,42 @@ public class AlertsServiceStarter extends IntentService {
     }
 
     /**
-     * Starts this service to check wan availability and check user preferences too. If
+     * Starts this service to perform action startServiceManual. If
      * the service is already performing a task this action will be queued.
      *
      * @see IntentService
      */
-//    public static void startServiceDefault(Context context) {
-//        Intent intent = new Intent(context, AlertsServiceStarter.class);
-//        intent.setAction(START_ALERTS_SERVICE);
-//        context.startService(intent);
-//    }
-
-    /**
-     * Starts this service to perform action Baz with the given parameters. If
-     * the service is already performing a task this action will be queued.
-     *
-     * @see IntentService
-     */
-    public static void startServiceManual(Context context) {
+    public static void startServiceManual(final Context context) {
         Intent intent = new Intent(context, AlertsServiceStarter.class);
         intent.setAction(START_MANUAL_SYNC_SERVICE);
         context.startService(intent);
     }
 
+    // Added @NonNull annotation to avoid inner if-else checking
     @Override
-    protected void onHandleIntent(Intent intent) {
-        if (intent != null) {
-            final String action = intent.getAction();
-            if (START_ALERTS_SERVICE.equals(action)) {
+    protected void onHandleIntent(@NonNull  Intent intent) {
+        // Acquire WakeLock at first, and assign to its
+        // specific static reference holder class
+        PowerManager pM = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        AlertsWakeLock.setWakeLock(pM.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "alerts_wakeLock"));
+
+        switch (intent.getAction()) {
+            case START_ALERTS_SERVICE:
                 handleStartServiceDefault();
-            } else if (START_MANUAL_SYNC_SERVICE.equals(action)) {
+                break;
+            case START_MANUAL_SYNC_SERVICE:
                 handleStartServiceManual();
-            }
+                break;
+            default:
+                // If there is no matching action release the WakeLock
+                AlertsWakeLock.doRelease();
+                break;
+
         }
     }
 
     /**
-     * Handle action Foo in the provided background thread with the provided
-     * parameters.
+     * Handle action handleStartServiceDefault in the provided background thread.
      */
     private void handleStartServiceDefault() {
         // Launch service if wan is available and user preference requirements are ok
@@ -90,12 +91,14 @@ public class AlertsServiceStarter extends IntentService {
             Log.d(LOG_TAG, "Don't meet requirements. Snoozing alarm one hour...");
             // Snooze alarm for 1 hour
             snoozeAlarm(this);
+
+            // If service was not launched release the WakeLock
+            AlertsWakeLock.doRelease();
         }
     }
 
     /**
-     * Handle action Baz in the provided background thread with the provided
-     * parameters.
+     * Handle action handleStartServiceManual in the provided background thread.
      */
     private void handleStartServiceManual() {
         if (isWanAvailable()) {
@@ -105,11 +108,20 @@ public class AlertsServiceStarter extends IntentService {
         } else {
             Log.d(LOG_TAG, "Manual sync failed, unavailable WAN.");
             // TODO: Inform user about network unavailable
+
+            // If service was not launched release the WakeLock
+            AlertsWakeLock.doRelease();
         }
     }
 
-    // Send broadcast to create a new retry alarm from now to about one hour
-    private static void snoozeAlarm(Context context) {
+    /**
+     * Sends a broadcast message to create a new retry alarm
+     * from now to "about" one hour (InexactRepeating)
+     *
+     * @param context   Context of Application to send Broadcast
+     *                  and get user preferences (for checking snooze alarm status)
+     */
+    private static void snoozeAlarm(final Context context) {
         @SuppressLint("SimpleDateFormat")
         String todayDateString = new SimpleDateFormat("yyyyMMdd").format(new Date());
         String snoozeDateString = PreferenceManager.getDefaultSharedPreferences(context)
@@ -126,14 +138,22 @@ public class AlertsServiceStarter extends IntentService {
             PreferenceManager.getDefaultSharedPreferences(context)
                     .edit()
                     .putString("snooze_alarm_date", "done")
-                    .commit(); // Call commit() to make changes
+                    .apply(); // Call apply() to make changes in background (commit() is immediate)
         }
     }
 
     /* Methods for checking about user preferences requirements */
 
-    // Check charging state, for warning info about NPE  check: http://goo.gl/DVPW9i
-    public static boolean isDeviceCharging(Context context) {
+    /**
+     * Checks for current charging state creating a new IntentFilter
+     * passing null as BroadcastReceiver to get actual info
+     * without registering a receiver.
+     * +info about implementation and NPE warning: http://goo.gl/DVPW9i
+     *
+     * @param context   Context of Application to get BatteryManager
+     * @return  TRUE if the device is plugged to AC or USB
+     */
+    public static boolean isDeviceCharging(final Context context) {
         @SuppressWarnings("ConstantConditions")
         int plugged = context.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED))
                 .getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
@@ -142,38 +162,51 @@ public class AlertsServiceStarter extends IntentService {
                 plugged == BatteryManager.BATTERY_PLUGGED_USB;
     }
 
-    // Check for unmetered network availability
-    public static boolean isUnmeteredNetworkAvailable(Context context) {
+    /**
+     * Checks for available working internet connection
+     *
+     * @return TRUE if WAN access to internet is currently available
+     */
+    public static boolean isWanAvailable() {
+        try {
+            return new OkHttpGetURL().isWanAvailable();
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Checks for availability of unmetered networks
+     *
+     * @param context   Context of Application to get connectivity service
+     * @return  TRUE if unmetered network is currently available
+     */
+    public static boolean isUnmeteredNetworkAvailable(final Context context) {
         ConnectivityManager connectivityManager = (ConnectivityManager)
                 context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
         return (networkInfo != null && (networkInfo.getType() == ConnectivityManager.TYPE_WIFI));
     }
 
-    // Check for available internet connection
-    public static boolean isWanAvailable() {
-        try {
-            return new OkHttpGetURL().isWanAvailable();
-        } catch (IOException e) {
-            Log.d(LOG_TAG, "Unreachable WAN: \n" + e);
-            return false;
-        }
-    }
-
-    // Check user preferences, returns true/false depending if all requirements are accomplished
-    public static boolean isPreferenceCheckOK(Context context) {
+    /**
+     * Check user preferences, returning TRUE or FALSE
+     * depending if all requirements are accomplished.
+     *
+     * @param context   Context of Application to get user preferences
+     * @return  TRUE if user preferences are successfully checked
+     */
+    public static boolean isPreferenceCheckOK(final Context context) {
 
         // Get shared preferences
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         // Check charging status
-        if (preferences.getBoolean("sync_only_when_charging", true)
-                && !isDeviceCharging(context)) {
+        if (preferences.getBoolean("sync_only_when_charging", true) && !isDeviceCharging(context)) {
             Log.d(LOG_TAG, "Device charging required!");
             return false;
         }
         // Check unmetered network
-        if (preferences.getBoolean("sync_only_over_unmetered_network", true)
-                && !isUnmeteredNetworkAvailable(context)) {
+        if (preferences.getBoolean("sync_only_over_unmetered_network", true) &&
+                !isUnmeteredNetworkAvailable(context)) {
             Log.d(LOG_TAG, "WiFi network required!");
             return false;
         }

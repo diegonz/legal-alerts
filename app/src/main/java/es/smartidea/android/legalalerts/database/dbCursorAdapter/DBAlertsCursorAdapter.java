@@ -12,7 +12,7 @@ import android.widget.TextView;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import es.smartidea.android.legalalerts.R;
-import es.smartidea.android.legalalerts.database.dbHelper.DBContract;
+import es.smartidea.android.legalalerts.database.DBContract;
 
 /**
  * A custom ResourceCursorAdapter {@link ResourceCursorAdapter} subclass.
@@ -23,7 +23,9 @@ import es.smartidea.android.legalalerts.database.dbHelper.DBContract;
 public class DBAlertsCursorAdapter extends ResourceCursorAdapter {
     private LayoutInflater inflater;
 
-    // ViewHolder static class to store associated Views
+    /**
+     * ViewHolder static class to store associated Views
+     */
     static class ViewHolder {
         @Bind(R.id.textViewAlertListItem) TextView textViewAlertListItem;
         @Bind(R.id.imageViewAlertListItemLiteral) ImageView imageViewAlertListItemLiteral;

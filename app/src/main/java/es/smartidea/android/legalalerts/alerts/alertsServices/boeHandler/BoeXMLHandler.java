@@ -1,6 +1,7 @@
-package es.smartidea.android.legalalerts.boeHandler;
+package es.smartidea.android.legalalerts.alerts.alertsServices.boeHandler;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -26,8 +27,10 @@ import es.smartidea.android.legalalerts.textUtils.TextSearchUtils;
  *
  * */
 
+@SuppressWarnings("StringConcatenationMissingWhitespace")
 public class BoeXMLHandler {
 
+    // BOE base string tokens
     public final static String BOE_BASE_URL = "http://www.boe.es";
     public final static String BOE_BASE_ID = "/diario_boe/xml.php?id=BOE-S-";
 
@@ -35,10 +38,19 @@ public class BoeXMLHandler {
     private String[] boeSummariesURLStrings;
     private String todayDateString;
 
-    final static Set<String> rawTextTags = new HashSet<>(
-            Arrays.asList("alerta", "materia", "p", "palabra", "titulo", "texto")
-    );
+    /**
+     * Set of strings containing all XML tags to be gathered
+     * for each attached document to any BOE summary
+     */
+    @SuppressWarnings("SpellCheckingInspection")
+    private final static Set<String> rawTextTags =
+            new HashSet<>(Arrays.asList("alerta", "materia", "p", "palabra", "titulo", "texto"));
 
+    /**
+    * This variable represents the listener passed in by the owning object,
+    * the observer must implement the events interface and passes messages up to the parent
+    * */
+    private BoeXMLHandlerEvents boeXMLHandlerEvents;
 
     /**
      * Public constructor, it sets to null internal listener reference and
@@ -62,8 +74,8 @@ public class BoeXMLHandler {
         this.todayDateString = receivedDates[receivedDates.length - 1];
     }
 
-    /*
-    * Callback interface to enable async communication with parent object
+    /**
+    * Inner callback interface class to enable async communication with parent object
     * This interface defines what type of messages can be communicated to owner object
     */
     public interface BoeXMLHandlerEvents {
@@ -73,6 +85,7 @@ public class BoeXMLHandler {
          *
          * @param searchResults Map containing search results as url of XML as key
          *                      and search term as value.
+         * @param xmlPdfUrls    Map containing XML and PDF urls for each attachment document
          */
         void onWorkCompleted(final Map<String, String> searchResults,
                              final Map<String, String> xmlPdfUrls);
@@ -96,14 +109,12 @@ public class BoeXMLHandler {
         this.boeXMLHandlerEvents = listener;
     }
 
-    // Listener un-setter/un-binder method.
+    /**
+     * Binds to null inner BoeXMLHandler reference
+     */
     public void unsetBoeXMLHandlerEvents() {
         this.boeXMLHandlerEvents = null;
     }
-
-    // This variable represents the listener passed in by the owning object
-    // The listener must implement the events interface and passes messages up to the parent.
-    private BoeXMLHandlerEvents boeXMLHandlerEvents;
 
     /**
      * Starts fetching summaries and attachments and search for every item received
@@ -128,77 +139,12 @@ public class BoeXMLHandler {
     }
 
     /**
-     * boeXmlWorker is a void method to parse and store xml data
-     * or download attached XML docs according to isSummary flag.
+     * Fetches URLs for summary and others using custom OkHttp object
      *
-     * @param boeParser BOE´s summary or attached doc associated XMLPullParser.
-     * @param attachmentUrlXml BOE´s document ID, can send null when parsing BOE´s summary.
-     *
-     * Attached doc URLs is stored on HashMap<String,String> urls.
-     * Data is stored on HashMap<String,String> boeXmlRawTextData.
-    **/
-    private static Map<String,String> boeXmlWorker(@NonNull XmlPullParser boeParser,
-                                           String attachmentUrlXml) {
-        int event;
-
-        try {
-            event = boeParser.getEventType();
-
-            StringBuilder rawTextStringBuilder;
-            Map<String,String> resultDataMap;
-            // If is summary (attachmentUrlXml == null)
-            //noinspection VariableNotUsedInsideIf
-            if (attachmentUrlXml == null){
-                rawTextStringBuilder = new StringBuilder(0);
-                //noinspection CollectionWithoutInitialCapacity
-                resultDataMap = new HashMap<>();
-            } else {
-                rawTextStringBuilder = new StringBuilder(0);
-                resultDataMap = new HashMap<>(1);
-            }
-
-            String name, text = null, tempUrl = null;
-
-            while (event != XmlPullParser.END_DOCUMENT) {
-                name = boeParser.getName();
-                switch (event) {
-                    case XmlPullParser.TEXT:
-                        text = boeParser.getText();
-                        break;
-                    case XmlPullParser.END_TAG:
-                        //noinspection VariableNotUsedInsideIf
-                        if (attachmentUrlXml == null){
-                            switch (name) {
-                                case "urlPdf":
-                                    tempUrl = text;
-                                    break;
-                                case "urlXml":
-                                    // If tempUrl not null (urlPdf exists)
-                                    if (tempUrl != null) {
-                                        resultDataMap.put(text, tempUrl);
-                                        // Set tempUrl to null again
-                                        tempUrl = null;
-                                    }
-                                    break;
-                            }
-                        } else if (rawTextTags.contains(name)) rawTextStringBuilder.append(text);
-                        break;
-                }
-                event = boeParser.next();
-            }
-            if (attachmentUrlXml != null) {
-                resultDataMap.put(attachmentUrlXml, rawTextStringBuilder.toString());
-            }
-            // Return results
-            return resultDataMap;
-        } catch (Exception e) { e.printStackTrace(); }
-        // return empty map after error
-        return new HashMap<>(0);
-    }
-
-    /*
-    * fetchXMLSummaries() fetches URLs for summary and others, based on OkHttp library
-    */
+     * @param okHttpGetURL  Custom OkHttp implementation object instance
+     * @return  Map of String,String containing pairs (PDF and XML)
+     * of BOE´s summary attached documents
+     */
     private Map<String, String> fetchXMLSummaries(OkHttpGetURL okHttpGetURL){
         //noinspection CollectionWithoutInitialCapacity
         Map<String, String> urlPairs = new HashMap<>();
@@ -237,18 +183,26 @@ public class BoeXMLHandler {
         return urlPairs;
     }
 
-    /*
-    * fetchAttachmentsAndSearch()
-    */
+    /**
+     * Fetches BOE´s summary attached documents using custom OkHttp object
+     * and searches in each document looking for received search terms.
+     *
+     * @param okHttpGetURL  Custom OkHttp implementation object instance
+     * @param urlPairs  Map of String,String containing pairs (PDF and XML)
+     *                  of BOE´s summary attached documents
+     * @param searchTerms   MAp containing search terms an
+     *                      its associated "literal search" flag
+     * @return  Map containing each search term that was found
+     * at least once and its associated PDF url
+     */
     private Map<String, String> fetchAttachmentsAndSearch(@NonNull OkHttpGetURL okHttpGetURL,
-                                                         @NonNull Map<String, String> mUrls,
+                                                         @NonNull Map<String, String> urlPairs,
                                                          @NonNull Map<String, Boolean> searchTerms){
-        // Fetches each rawXML and passes each one to parse and store data
         //noinspection CollectionWithoutInitialCapacity
         Map<String, String> searchResults = new HashMap<>();
         Map<String, String> rawTextData = new HashMap<>(1);
         InputStream boeStream = null;
-        for (Map.Entry<String, String> eachUrlPair : mUrls.entrySet()){
+        for (Map.Entry<String, String> eachUrlPair : urlPairs.entrySet()){
             try {
                 // Reset map if its not empty
                 if (!rawTextData.isEmpty()) rawTextData.clear();
@@ -288,5 +242,76 @@ public class BoeXMLHandler {
 
         // Return results, can be empty
         return searchResults;
+    }
+
+    /**
+     * Void static method to parse and store xml data or download attached XML docs
+     * according to given @Nullable String attachmentUrlXml.
+     *
+     * @param boeParser        XMLPullParser object associated with current
+     *                         BOE´s summary or attached doc.
+     * @param attachmentUrlXml @Nullable BOE´s document ID, can receive null
+     *                         when parsing BOE´s summary.
+     *                         <p>
+     *                         Attached doc URLs is stored on HashMap<String,String> urls.
+     *                         Data is stored on HashMap<String,String> boeXmlRawTextData.
+     **/
+    private static Map<String, String> boeXmlWorker(@NonNull XmlPullParser boeParser,
+                                                    @Nullable String attachmentUrlXml) {
+        try {
+            int event = boeParser.getEventType();
+
+            StringBuilder rawTextStringBuilder;
+            Map<String, String> resultDataMap;
+            // If is summary (attachmentUrlXml == null)
+            //noinspection VariableNotUsedInsideIf
+            if (attachmentUrlXml == null) {
+                rawTextStringBuilder = new StringBuilder(0);
+                //noinspection CollectionWithoutInitialCapacity
+                resultDataMap = new HashMap<>();
+            } else {
+                rawTextStringBuilder = new StringBuilder(0);
+                resultDataMap = new HashMap<>(1);
+            }
+
+            String name, text = null, tempUrl = null;
+
+            while (event != XmlPullParser.END_DOCUMENT) {
+                name = boeParser.getName();
+                switch (event) {
+                    case XmlPullParser.TEXT:
+                        text = boeParser.getText();
+                        break;
+                    case XmlPullParser.END_TAG:
+                        //noinspection VariableNotUsedInsideIf
+                        if (attachmentUrlXml == null) {
+                            switch (name) {
+                                case "urlPdf":
+                                    tempUrl = text;
+                                    break;
+                                case "urlXml":
+                                    // If tempUrl not null (urlPdf exists)
+                                    if (tempUrl != null) {
+                                        resultDataMap.put(text, tempUrl);
+                                        // Set tempUrl to null again
+                                        tempUrl = null;
+                                    }
+                                    break;
+                            }
+                        } else if (rawTextTags.contains(name)) rawTextStringBuilder.append(text);
+                        break;
+                }
+                event = boeParser.next();
+            }
+            if (attachmentUrlXml != null) {
+                resultDataMap.put(attachmentUrlXml, rawTextStringBuilder.toString());
+            }
+            // Return results
+            return resultDataMap;
+        } catch (Exception e) {
+            e.printStackTrace();
+            // return empty map after error recovery
+            return new HashMap<>(0);
+        }
     }
 }

@@ -5,6 +5,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import es.smartidea.android.legalalerts.database.DBContract;
+
 /**
  * DBHelper class, does CRUD stuff on DB
  * It contains and handles query and methods to CRUD and upgrade/downgrade DB

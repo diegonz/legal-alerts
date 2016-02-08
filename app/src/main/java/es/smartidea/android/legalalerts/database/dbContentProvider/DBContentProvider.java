@@ -11,7 +11,7 @@ import android.net.Uri;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import es.smartidea.android.legalalerts.database.dbHelper.DBContract;
+import es.smartidea.android.legalalerts.database.DBContract;
 import es.smartidea.android.legalalerts.database.dbHelper.DBHelper;
 
 import android.support.annotation.NonNull;
@@ -175,7 +175,14 @@ public class DBContentProvider extends ContentProvider {
         return rowsUpdated;
     }
 
-    // checkColumns() checks if received projection´s columns are valid
+    /**
+     * Checks if received projection´s columns are valid
+     * throwing an IllegalArgumentException if not all fields are contained
+     *
+     * @param uriType   int representing the URI of each DB table
+     * @param projection    received VarArgs String[] containing DB columns
+     *                      to check against DB structure
+     */
     public static void checkColumns(int uriType, @NonNull String... projection) {
         HashSet<String> requested;
         HashSet<String> available;

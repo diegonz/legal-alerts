@@ -22,9 +22,9 @@ import android.view.View;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import es.smartidea.android.legalalerts.broadcastReceivers.AlertsAlarmReceiver;
+import es.smartidea.android.legalalerts.receivers.AlertsAlarmReceiver;
 import es.smartidea.android.legalalerts.database.dbContentProvider.DBContentProvider;
-import es.smartidea.android.legalalerts.database.dbHelper.DBContract;
+import es.smartidea.android.legalalerts.database.DBContract;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {

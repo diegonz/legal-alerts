@@ -23,11 +23,11 @@ import android.widget.Toast;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import es.smartidea.android.legalalerts.alertsServices.AlertsService;
-import es.smartidea.android.legalalerts.alertsServices.AlertsServiceStarter;
+import es.smartidea.android.legalalerts.alerts.alertsServices.AlertsService;
+import es.smartidea.android.legalalerts.alerts.alertsServices.AlertsServiceStarter;
 import es.smartidea.android.legalalerts.database.dbContentProvider.DBContentProvider;
 import es.smartidea.android.legalalerts.database.dbCursorAdapter.DBAlertsCursorAdapter;
-import es.smartidea.android.legalalerts.database.dbHelper.DBContract;
+import es.smartidea.android.legalalerts.database.DBContract;
 
 /**
  * A simple {@link Fragment} subclass.

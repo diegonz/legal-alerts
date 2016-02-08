@@ -1,4 +1,4 @@
-package es.smartidea.android.legalalerts.alertsServices;
+package es.smartidea.android.legalalerts.alerts.alertsServices;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -22,10 +22,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import es.smartidea.android.legalalerts.R;
-import es.smartidea.android.legalalerts.alertsBuilders.AlertsNotificationBuilder;
-import es.smartidea.android.legalalerts.boeHandler.BoeXMLHandler;
+import es.smartidea.android.legalalerts.alerts.AlertsNotificationBuilder;
+import es.smartidea.android.legalalerts.alerts.AlertsWakeLock;
+import es.smartidea.android.legalalerts.alerts.alertsServices.boeHandler.BoeXMLHandler;
 import es.smartidea.android.legalalerts.database.dbContentProvider.DBContentProvider;
-import es.smartidea.android.legalalerts.database.dbHelper.DBContract;
+import es.smartidea.android.legalalerts.database.DBContract;
 
 public class AlertsService extends Service {
 
@@ -136,7 +137,7 @@ public class AlertsService extends Service {
      *
      * @return Map containing all alerts stored onto the application DB.
      */
-    private static Map<String, Boolean> getAlertsFromDB(Context context) {
+    private static Map<String, Boolean> getAlertsFromDB(@NonNull final Context context) {
         // Get current Alerts to look for from DB
         Cursor alertsCursor = context.getContentResolver().query(ALERTS_URI,
                 ALERTS_PROJECTION, ALERTS_SELECTION_NOTNULL, null, ALERTS_ORDER_ASC_BY_NAME);
@@ -170,8 +171,9 @@ public class AlertsService extends Service {
      * and related PDF Url from received urls Map,
      * saving generated combined result data into DB.
      *
-     * @param resultUrlsAndAlerts Map<String,String> corresponding to founded search results
-     * @param xmlPdfUrls Map<String,String> corresponding to raw today attachment´s urls
+     * @param context   Context of Application to get ContentResolver
+     * @param resultUrlsAndAlerts   Map<String,String> corresponding to founded search results
+     * @param xmlPdfUrls    Map<String,String> corresponding to raw today attachment´s urls
      */
     private static void storeResultsOnDB(@NonNull final Context context,
                                          @NonNull final Map<String, String> resultUrlsAndAlerts,
@@ -205,12 +207,13 @@ public class AlertsService extends Service {
      * Build and Shows a notification in a new Runnable object
      * according to given title and message parameters.
      *
+     * @param context   Context of Application to get SharedPreferences
      * @param title   String corresponding to Notification´s title
      * @param message String corresponding to Notification´s message
      **/
-    public void showAlertNotification(final Context context,
-                                      final String title,
-                                      final String message) {
+    public void showAlertNotification(@NonNull final Context context,
+                                      @NonNull final String title,
+                                      @NonNull final String message) {
 
         // If notification not enabled on user preferences return
         new Thread(new Runnable() {
@@ -273,6 +276,7 @@ public class AlertsService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         // We don't provide binding, so return null
+        //noinspection ReturnOfNull
         return null;
     }
 
@@ -283,23 +287,28 @@ public class AlertsService extends Service {
             PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
                     .edit()
                     .putString(LAST_SUCCESSFUL_SYNC, todayDateString)
-                    .commit(); // Call commit() to make changes
+                    .apply(); // Call apply() to make changes in background (commit() is immediate)
         }
         // Set snooze_alarm_date to "done"
         PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
                 .edit()
                 .putString("snooze_alarm_date", "done")
-                .commit(); // Call commit() to make changes
+                .apply(); // Call apply() to make changes in background (commit() is immediate)
 
         Toast.makeText(this, "service done", Toast.LENGTH_SHORT).show();
         Log.d(LOG_TAG, "Stopping AlertsService...");
+
         // Release as many resources as possible
         if (boeXMLHandler != null){
             boeXMLHandler.unsetBoeXMLHandlerEvents();
             boeXMLHandler = null;
         }
+
         // Set serviceRunning flag to FALSE
         serviceRunning = false;
+
+        // Then release the WakeLock from its static reference
+        AlertsWakeLock.doRelease();
     }
 
     /*

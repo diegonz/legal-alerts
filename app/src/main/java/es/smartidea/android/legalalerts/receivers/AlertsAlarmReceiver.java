@@ -1,4 +1,4 @@
-package es.smartidea.android.legalalerts.broadcastReceivers;
+package es.smartidea.android.legalalerts.receivers;
 
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -6,8 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import es.smartidea.android.legalalerts.alertsServices.AlertsServiceStarter;
-import es.smartidea.android.legalalerts.alertsBuilders.AlertsAlarmBuilder;
+import es.smartidea.android.legalalerts.alerts.alertsServices.AlertsServiceStarter;
+import es.smartidea.android.legalalerts.alerts.AlertsAlarmBuilder;
 
 public class AlertsAlarmReceiver extends BroadcastReceiver {
 

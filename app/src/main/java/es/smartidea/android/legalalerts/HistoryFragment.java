@@ -20,10 +20,10 @@ import android.widget.TextView;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import es.smartidea.android.legalalerts.boeHandler.BoeXMLHandler;
+import es.smartidea.android.legalalerts.alerts.alertsServices.boeHandler.BoeXMLHandler;
 import es.smartidea.android.legalalerts.database.dbContentProvider.DBContentProvider;
 import es.smartidea.android.legalalerts.database.dbCursorAdapter.DBHistoryCursorAdapter;
-import es.smartidea.android.legalalerts.database.dbHelper.DBContract;
+import es.smartidea.android.legalalerts.database.DBContract;
 
 /**
  * An simple listView container {@link Fragment} subclass.
@@ -39,7 +39,6 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
     private static final int HISTORY_LOADER_ID = 2;
     // Declare DBAdapter
     private DBHistoryCursorAdapter historyAdapter;
-    // Declare and bind ListView
     // ButterKnife bindings
     @Bind(R.id.listViewHistory) ListView listViewHistory;
 
