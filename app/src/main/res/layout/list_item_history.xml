@@ -23,6 +23,17 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="@string/fragment_history_text_list_item"
         android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textViewHistoryListItemDocumentDate"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="@string/fragment_history_text_list_item"
+        android:layout_below="@+id/textViewHistoryListItemDocumentName"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true" />
 
 </RelativeLayout>

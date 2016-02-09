@@ -23,13 +23,14 @@
     <string name="nav_share">Share App</string>
     <string name="nav_info">About</string>
 
-    <!-- Strings related to History fragment -->
-    <string name="fragment_history_context_menu_view">View on external app</string>
-
     <!-- Strings related to ToolBar (ActionBar) -->
     <string name="action_settings">Settings</string>
     <string name="action_manual_sync">Sync</string>
 
+    <!-- Strings related to History fragment -->
+    <string name="fragment_history_context_menu_view">View on external app</string>
+
+    <!-- Strings related to Alerts fragment -->
     <!-- Strings related to Alerts ListView items ContextMenu -->
     <string name="list_view_alerts_context_menu_option_delete">Delete</string>
     <string name="list_view_alerts_context_menu_option_edit">Edit</string>

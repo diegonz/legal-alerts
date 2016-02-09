@@ -28,6 +28,7 @@ public class DBHistoryCursorAdapter extends ResourceCursorAdapter {
     static class ViewHolder{
         @Bind(R.id.textViewHistoryListItemRelatedAlert) TextView textViewHistoryListItemRelatedAlert;
         @Bind(R.id.textViewHistoryListItemDocumentName) TextView textViewHistoryListItemDocumentName;
+        @Bind(R.id.textViewHistoryListItemDocumentDate) TextView textViewHistoryListItemDocumentDate;
 
         public ViewHolder(View view) {
             ButterKnife.bind(this, view);
@@ -69,7 +70,9 @@ public class DBHistoryCursorAdapter extends ResourceCursorAdapter {
         // Populate the ViewHolder fields
         holder.textViewHistoryListItemRelatedAlert.setText(relatedAlertName);
         holder.textViewHistoryListItemDocumentName.setText(relatedDocumentName);
-        // Set PDF url as TextView tag
+        holder.textViewHistoryListItemDocumentDate.setText(relatedPdfDocumentURL.substring(10,20));
+
+        // Set PDF url as holder´s TextView tag
         holder.textViewHistoryListItemDocumentName.setTag(relatedPdfDocumentURL);
     }
 }
