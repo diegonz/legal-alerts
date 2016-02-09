@@ -23,8 +23,8 @@ import android.widget.Toast;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import es.smartidea.android.legalalerts.alerts.alertsServices.AlertsService;
-import es.smartidea.android.legalalerts.alerts.alertsServices.AlertsServiceStarter;
+import es.smartidea.android.legalalerts.services.AlertsService;
+import es.smartidea.android.legalalerts.services.ServiceStarter;
 import es.smartidea.android.legalalerts.database.dbContentProvider.DBContentProvider;
 import es.smartidea.android.legalalerts.database.dbCursorAdapter.DBAlertsCursorAdapter;
 import es.smartidea.android.legalalerts.database.DBContract;
@@ -159,7 +159,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
                 ).show();
             } else {
                 // Starting manual download and search of XML data trough IntentService
-                AlertsServiceStarter.startServiceManual(getContext());
+                ServiceStarter.startServiceManual(getContext());
             }
             return true;
         }

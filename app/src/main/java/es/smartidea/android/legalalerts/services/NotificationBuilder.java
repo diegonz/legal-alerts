@@ -1,4 +1,4 @@
-package es.smartidea.android.legalalerts.alerts;
+package es.smartidea.android.legalalerts.services;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -10,10 +10,10 @@ import android.support.v7.app.NotificationCompat;
 import es.smartidea.android.legalalerts.MainActivity;
 import es.smartidea.android.legalalerts.R;
 
-public class AlertsNotificationBuilder {
+public class NotificationBuilder {
 
     // Private empty constructor to avoid instantiation
-    private AlertsNotificationBuilder() {}
+    private NotificationBuilder() {}
 
     public static class Builder {
         private Context context;
@@ -33,7 +33,7 @@ public class AlertsNotificationBuilder {
          * Sets notification title and returns a Builder object
          *
          * @param title String representing main title of notification
-         * @return  AlertsNotificationBuilder object
+         * @return  NotificationBuilder object
          */
         public Builder setTitle(final String title) {
             notification = new NotificationCompat.Builder(context);
@@ -46,7 +46,7 @@ public class AlertsNotificationBuilder {
          * Sets notification message and returns a Builder object
          *
          * @param message   String representing main notification´s message
-         * @return  AlertsNotificationBuilder object
+         * @return  NotificationBuilder object
          */
         public Builder setMessage(final String message) {
             notification.setContentText(message);
@@ -58,7 +58,7 @@ public class AlertsNotificationBuilder {
          * and returns a Builder object
          *
          * @param vibrateON boolean flag indicating if vibrate pattern has to be added
-         * @return  AlertsNotificationBuilder object
+         * @return  NotificationBuilder object
          */
         public Builder setVibrate(final boolean vibrateON){
             if (vibrateON) notification.setVibrate(new long[]{0L, 500L, 250L, 500L});
@@ -72,7 +72,7 @@ public class AlertsNotificationBuilder {
          *
          * @param notificationSoundPath String representing path (URI)
          *                              to desired notification sound
-         * @return AlertsNotificationBuilder object
+         * @return NotificationBuilder object
          */
         public Builder setSound(final String notificationSoundPath){
             notification.setSound(Uri.parse(notificationSoundPath));
@@ -99,7 +99,6 @@ public class AlertsNotificationBuilder {
             NotificationManager notificationManager =
                     (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             notificationManager.notify(ALERT_NOTIFICATION_ID, notification.build());
-
             // Release references after Notification sent
             releaseReferences();
         }

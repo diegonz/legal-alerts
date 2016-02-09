@@ -22,7 +22,7 @@ import android.view.View;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import es.smartidea.android.legalalerts.receivers.AlertsAlarmReceiver;
+import es.smartidea.android.legalalerts.receivers.AlarmReceiver;
 import es.smartidea.android.legalalerts.database.dbContentProvider.DBContentProvider;
 import es.smartidea.android.legalalerts.database.DBContract;
 
@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity
 
         if (savedInstanceState == null) {
             // Check/start new alarm
-            sendBroadcast(new Intent(this, AlertsAlarmReceiver.class));
+            sendBroadcast(new Intent(this, AlarmReceiver.class));
             // Starting from scratch, getIntExtra from intent to replace
             // corresponding fragment, defaulting to FRAGMENT_ALERTS
             replaceFragment(getIntent().getIntExtra("start_on_fragment", FRAGMENT_ALERTS));

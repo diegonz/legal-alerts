@@ -39,7 +39,7 @@
             android:parentActivityName=".MainActivity" />
 
         <receiver
-            android:name=".receivers.AlertsAlarmReceiver"
+            android:name=".receivers.AlarmReceiver"
             android:enabled="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
@@ -55,11 +55,11 @@
             android:exported="false" />
 
         <service
-            android:name=".alerts.alertsServices.AlertsServiceStarter"
+            android:name=".services.ServiceStarter"
             android:exported="false" />
 
         <service
-            android:name=".alerts.alertsServices.AlertsService"
+            android:name=".services.AlertsService"
             android:enabled="true"
             android:exported="false" />
 

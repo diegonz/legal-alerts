@@ -20,7 +20,7 @@ import android.widget.TextView;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import es.smartidea.android.legalalerts.alerts.alertsServices.boeHandler.BoeXMLHandler;
+import es.smartidea.android.legalalerts.services.boeHandler.BoeXMLHandler;
 import es.smartidea.android.legalalerts.database.dbContentProvider.DBContentProvider;
 import es.smartidea.android.legalalerts.database.dbCursorAdapter.DBHistoryCursorAdapter;
 import es.smartidea.android.legalalerts.database.DBContract;

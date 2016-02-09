@@ -1,4 +1,4 @@
-package es.smartidea.android.legalalerts.alerts.alertsServices;
+package es.smartidea.android.legalalerts.services;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -22,13 +22,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import es.smartidea.android.legalalerts.R;
-import es.smartidea.android.legalalerts.alerts.AlertsNotificationBuilder;
-import es.smartidea.android.legalalerts.alerts.AlertsWakeLock;
-import es.smartidea.android.legalalerts.alerts.alertsServices.boeHandler.BoeXMLHandler;
+import es.smartidea.android.legalalerts.alarms.AlarmWorker;
+import es.smartidea.android.legalalerts.services.boeHandler.BoeXMLHandler;
 import es.smartidea.android.legalalerts.database.dbContentProvider.DBContentProvider;
 import es.smartidea.android.legalalerts.database.DBContract;
 
 public class AlertsService extends Service {
+
+    private static final String LOG_TAG = "Service";
 
     // URI of DB
     private static final Uri ALERTS_URI = DBContentProvider.ALERTS_URI;
@@ -40,8 +41,7 @@ public class AlertsService extends Service {
 
     private static final String ALERTS_ORDER_ASC_BY_NAME =
             DBContract.Alerts.COL_ALERT_NAME + " ASC";
-    private static final String LOG_TAG = "Service";
-    private static final String LAST_SUCCESSFUL_SYNC = "last_successful_sync";
+    private static final String LAST_SUCCESSFUL_SYNC = AlarmWorker.LAST_SUCCESSFUL_SYNC;
     private String todayDateString;
     private BoeXMLHandler boeXMLHandler;
     // boolean flag indicating if service is running.
@@ -111,7 +111,6 @@ public class AlertsService extends Service {
             @Override
             public void todaySummaryResultOK(boolean todaySyncResultOK) {
                 todaySyncedOK = todaySyncResultOK;
-                Log.d(LOG_TAG, "Today´s summary fetched OK: " + todaySyncResultOK);
             }
         });
     }
@@ -224,7 +223,7 @@ public class AlertsService extends Service {
                         PreferenceManager.getDefaultSharedPreferences(context);
                 // Notify if user preference flags if notifyON
                 if (sharedPreferences.getBoolean("notifications_new_message", true)) {
-                    new AlertsNotificationBuilder.Builder(getApplicationContext())
+                    new NotificationBuilder.Builder(getApplicationContext())
                         .setTitle(title)
                         .setMessage(message)
                         .setVibrate(sharedPreferences.getBoolean(

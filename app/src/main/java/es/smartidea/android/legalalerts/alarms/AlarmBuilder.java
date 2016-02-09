@@ -1,24 +1,27 @@
-package es.smartidea.android.legalalerts.alerts;
+package es.smartidea.android.legalalerts.alarms;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.SystemClock;
+import android.util.Log;
 
 import java.util.Calendar;
 
-import es.smartidea.android.legalalerts.alerts.alertsServices.AlertsServiceStarter;
+import es.smartidea.android.legalalerts.services.ServiceStarter;
 
 /*
-* Public pseudo-builder class AlertsAlarmBuilder
+* Public pseudo-builder class AlarmBuilder
 * Sets an alarm according to given hour and minute
 * if any parameter is missing it defaults to 00:00
 * */
-public class AlertsAlarmBuilder {
+public class AlarmBuilder {
+
+    private static final String LOG_TAG = "AlarmBuilder";
 
     // Private empty constructor to avoid instantiation
-    private AlertsAlarmBuilder() {}
+    private AlarmBuilder() {}
 
     // Static Builder class
     public static class Builder {
@@ -34,15 +37,15 @@ public class AlertsAlarmBuilder {
          * @param mContext  Context of Application to get Alarm Service
          * @param ALARM_TYPE    String containing type of alarm that must be set.
          */
-        public Builder(final Context mContext, final String ALARM_TYPE ) {
+        public Builder(final Context mContext, final String ALARM_TYPE) {
             this.context = mContext;
             this.alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
             // Setup the alarm.
             alarmIntent = PendingIntent.getService(
                     context,
                     0,
-                    new Intent(context, AlertsServiceStarter.class).setAction(ALARM_TYPE),
-                    0
+                    new Intent(context, ServiceStarter.class).setAction(ALARM_TYPE),
+                    PendingIntent.FLAG_UPDATE_CURRENT
             );
         }
 
@@ -50,7 +53,7 @@ public class AlertsAlarmBuilder {
          * Set the alarm to start at desired hour (24h)
          *
          * @param hour  int representing hour of day to set the alarm (defaults to 09 h)
-         * @return  AlertsAlarmBuilder Builder
+         * @return  AlarmBuilder Builder
          */
         public Builder setHour(final int hour) {
             this.hour = hour;
@@ -61,7 +64,7 @@ public class AlertsAlarmBuilder {
          * Set the alarm to start at desired minute
          *
          * @param minute    int representing minute to set the alarm (defaults to 30 min)
-         * @return  AlertsAlarmBuilder Builder
+         * @return  AlarmBuilder Builder
          */
         public Builder setMinute(final int minute) {
             this.minute = minute;
@@ -76,18 +79,17 @@ public class AlertsAlarmBuilder {
         public void setDailyAlarm() {
             // Set up time of alarm
             this.calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(System.currentTimeMillis());
-            calendar.set(Calendar.HOUR_OF_DAY, this.hour);
-            calendar.set(Calendar.MINUTE, this.minute);
+            this.calendar.setTimeInMillis(System.currentTimeMillis());
+            this.calendar.set(Calendar.HOUR_OF_DAY, this.hour);
+            this.calendar.set(Calendar.MINUTE, this.minute);
             // check if this time has already passed, if TRUE add one day to the date of the alarm
-            if (calendar.getTimeInMillis() < System.currentTimeMillis()) calendar.add(Calendar.DATE, 1);
-            /*
-            * With setInexactRepeating(), you have to use one of the AlarmManager interval
-            * constants, in this case, AlarmManager.INTERVAL_DAY.
-            * */
-            alarmMgr.setInexactRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
+            if (this.calendar.getTimeInMillis() < System.currentTimeMillis() &&
+                    AlarmWorker.isSyncUpToDate(this.context)) {
+                this.calendar.add(Calendar.DATE, 1);
+            }
+            alarmMgr.setInexactRepeating(AlarmManager.RTC_WAKEUP, this.calendar.getTimeInMillis(),
                     AlarmManager.INTERVAL_DAY, alarmIntent);
-
+            Log.d(LOG_TAG, "DAILY Alarm set!");
             // Release references after alarm setup
             releaseReferences();
         }
@@ -101,6 +103,7 @@ public class AlertsAlarmBuilder {
             alarmMgr.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                     SystemClock.elapsedRealtime() + 3600000L,
                     alarmIntent);
+            Log.d(LOG_TAG, "RETRY Alarm set!");
 
             // Release references after alarm setup
             releaseReferences();

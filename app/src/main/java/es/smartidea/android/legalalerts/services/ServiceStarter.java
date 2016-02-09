@@ -1,6 +1,5 @@
-package es.smartidea.android.legalalerts.alerts.alertsServices;
+package es.smartidea.android.legalalerts.services;
 
-import android.annotation.SuppressLint;
 import android.app.IntentService;
 import android.content.Intent;
 import android.content.Context;
@@ -9,17 +8,14 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.BatteryManager;
-import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
-import es.smartidea.android.legalalerts.alerts.AlertsWakeLock;
-import es.smartidea.android.legalalerts.receivers.AlertsAlarmReceiver;
+import es.smartidea.android.legalalerts.alarms.AlarmWorker;
+import es.smartidea.android.legalalerts.receivers.AlarmReceiver;
 import es.smartidea.android.legalalerts.okHttp.OkHttpGetURL;
 
 /**
@@ -28,19 +24,20 @@ import es.smartidea.android.legalalerts.okHttp.OkHttpGetURL;
  * <p/>
  * helper methods.
  */
-public class AlertsServiceStarter extends IntentService {
+public class ServiceStarter extends IntentService {
+
     private static final String LOG_TAG = "ServiceLauncher";
+
     // ServiceLauncherReceiver related String Broadcast actions & extras
     public final static String START_ALERTS_SERVICE =
             "es.smartidea.legalalerts.START_ALERTS_SERVICE";
     public final static String START_MANUAL_SYNC_SERVICE =
             "es.smartidea.legalalerts.START_MANUAL_SYNC_SERVICE";
+    private final static String ALARM_SNOOZE = AlarmReceiver.ALARM_SNOOZE;
 
-    // AlarmReceiver related String Broadcast actions & extras
-    private final static String ALARM_SNOOZE = AlertsAlarmReceiver.ALARM_SNOOZE;
 
-    public AlertsServiceStarter() {
-        super("AlertsServiceStarter");
+    public ServiceStarter() {
+        super("ServiceStarter");
     }
 
     /**
@@ -50,7 +47,7 @@ public class AlertsServiceStarter extends IntentService {
      * @see IntentService
      */
     public static void startServiceManual(final Context context) {
-        Intent intent = new Intent(context, AlertsServiceStarter.class);
+        Intent intent = new Intent(context, ServiceStarter.class);
         intent.setAction(START_MANUAL_SYNC_SERVICE);
         context.startService(intent);
     }
@@ -60,8 +57,7 @@ public class AlertsServiceStarter extends IntentService {
     protected void onHandleIntent(@NonNull  Intent intent) {
         // Acquire WakeLock at first, and assign to its
         // specific static reference holder class
-        PowerManager pM = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        AlertsWakeLock.setWakeLock(pM.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "alerts_wakeLock"));
+        AlertsWakeLock.setWakeLock(this);
 
         switch (intent.getAction()) {
             case START_ALERTS_SERVICE:
@@ -70,11 +66,14 @@ public class AlertsServiceStarter extends IntentService {
             case START_MANUAL_SYNC_SERVICE:
                 handleStartServiceManual();
                 break;
+            case ALARM_SNOOZE:
+                handleStartServiceDefault();
+                break;
             default:
                 // If there is no matching action release the WakeLock
+                Log.d(LOG_TAG, "No matching action!");
                 AlertsWakeLock.doRelease();
                 break;
-
         }
     }
 
@@ -90,7 +89,7 @@ public class AlertsServiceStarter extends IntentService {
         } else {
             Log.d(LOG_TAG, "Don't meet requirements. Snoozing alarm one hour...");
             // Snooze alarm for 1 hour
-            snoozeAlarm(this);
+            AlarmWorker.snoozeAlarm(this);
 
             // If service was not launched release the WakeLock
             AlertsWakeLock.doRelease();
@@ -111,34 +110,6 @@ public class AlertsServiceStarter extends IntentService {
 
             // If service was not launched release the WakeLock
             AlertsWakeLock.doRelease();
-        }
-    }
-
-    /**
-     * Sends a broadcast message to create a new retry alarm
-     * from now to "about" one hour (InexactRepeating)
-     *
-     * @param context   Context of Application to send Broadcast
-     *                  and get user preferences (for checking snooze alarm status)
-     */
-    private static void snoozeAlarm(final Context context) {
-        @SuppressLint("SimpleDateFormat")
-        String todayDateString = new SimpleDateFormat("yyyyMMdd").format(new Date());
-        String snoozeDateString = PreferenceManager.getDefaultSharedPreferences(context)
-                .getString("snooze_alarm_date", "done");
-        // Check snoozeDateString, if its "done" AND
-        if (!snoozeDateString.equals("done") && snoozeDateString.equals(todayDateString)) {
-            context.sendBroadcast(
-                    new Intent(context, AlertsAlarmReceiver.class)
-                            .setAction(ALARM_SNOOZE)
-            );
-            Log.d(LOG_TAG, "Snoozing alarm one hour...");
-        } else if (!snoozeDateString.equals(todayDateString)) {
-            // If day has changed, dismiss snoozed alarm (next check, daily alarm)
-            PreferenceManager.getDefaultSharedPreferences(context)
-                    .edit()
-                    .putString("snooze_alarm_date", "done")
-                    .apply(); // Call apply() to make changes in background (commit() is immediate)
         }
     }
 

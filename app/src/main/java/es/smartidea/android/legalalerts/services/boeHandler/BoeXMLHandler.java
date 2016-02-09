@@ -1,4 +1,4 @@
-package es.smartidea.android.legalalerts.alerts.alertsServices.boeHandler;
+package es.smartidea.android.legalalerts.services.boeHandler;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
