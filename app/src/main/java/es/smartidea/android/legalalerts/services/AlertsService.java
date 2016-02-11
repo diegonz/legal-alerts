@@ -11,7 +11,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
@@ -100,7 +99,10 @@ public class AlertsService extends Service {
                             getString(R.string.notification_ok_results_title),
                             getString(R.string.notification_ok_results_description)
                     );
-                    Log.d(LOG_TAG, searchResults.size() + " Coincidences found.");
+
+                    // Log to file for debugging
+                    FileLogger.logToExternalFile(LOG_TAG + " - " + searchResults.size() + " Coincidences found.");
+
                     // Stop Service after search completed and Notification sent.
                     stopSelf();
                 } else {
@@ -109,7 +111,10 @@ public class AlertsService extends Service {
                             getString(R.string.notification_no_results_title),
                             getString(R.string.notification_no_results_description)
                     );
-                    Log.d(LOG_TAG, "Any coincidence were found.");
+
+                    // Log to file for debugging
+                    FileLogger.logToExternalFile(LOG_TAG + " - Any coincidences were found.");
+
                     // Stop Service after search completed and Notification sent.
                     stopSelf();
                 }
@@ -274,7 +279,8 @@ public class AlertsService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
-        Log.d(LOG_TAG, "Service started!");
+        // Log to file for debugging
+        FileLogger.logToExternalFile(LOG_TAG + " - Service started!");
         // If we get killed, after returning from here, AVOID restarting
         return START_NOT_STICKY;
     }
@@ -303,7 +309,6 @@ public class AlertsService extends Service {
                 .apply(); // Call apply() to make changes in background (commit() is immediate)
 
         Toast.makeText(this, "service done", Toast.LENGTH_SHORT).show();
-        Log.d(LOG_TAG, "Stopping AlertsService...");
 
         // Log to file for debugging
         FileLogger.logToExternalFile(LOG_TAG + " - Stopping service, Sync OK?: " + todaySyncedOK);

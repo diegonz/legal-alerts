@@ -5,11 +5,12 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.SystemClock;
-import android.util.Log;
 
 import java.util.Calendar;
 
+import es.smartidea.android.legalalerts.receivers.AlarmReceiver;
 import es.smartidea.android.legalalerts.services.ServiceStarter;
+import es.smartidea.android.legalalerts.utils.FileLogger;
 
 /*
 * Public pseudo-builder class AlarmBuilder
@@ -32,20 +33,26 @@ public class AlarmBuilder {
         private int hour = 9, minute = 30;
 
         /**
-         * Public Builder constructor sets the Context and ALARM_TYPE according to given parameters
+         * Public Builder constructor sets the Context and alarmType according to given parameters
          *
          * @param mContext  Context of Application to get Alarm Service
-         * @param ALARM_TYPE    String containing type of alarm that must be set.
+         * @param alarmType    String containing type of alarm that must be set.
+         * @param alarmID   int representing ID of alarm by type
+         *                  0 as daily alarm, 1 as snooze alarm
          */
-        public Builder(final Context mContext, final String ALARM_TYPE) {
+        public Builder(final Context mContext, final String alarmType, final int alarmID) {
             this.context = mContext;
             this.alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+            // Setup the flags according to alarm type.
+            final int flags = alarmID == AlarmReceiver.DAILY_ALARM_ID ?
+                    PendingIntent.FLAG_UPDATE_CURRENT :
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT;
             // Setup the alarm.
             alarmIntent = PendingIntent.getService(
                     context,
-                    0,
-                    new Intent(context, ServiceStarter.class).setAction(ALARM_TYPE),
-                    PendingIntent.FLAG_UPDATE_CURRENT
+                    alarmID,
+                    new Intent(context, ServiceStarter.class).setAction(alarmType),
+                    flags
             );
         }
 
@@ -89,7 +96,10 @@ public class AlarmBuilder {
             }
             alarmMgr.setInexactRepeating(AlarmManager.RTC_WAKEUP, this.calendar.getTimeInMillis(),
                     AlarmManager.INTERVAL_DAY, alarmIntent);
-            Log.d(LOG_TAG, "DAILY Alarm set!");
+
+            // Log to file for debugging
+            FileLogger.logToExternalFile(LOG_TAG + " DAILY Alarm set!");
+
             // Release references after alarm setup
             releaseReferences();
         }
@@ -103,7 +113,8 @@ public class AlarmBuilder {
             alarmMgr.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                     SystemClock.elapsedRealtime() + 3600000L,
                     alarmIntent);
-            Log.d(LOG_TAG, "RETRY Alarm set!");
+            // Log to file for debugging
+            FileLogger.logToExternalFile(LOG_TAG + " RETRY Alarm set!");
 
             // Release references after alarm setup
             releaseReferences();

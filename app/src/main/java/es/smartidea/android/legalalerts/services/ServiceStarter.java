@@ -10,7 +10,6 @@ import android.net.NetworkInfo;
 import android.os.BatteryManager;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import java.io.IOException;
 
@@ -75,12 +74,9 @@ public class ServiceStarter extends IntentService {
                 handleStartServiceDefault();
                 break;
             default:
-                // If there is no matching action release the WakeLock
-                Log.d(LOG_TAG, "No matching action!");
-
                 // Log to file for debugging
                 FileLogger.logToExternalFile(LOG_TAG + " - @onHandleIntent() No matching action!: " + intentAction);
-
+                // If there is no matching action release the WakeLock
                 AlertsWakeLock.doRelease();
                 break;
         }
@@ -92,16 +88,12 @@ public class ServiceStarter extends IntentService {
     private void handleStartServiceDefault() {
         // Launch service if wan is available and user preference requirements are ok
         if (isWanAvailable() && isPreferenceCheckOK(this)) {
-            Log.d(LOG_TAG, "Preferences requirements OK, launching service.");
-
             // Log to file for debugging
             FileLogger.logToExternalFile(LOG_TAG + " - Preferences requirements OK, launching service.");
 
             // User preferences OK, star service
             startService(new Intent(this, AlertsService.class));
         } else {
-            Log.d(LOG_TAG, "Don't meet requirements. Snoozing alarm one hour...");
-
             // Log to file for debugging
             FileLogger.logToExternalFile(LOG_TAG + " - Don't meet requirements. Snoozing alarm one hour...");
 
@@ -118,17 +110,13 @@ public class ServiceStarter extends IntentService {
      */
     private void handleStartServiceManual() {
         if (isWanAvailable()) {
-            Log.d(LOG_TAG, "Manual sync started, launching service.");
-
             // Log to file for debugging
             FileLogger.logToExternalFile(LOG_TAG + " - Manual sync started, launching service.");
 
             // Manual sync requested TODO: Add confirm dialog according to user preferences
             startService(new Intent(this, AlertsService.class));
         } else {
-            Log.d(LOG_TAG, "Manual sync failed, unavailable WAN.");
             // TODO: Inform user about network unavailable
-
             // Log to file for debugging
             FileLogger.logToExternalFile(LOG_TAG + " - Manual sync failed, due to unavailable WAN.");
 
@@ -197,13 +185,16 @@ public class ServiceStarter extends IntentService {
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         // Check charging status
         if (preferences.getBoolean("sync_only_when_charging", true) && !isDeviceCharging(context)) {
-            Log.d(LOG_TAG, "Device charging required!");
+            // Log to file for debugging
+            FileLogger.logToExternalFile(LOG_TAG + " - ERROR: Device charging required!");
+
             return false;
         }
         // Check unmetered network
         if (preferences.getBoolean("sync_only_over_unmetered_network", true) &&
                 !isUnmeteredNetworkAvailable(context)) {
-            Log.d(LOG_TAG, "WiFi network required!");
+            // Log to file for debugging
+            FileLogger.logToExternalFile(LOG_TAG + " - ERROR: WiFi network required!");
             return false;
         }
         return true;

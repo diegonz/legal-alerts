@@ -2,7 +2,6 @@ package es.smartidea.android.legalalerts.services.boeHandler;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -15,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 import es.smartidea.android.legalalerts.okHttp.OkHttpGetURL;
+import es.smartidea.android.legalalerts.utils.FileLogger;
 import es.smartidea.android.legalalerts.utils.TextSearchUtils;
 
 /*
@@ -30,6 +30,7 @@ import es.smartidea.android.legalalerts.utils.TextSearchUtils;
 @SuppressWarnings("StringConcatenationMissingWhitespace")
 public class BoeXMLHandler {
 
+    private static final String LOG_TAG = "BoeXMLHandler";
     // BOE base string tokens
     public final static String BOE_BASE_URL = "http://www.boe.es";
     public final static String BOE_BASE_ID = "/diario_boe/xml.php?id=BOE-S-";
@@ -68,7 +69,10 @@ public class BoeXMLHandler {
         this.boeSummariesURLStrings = new String[receivedDates.length];
         for (int i = 0; i < receivedDates.length; i++) {
             this.boeSummariesURLStrings[i] = BOE_BASE_URL + BOE_BASE_ID + receivedDates[i];
-            Log.d("BOE", "SummaryURL: " + boeSummariesURLStrings[i]);
+
+            // Log to file for debugging
+            FileLogger.logToExternalFile(LOG_TAG + " - " + "SummaryURL: " + boeSummariesURLStrings[i]);
+
         }
         // Get today´s date in string format
         this.todayDateString = receivedDates[receivedDates.length - 1];
@@ -167,7 +171,9 @@ public class BoeXMLHandler {
                     boeXMLHandlerEvents.todaySummaryResultOK(urlPairs.size() > sizeBefore);
                 }
             } catch (Exception e) {
-                Log.d("BOE", "ERROR while trying to download BOE´s summary!");
+                // Log to file for debugging
+                FileLogger.logToExternalFile(LOG_TAG + " ERROR while trying to download BOE´s summary!");
+
                 e.printStackTrace();
             } finally {
                 if (boeSummaryStream != null){
@@ -226,7 +232,9 @@ public class BoeXMLHandler {
                     ));
                 }
             } catch (Exception e) {
-                Log.d("BOE", "ERROR while trying to download BOE´s attachments!");
+                // Log to file for debugging
+                FileLogger.logToExternalFile(LOG_TAG + " ERROR while trying to download BOE´s attachments!");
+
                 e.printStackTrace();
             } finally {
                 if (boeStream != null){

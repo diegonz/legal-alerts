@@ -1,7 +1,6 @@
 package es.smartidea.android.legalalerts.utils;
 
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import java.text.Normalizer;
 import java.util.HashMap;
@@ -9,6 +8,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 public class TextSearchUtils {
+    private final static String LOG_TAG = "TextSearchUtils";
+
     private final static Pattern NOT_ASCII_REGEXP = Pattern.compile("[^\\p{ASCII}]");
     private final static Pattern SPACE_REGEXP = Pattern.compile("\\s");
 
@@ -53,7 +54,8 @@ public class TextSearchUtils {
                 // Add Boe to result if "hasAllSearchItems"
                 if (hasAllSearchItems) resultUrls.put(urlXml, searchQuery);
             } catch (Exception e) {
-                Log.d("BOE", "ERROR while searching for: " + searchQuery);
+                // Log to file for debugging
+                FileLogger.logToExternalFile(LOG_TAG + " - ERROR: while searching for: " + searchQuery);
                 e.printStackTrace();
             }
         }

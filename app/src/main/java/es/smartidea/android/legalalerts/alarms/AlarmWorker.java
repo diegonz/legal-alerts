@@ -86,15 +86,11 @@ public class AlarmWorker {
             default:
                 if (snoozeDateString.equals(todayDateString)) {
                     setupSnooze(context, todayDateString);
-                    Log.d(LOG_TAG, "Snoozing alarm one hour...");
-
                     // Log to file for debugging
                     FileLogger.logToExternalFile(LOG_TAG + " - Snoozing alarm one hour...");
 
                 } else {
                     setupSnooze(context, SNOOZE_DATE_DEFAULT);
-                    Log.d(LOG_TAG, "Day has changed, DO NOT SET any alarm");
-
                     // Log to file for debugging
                     FileLogger.logToExternalFile(LOG_TAG + " - Day has changed, DO NOT SET any alarm");
                 }

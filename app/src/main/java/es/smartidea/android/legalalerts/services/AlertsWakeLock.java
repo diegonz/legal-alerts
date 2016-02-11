@@ -2,7 +2,8 @@ package es.smartidea.android.legalalerts.services;
 
 import android.content.Context;
 import android.os.PowerManager;
-import android.util.Log;
+
+import es.smartidea.android.legalalerts.utils.FileLogger;
 
 /**
  * Public class containing a static reference to an WakeLock
@@ -28,7 +29,9 @@ public class AlertsWakeLock {
         PowerManager pM = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         wakeLock = pM.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "alerts_wakeLock");
         wakeLock.acquire();
-        Log.d(LOG_TAG, "Acquiring WakeLock...");
+
+        // Log to file for debugging
+        FileLogger.logToExternalFile(LOG_TAG + " - Acquiring WakeLock...");
     }
 
     /**
@@ -36,7 +39,9 @@ public class AlertsWakeLock {
      */
     public static void doRelease(){
         if (wakeLock != null && wakeLock.isHeld()) {
-            Log.d(LOG_TAG, "Releasing WakeLock...");
+            // Log to file for debugging
+            FileLogger.logToExternalFile(LOG_TAG + " - Releasing WakeLock...");
+
             wakeLock.release();
             //wakeLock = null;
         }
