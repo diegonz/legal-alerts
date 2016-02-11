@@ -8,6 +8,7 @@ import android.util.Log;
 
 import es.smartidea.android.legalalerts.alarms.AlarmBuilder;
 import es.smartidea.android.legalalerts.services.ServiceStarter;
+import es.smartidea.android.legalalerts.utils.FileLogger;
 
 public class AlarmReceiver extends BroadcastReceiver {
 
@@ -57,8 +58,14 @@ public class AlarmReceiver extends BroadcastReceiver {
                     break;
             }
             Log.d(LOG_TAG, "CREATING new " + ALARM_TYPE + " alarm.");
+
+            // Log to file for debugging
+            FileLogger.logToExternalFile(LOG_TAG + " - CREATING new " + ALARM_TYPE + " alarm.");
         } else {
             Log.d(LOG_TAG, "SKIPPING " + ALARM_TYPE + " already set.");
+
+            // Log to file for debugging
+            FileLogger.logToExternalFile(LOG_TAG + " - SKIPPING " + ALARM_TYPE + " already set.");
         }
     }
 }

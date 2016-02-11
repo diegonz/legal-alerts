@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import es.smartidea.android.legalalerts.receivers.AlarmReceiver;
+import es.smartidea.android.legalalerts.utils.FileLogger;
 
 /**
  * Static class that handles up to date syncing check and snoozing alarm logic,
@@ -26,7 +27,8 @@ public class AlarmWorker {
     // AlarmReceiver related String Broadcast actions & extras
     private final static String ALARM_SNOOZE = AlarmReceiver.ALARM_SNOOZE;
     // SNOOZE dateString default value
-    private static final String SNOOZE_DATE_DEFAULT = "default_value";
+    public static final String SNOOZE_DATE_NAME = "snooze_alarm_date";
+    public static final String SNOOZE_DATE_DEFAULT = "default_value";
 
 
     // Private empty constructor to avoid instantiation
@@ -67,13 +69,17 @@ public class AlarmWorker {
         @SuppressLint("SimpleDateFormat")
         final String todayDateString = new SimpleDateFormat("yyyyMMdd").format(new Date());
         final String snoozeDateString = PreferenceManager.getDefaultSharedPreferences(context)
-                .getString("snooze_alarm_date", SNOOZE_DATE_DEFAULT);
+                .getString(SNOOZE_DATE_NAME, SNOOZE_DATE_DEFAULT);
         switch (snoozeDateString) {
 
             // Empty or new snoozing request
             case SNOOZE_DATE_DEFAULT:
                 setupSnooze(context, todayDateString);
                 Log.d(LOG_TAG, "Snoozing alarm one hour...");
+
+                // Log to file for debugging
+                FileLogger.logToExternalFile(LOG_TAG + " - First time - snoozing alarm one hour...");
+
                 break;
 
             // Default when has any date String to compare
@@ -81,9 +87,16 @@ public class AlarmWorker {
                 if (snoozeDateString.equals(todayDateString)) {
                     setupSnooze(context, todayDateString);
                     Log.d(LOG_TAG, "Snoozing alarm one hour...");
+
+                    // Log to file for debugging
+                    FileLogger.logToExternalFile(LOG_TAG + " - Snoozing alarm one hour...");
+
                 } else {
                     setupSnooze(context, SNOOZE_DATE_DEFAULT);
                     Log.d(LOG_TAG, "Day has changed, DO NOT SET any alarm");
+
+                    // Log to file for debugging
+                    FileLogger.logToExternalFile(LOG_TAG + " - Day has changed, DO NOT SET any alarm");
                 }
                 break;
         }
@@ -102,7 +115,7 @@ public class AlarmWorker {
     private static void setupSnooze(final Context context, final String dateString) {
         PreferenceManager.getDefaultSharedPreferences(context)
                 .edit()
-                .putString("snooze_alarm_date", dateString)
+                .putString(SNOOZE_DATE_NAME, dateString)
                 .apply(); // Call apply() to make changes in background (commit() is immediate)
 
         // If date has changed, DO NOT SET any snoozed alarm (next check, daily alarm)

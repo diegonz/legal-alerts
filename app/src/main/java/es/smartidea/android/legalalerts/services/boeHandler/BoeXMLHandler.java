@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Set;
 
 import es.smartidea.android.legalalerts.okHttp.OkHttpGetURL;
-import es.smartidea.android.legalalerts.textUtils.TextSearchUtils;
+import es.smartidea.android.legalalerts.utils.TextSearchUtils;
 
 /*
  * BoeXMLHandler class

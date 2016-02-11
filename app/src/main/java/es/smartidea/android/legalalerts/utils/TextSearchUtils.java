@@ -1,4 +1,4 @@
-package es.smartidea.android.legalalerts.textUtils;
+package es.smartidea.android.legalalerts.utils;
 
 import android.support.annotation.NonNull;
 import android.util.Log;

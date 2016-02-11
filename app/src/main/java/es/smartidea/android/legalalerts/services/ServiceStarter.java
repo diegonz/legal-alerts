@@ -17,6 +17,7 @@ import java.io.IOException;
 import es.smartidea.android.legalalerts.alarms.AlarmWorker;
 import es.smartidea.android.legalalerts.receivers.AlarmReceiver;
 import es.smartidea.android.legalalerts.okHttp.OkHttpGetURL;
+import es.smartidea.android.legalalerts.utils.FileLogger;
 
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in
@@ -59,7 +60,11 @@ public class ServiceStarter extends IntentService {
         // specific static reference holder class
         AlertsWakeLock.setWakeLock(this);
 
-        switch (intent.getAction()) {
+        String intentAction = intent.getAction();
+        // Log to file for debugging TODO: REMOVE STRING intentAction AFTER DEBUG
+        FileLogger.logToExternalFile(LOG_TAG + " - @onHandleIntent() action: " + intentAction);
+
+        switch (intentAction) {
             case START_ALERTS_SERVICE:
                 handleStartServiceDefault();
                 break;
@@ -72,6 +77,10 @@ public class ServiceStarter extends IntentService {
             default:
                 // If there is no matching action release the WakeLock
                 Log.d(LOG_TAG, "No matching action!");
+
+                // Log to file for debugging
+                FileLogger.logToExternalFile(LOG_TAG + " - @onHandleIntent() No matching action!: " + intentAction);
+
                 AlertsWakeLock.doRelease();
                 break;
         }
@@ -84,10 +93,18 @@ public class ServiceStarter extends IntentService {
         // Launch service if wan is available and user preference requirements are ok
         if (isWanAvailable() && isPreferenceCheckOK(this)) {
             Log.d(LOG_TAG, "Preferences requirements OK, launching service.");
+
+            // Log to file for debugging
+            FileLogger.logToExternalFile(LOG_TAG + " - Preferences requirements OK, launching service.");
+
             // User preferences OK, star service
             startService(new Intent(this, AlertsService.class));
         } else {
             Log.d(LOG_TAG, "Don't meet requirements. Snoozing alarm one hour...");
+
+            // Log to file for debugging
+            FileLogger.logToExternalFile(LOG_TAG + " - Don't meet requirements. Snoozing alarm one hour...");
+
             // Snooze alarm for 1 hour
             AlarmWorker.snoozeAlarm(this);
 
@@ -102,11 +119,19 @@ public class ServiceStarter extends IntentService {
     private void handleStartServiceManual() {
         if (isWanAvailable()) {
             Log.d(LOG_TAG, "Manual sync started, launching service.");
+
+            // Log to file for debugging
+            FileLogger.logToExternalFile(LOG_TAG + " - Manual sync started, launching service.");
+
             // Manual sync requested TODO: Add confirm dialog according to user preferences
             startService(new Intent(this, AlertsService.class));
         } else {
             Log.d(LOG_TAG, "Manual sync failed, unavailable WAN.");
             // TODO: Inform user about network unavailable
+
+            // Log to file for debugging
+            FileLogger.logToExternalFile(LOG_TAG + " - Manual sync failed, due to unavailable WAN.");
+
 
             // If service was not launched release the WakeLock
             AlertsWakeLock.doRelease();

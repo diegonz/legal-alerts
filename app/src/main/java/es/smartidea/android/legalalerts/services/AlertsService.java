@@ -26,6 +26,7 @@ import es.smartidea.android.legalalerts.alarms.AlarmWorker;
 import es.smartidea.android.legalalerts.services.boeHandler.BoeXMLHandler;
 import es.smartidea.android.legalalerts.database.dbContentProvider.DBContentProvider;
 import es.smartidea.android.legalalerts.database.DBContract;
+import es.smartidea.android.legalalerts.utils.FileLogger;
 
 public class AlertsService extends Service {
 
@@ -48,6 +49,10 @@ public class AlertsService extends Service {
     private static boolean serviceRunning = false;
     // Flag indicating today´s summary sync status
     private static boolean todaySyncedOK = false;
+    // SNOOZE dateString values
+    private static final String SNOOZE_DATE_DEFAULT = AlarmWorker.SNOOZE_DATE_DEFAULT;
+    private static final String SNOOZE_DATE_NAME = AlarmWorker.SNOOZE_DATE_NAME;
+
 
     /*
     * Service Methods START
@@ -66,7 +71,7 @@ public class AlertsService extends Service {
 
         this.todayDateString = dateFormat.format(todayDate);
         final String lastSuccessfulSyncString = PreferenceManager
-                .getDefaultSharedPreferences(getApplicationContext())
+                .getDefaultSharedPreferences(this)
                 .getString(LAST_SUCCESSFUL_SYNC, todayDateString);
 
         try {
@@ -81,14 +86,16 @@ public class AlertsService extends Service {
         }
         // Initialize BoeXMLHandler passing pending days to check as string array
         boeXMLHandler = new BoeXMLHandler(daysToCheck.toArray(new String[daysToCheck.size()]));
+        // TODO: Check a reference to service (Context)
+        final Context context = this;
         // Set/send BoeXMLHandler event listener
         boeXMLHandler.setBoeXMLHandlerEvents(new BoeXMLHandler.BoeXMLHandlerEvents() {
             @Override
-            public void onWorkCompleted(Map<String, String> searchResults, Map<String, String> xmlPdfUrls) {
+            public void onWorkCompleted(final Map<String, String> searchResults, final Map<String, String> xmlPdfUrls) {
                 if (!searchResults.isEmpty()){
-                    storeResultsOnDB(getApplicationContext(), searchResults, xmlPdfUrls);
+                    storeResultsOnDB(context, searchResults, xmlPdfUrls);
                     showAlertNotification(
-                            getApplicationContext(),
+                            context,
                             searchResults.size() + " " +
                             getString(R.string.notification_ok_results_title),
                             getString(R.string.notification_ok_results_description)
@@ -98,7 +105,7 @@ public class AlertsService extends Service {
                     stopSelf();
                 } else {
                     showAlertNotification(
-                            getApplicationContext(),
+                            context,
                             getString(R.string.notification_no_results_title),
                             getString(R.string.notification_no_results_description)
                     );
@@ -109,7 +116,7 @@ public class AlertsService extends Service {
             }
 
             @Override
-            public void todaySummaryResultOK(boolean todaySyncResultOK) {
+            public void todaySummaryResultOK(final boolean todaySyncResultOK) {
                 todaySyncedOK = todaySyncResultOK;
             }
         });
@@ -210,7 +217,7 @@ public class AlertsService extends Service {
      * @param title   String corresponding to Notification´s title
      * @param message String corresponding to Notification´s message
      **/
-    public void showAlertNotification(@NonNull final Context context,
+    public static void showAlertNotification(@NonNull final Context context,
                                       @NonNull final String title,
                                       @NonNull final String message) {
 
@@ -223,7 +230,7 @@ public class AlertsService extends Service {
                         PreferenceManager.getDefaultSharedPreferences(context);
                 // Notify if user preference flags if notifyON
                 if (sharedPreferences.getBoolean("notifications_new_message", true)) {
-                    new NotificationBuilder.Builder(getApplicationContext())
+                    new NotificationBuilder.Builder(context)
                         .setTitle(title)
                         .setMessage(message)
                         .setVibrate(sharedPreferences.getBoolean(
@@ -258,7 +265,7 @@ public class AlertsService extends Service {
                 serviceRunning = true;
                 //setup BoeHandler and BoeHandler.Listeners
                 setupBoeHandler();
-                // Start fetching summary
+                // Start fetching summary using in a runnable using getApplicationContext()
                 boeXMLHandler.startFetchAndSearch(getAlertsFromDB(getApplicationContext()));
             }
         }).start();
@@ -283,19 +290,23 @@ public class AlertsService extends Service {
     public void onDestroy() {
         if (todaySyncedOK){
             // Set LAST_SUCCESSFUL_SYNC to todayDateString
-            PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
+            // TODO: CHECK getApplicationContext() vs this in services
+            PreferenceManager.getDefaultSharedPreferences(this)
                     .edit()
                     .putString(LAST_SUCCESSFUL_SYNC, todayDateString)
                     .apply(); // Call apply() to make changes in background (commit() is immediate)
         }
         // Set snooze_alarm_date to "done"
-        PreferenceManager.getDefaultSharedPreferences(getApplicationContext())
+        PreferenceManager.getDefaultSharedPreferences(this)
                 .edit()
-                .putString("snooze_alarm_date", "done")
+                .putString(SNOOZE_DATE_NAME, SNOOZE_DATE_DEFAULT)
                 .apply(); // Call apply() to make changes in background (commit() is immediate)
 
         Toast.makeText(this, "service done", Toast.LENGTH_SHORT).show();
         Log.d(LOG_TAG, "Stopping AlertsService...");
+
+        // Log to file for debugging
+        FileLogger.logToExternalFile(LOG_TAG + " - Stopping service, Sync OK?: " + todaySyncedOK);
 
         // Release as many resources as possible
         if (boeXMLHandler != null){
