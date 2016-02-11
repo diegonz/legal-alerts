@@ -28,7 +28,7 @@ public class DBAlertsCursorAdapter extends ResourceCursorAdapter {
      */
     static class ViewHolder {
         @Bind(R.id.textViewAlertListItem) TextView textViewAlertListItem;
-        @Bind(R.id.imageViewAlertListItemLiteral) ImageView imageViewAlertListItemLiteral;
+        @Bind(R.id.imageAlertListItemLiteralSearch) ImageView imageViewAlertListItemLiteral;
 
         // Public constructor which receives a View to bind its contents to the holder
         public ViewHolder(View view) {

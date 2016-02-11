@@ -16,15 +16,15 @@ import es.smartidea.android.legalalerts.database.DBContract;
 public class DBHelper extends SQLiteOpenHelper {
 
     // String query "tokens" with preceding space
-    private static final String TEXT_TYPE = " TEXT", INT_TYPE = " INT", NOT_NULL = " NOT NULL";
+    public static final String TEXT_TYPE = " TEXT", INT_TYPE = " INT", NOT_NULL = " NOT NULL";
     private static final String ON_CONFLICT_IGNORE = " ON CONFLICT IGNORE";
     private static final String DEFAULT_0 = " DEFAULT 0";
-    private static final String SPACE_OPEN_BRACKET = " (", SPACE_CLOSE_BRACKET_SEMICOLON = " );";
+    public static final String SPACE_OPEN_BRACKET = " (", SPACE_CLOSE_BRACKET_SEMICOLON = " );";
     // String query "tokens" with later space
     private static final String UNIQUE = "UNIQUE ", COMMA_SEP = ", ";
     // String query "tokens" with space before and after
     private static final String INT_PRIMARY_KEY = " INTEGER PRIMARY KEY, ";
-    private static final String CLOSE_BRACKET_SPACE = ") ";
+    public static final String CLOSE_BRACKET_SPACE = ") ";
 
     /*
     *  Start ALERTS table

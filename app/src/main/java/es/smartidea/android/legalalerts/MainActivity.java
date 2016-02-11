@@ -1,6 +1,7 @@
 package es.smartidea.android.legalalerts;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -22,6 +23,7 @@ import android.view.View;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import es.smartidea.android.legalalerts.database.dbHelper.DBHelper;
 import es.smartidea.android.legalalerts.receivers.AlarmReceiver;
 import es.smartidea.android.legalalerts.database.dbContentProvider.DBContentProvider;
 import es.smartidea.android.legalalerts.database.DBContract;
@@ -54,13 +56,13 @@ public class MainActivity extends AppCompatActivity
                 break;
             case FRAGMENT_HISTORY:
                 // Delete all items
-                showSnackBar(view, "Deleted " + deleteHistory(null) + " item(s).");
+                showSnackBar(view, "Deleted " + deleteHistory(this, null, null) + " item(s).");
                 break;
         }
     }
 
     /*
-    * LIFECYCLE
+    * LIFECYCLE START
     * */
 
     @Override
@@ -108,6 +110,10 @@ public class MainActivity extends AppCompatActivity
         // Save the user's current running fragment
         outState.putInt(RUNNING_FRAGMENT_STRING, runningFragment);
     }
+
+    /*
+    * LIFECYCLE END
+    * */
 
     @Override
     public void onBackPressed() {
@@ -190,22 +196,25 @@ public class MainActivity extends AppCompatActivity
     // DB
 
     /**
-     * Activity method to insert new Alerts into Database
+     * Activity method to insert new Alerts into Database according to given alertName
+     * and boolean flag isLiteralSearch
      *
+     * @param context   Context to get ContentResolver
      * @param alertName String representing the search term to be stored
      * @param isLiteralSearch boolean flag indicating if search
      *                        term has literal search set to TRUE
      * @return int indicating DB ID, returns minus one (-1) if there was an
      * error or same search term already existed into DB
      */
-    public int insertNewAlert(final String alertName, final boolean isLiteralSearch){
+    public static int insertNewAlert(final Context context, final String alertName,
+                                     final boolean isLiteralSearch){
         ContentValues values = new ContentValues();
         values.put(DBContract.Alerts.COL_ALERT_NAME, alertName);
         // Get REVERSE toggle button state by casting a boolean with ternary operator expression.
         // If checked returns 0, if not returns 1
         int literalSearchIntValue = (isLiteralSearch) ? 0 : 1;
         values.put(DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL, literalSearchIntValue);
-        Uri resultID = getContentResolver().insert(ALERTS_URI, values);
+        Uri resultID = context.getContentResolver().insert(ALERTS_URI, values);
         if (resultID != null) {
             // Return last item of Uri (ID)
             return Integer.parseInt(resultID.getLastPathSegment());
@@ -215,15 +224,17 @@ public class MainActivity extends AppCompatActivity
     }
 
     /**
-     * Activity method to update Alerts into Database
+     * Activity method to update Alerts into Database according to given alertName
      *
-     * @param oldName       String representing previous alertName to be updated
-     * @param newName       String representing new alertName to update
+     * @param context   Context to get ContentResolver
+     * @param oldName   String representing previous alertName to be updated
+     * @param newName   String representing new alertName to update
      * @param isLiteralSearch   boolean flag indicating if search
      *                          term has literal search set to TRUE
      * @return int representing updating success, 1 if updated ok, -1 if no update was produced
      */
-    public int updateAlert(final String oldName, final String newName, final boolean isLiteralSearch){
+    public static int updateAlert(final Context context, final String oldName, final String newName,
+                                  final boolean isLiteralSearch){
         ContentValues values = new ContentValues();
         values.put(DBContract.Alerts.COL_ALERT_NAME, newName);
         // Get REVERSE toggle button state by casting a boolean with ternary operator expression.
@@ -232,22 +243,54 @@ public class MainActivity extends AppCompatActivity
         values.put(DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL, literalSearchIntValue);
         // Set WHERE clause between single quotes to avoid being
         // identified by SQLite as a table +info: http://stackoverflow.com/a/13173792/3799840
-        return getContentResolver()
+        return context.getContentResolver()
                 .update(ALERTS_URI, values, WHERE_NAME_EQUALS + '\'' + oldName + '\'', null) < 1
                 ? -1
                 : 1;
     }
 
     /**
+     * Activity method to delete Alerts into Database according to given alertName
+     *
+     * @param context   Context to get ContentResolver
+     * @param alertName String representing alertName to be deleted
+     * @return int representing number of deleted items
+     */
+    public static int deleteAlert(final Context context, final String alertName){
+        return context.getContentResolver().delete(
+                ALERTS_URI,
+                DBContract.Alerts.COL_ALERT_NAME + "='" + alertName + '\'',
+                null
+        );
+    }
+
+    /**
      * Delete items from history table according to given parameters
      *
-     * @param historyItem    @Nullable String representing history item to delete
-     *                       if NULL received deleted all entries in the table
-     * @return  int indicating number of items deleted.
+     * @param context       Context to get ContentResolver
+     * @param documentName  @Nullable String representing history item to delete
+     *                      if NULL received deleted all entries in the table
+     * @param alertName     @Nullable String representing history item to delete
+     *                      if NULL received deleted all entries in the table
+     * @return  int indicating number of items deleted. -1 If no action taken.
      */
-    public int deleteHistory(@Nullable final String historyItem){
-        // Deletes item according to received String, if null received deletes all records
-        return getContentResolver().delete(HISTORY_URI, historyItem, null);
+    public static int deleteHistory(final Context context, @Nullable final String documentName,
+                                    @Nullable final String alertName){
+        if (!(documentName == null) && !(alertName == null)){
+            // Construct WHERE statement
+            //noinspection StringConcatenationMissingWhitespace
+            final String WHERE = DBHelper.SPACE_OPEN_BRACKET +
+                    DBContract.History.COL_HISTORY_DOCUMENT_NAME + "='" + documentName + '\'' +
+                    DBHelper.CLOSE_BRACKET_SPACE + " AND " + DBHelper.SPACE_OPEN_BRACKET +
+                    DBContract.History.COL_HISTORY_RELATED_ALERT_NAME + "='" + alertName + '\'' +
+                    DBHelper.CLOSE_BRACKET_SPACE;
+            // Delete concrete alert
+            return context.getContentResolver().delete(HISTORY_URI, WHERE, null);
+
+        } else if (documentName == null && alertName == null) {
+            // Delete all history records
+            return context.getContentResolver().delete(HISTORY_URI, null, null);
+        } else return -1; // Return -1 as error flag indicating no order was processed
     }
 
     // UI
@@ -347,7 +390,7 @@ public class MainActivity extends AppCompatActivity
      * @param view  Parent view to show the SnackBar on.
      * @param message   String containing message to show
      */
-    private static void showSnackBar(@NonNull final View view, @NonNull final String message){
+    public static void showSnackBar(@NonNull final View view, @NonNull final String message){
         Snackbar.make(view, message, Snackbar.LENGTH_SHORT).setAction("Action", null).show();
     }
 }

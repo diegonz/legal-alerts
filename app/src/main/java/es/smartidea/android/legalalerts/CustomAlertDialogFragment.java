@@ -193,11 +193,11 @@ public class CustomAlertDialogFragment extends AppCompatDialogFragment {
                                 // Get int result and assign by ternary operator expression,
                                 // invoking correct method checking bundle nullity
                                 int result = bundle != null
-                                        ? ((MainActivity) getActivity()).updateAlert(
+                                        ? MainActivity.updateAlert(getContext(),
                                                 bundle.getString("alert_name"),
                                                 editTextDialogAlert.getText().toString(),
                                                 switchLiteralSearch.isChecked())
-                                        : ((MainActivity) getActivity()).insertNewAlert(
+                                        : MainActivity.insertNewAlert(getContext(),
                                                 editTextDialogAlert.getText().toString(),
                                                 switchLiteralSearch.isChecked());
                                 switch (result){

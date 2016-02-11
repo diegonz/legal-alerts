@@ -56,9 +56,19 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     // Required empty public constructor
     public AlertsFragment() {}
 
+    /**
+     * Set alertsAdapter to ListViewAlerts and initialize Loader via LoaderManager
+     */
+    private void initAlertsLoader() {
+        alertsAdapter = new DBAlertsCursorAdapter(getActivity(), R.layout.list_item_alert, null, 0);
+        listViewAlerts.setAdapter(alertsAdapter);
+        // Prepare the loader.  Either re-connect with an existing one or start a new one.
+        getActivity().getSupportLoaderManager().initLoader(ALERTS_LOADER_ID, null, this);
+    }
+
     /*
-     * Start of fragment lifecycle
-     * */
+    * LIFECYCLE START
+    * */
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -92,19 +102,23 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     }
 
     @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        super.onCreateContextMenu(menu, v, menuInfo);
-        // Inflate context menu
-        getActivity().getMenuInflater().inflate(R.menu.list_view_alerts_context, menu);
-    }
-
-    @Override
     public void onDestroyView() {
         super.onDestroyView();
         // Unbind ButterKnife
         ButterKnife.unbind(this);
         // Destroy LoaderManager when onPause()
         getActivity().getSupportLoaderManager().destroyLoader(ALERTS_LOADER_ID);
+    }
+
+    /*
+    * LIFECYCLE END
+    * */
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        // Inflate context menu
+        getActivity().getMenuInflater().inflate(R.menu.list_view_alerts_context, menu);
     }
 
     @Override
@@ -114,9 +128,9 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
         TextView textView = ButterKnife.findById(
                 listViewAlerts.getChildAt(info.position), R.id.textViewAlertListItem);
         ImageView imageView = ButterKnife.findById(
-                listViewAlerts.getChildAt(info.position), R.id.imageViewAlertListItemLiteral);
-        switch (item.getItemId()){
-            case R.id.contextMenuListItemAlertsEdit:
+                listViewAlerts.getChildAt(info.position), R.id.imageAlertListItemLiteralSearch);
+        switch (item.getItemId()) {
+            case R.id.contextListAlertsEdit:
                 // Show dialog passing to the factory method its alertName
                 // and TRUE or FALSE if marked as literal search
                 // on imageView tag´s added on DBAlertsCursorAdapter
@@ -125,12 +139,10 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
                         imageView.getTag().equals(true)
                 ).show(getActivity().getSupportFragmentManager(), DIALOG_TAG);
                 return true;
-            case R.id.contextMenuListItemAlertsDelete:
-                int hits = getActivity().getContentResolver().delete(
-                        ALERTS_URI,
-                        DBContract.Alerts.COL_ALERT_NAME + "='" + textView.getText() + '\'',
-                        null
-                );
+            case R.id.contextListAlertsDelete:
+                // Delete alert sending alertName to MainActivity deleteAlert() method.
+                final int hits =
+                        MainActivity.deleteAlert(getContext(), textView.getText().toString());
                 // Set textView (or ListView) as view for the SnackBar as since CoordinatorLayout
                 // manages animations an viewGroup relationship
                 // check url for details: https://goo.gl/XwjDM4
@@ -152,7 +164,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
         // as you specify a parent activity in AndroidManifest.xml.
         if (item.getItemId() == R.id.action_refresh) {
             // Start manual sync if service is not already running
-            if (AlertsService.isRunning()){
+            if (AlertsService.isRunning()) {
                 Toast.makeText(getContext(),
                         getString(R.string.text_toast_service_already_running),
                         Toast.LENGTH_SHORT
@@ -166,10 +178,6 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
 
         return super.onOptionsItemSelected(item);
     }
-
-    /*
-     * End of fragment lifecycle
-     * */
 
     // Returns a new loader after the initAlertsLoader() call
     @Override
@@ -189,15 +197,5 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     public void onLoaderReset(Loader loader) {
         // data is not available anymore, delete reference
         alertsAdapter.swapCursor(null);
-    }
-
-    /**
-     * Set alertsAdapter to ListViewAlerts and initialize Loader via LoaderManager
-     */
-    private void initAlertsLoader() {
-        alertsAdapter = new DBAlertsCursorAdapter(getActivity(), R.layout.list_item_alert, null, 0);
-        listViewAlerts.setAdapter(alertsAdapter);
-        // Prepare the loader.  Either re-connect with an existing one or start a new one.
-        getActivity().getSupportLoaderManager().initLoader(ALERTS_LOADER_ID, null, this);
     }
 }

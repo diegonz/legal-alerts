@@ -45,6 +45,19 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
     // Required empty public constructor
     public HistoryFragment() {}
 
+    // Attach alertsAdapter to ListViewAlerts
+    private void initHistoryLoader() {
+        historyAdapter =
+                new DBHistoryCursorAdapter(getActivity(), R.layout.list_item_history, null, 0);
+        listViewHistory.setAdapter(historyAdapter);
+        // Prepare the loader.  Either re-connect with an existing one or start a new one.
+        getActivity().getSupportLoaderManager().initLoader(HISTORY_LOADER_ID, null, this);
+    }
+
+    /*
+    * LIFECYCLE START
+    * */
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         // Inflate the layout for this fragment
@@ -63,12 +76,6 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
     }
 
     @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        super.onCreateContextMenu(menu, v, menuInfo);
-        menu.add(getString(R.string.fragment_history_context_menu_view));
-    }
-
-    @Override
     public void onDestroyView() {
         super.onDestroyView();
         // Unbind ButterKnife
@@ -76,18 +83,44 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
         getActivity().getSupportLoaderManager().destroyLoader(HISTORY_LOADER_ID);
     }
 
+    /*
+    * LIFECYCLE END
+    * */
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo){
+        super.onCreateContextMenu(menu, v, menuInfo);
+        // Inflate context menu
+        getActivity().getMenuInflater().inflate(R.menu.list_view_history_context, menu);
+    }
+
     @Override
     public boolean onContextItemSelected(MenuItem item) {
-//        return super.onContextItemSelected(item);
         AdapterView.AdapterContextMenuInfo info =
                 (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        TextView textView = ButterKnife.findById(
-                listViewHistory.getChildAt(info.position), R.id.textViewHistoryListItemDocumentName);
-        //noinspection StringConcatenationMissingWhitespace
-        startActivity(new Intent(Intent.ACTION_VIEW).setData(
-                        Uri.parse(BoeXMLHandler.BOE_BASE_URL + textView.getTag()))
-        );
-        return true;
+        final TextView textViewDocument = ButterKnife.findById(
+                listViewHistory.getChildAt(info.position), R.id.historyListItemDocumentName);
+        final TextView textViewAlert = ButterKnife.findById(
+                listViewHistory.getChildAt(info.position), R.id.historyListItemRelatedAlert);
+        switch (item.getItemId()){
+            case R.id.contextListHistoryView:
+                //noinspection StringConcatenationMissingWhitespace
+                startActivity(new Intent(Intent.ACTION_VIEW).setData(
+                        Uri.parse(BoeXMLHandler.BOE_BASE_URL + textViewDocument.getTag()))
+                );
+                return true;
+            case R.id.contextListHistoryDelete:
+                final int deletedItems = MainActivity.deleteHistory(
+                        getContext(),
+                        textViewDocument.getText().toString(),
+                        textViewAlert.getText().toString()
+                );
+                MainActivity.showSnackBar(listViewHistory, "Deleted " + deletedItems + " item(s).");
+                return true;
+            default:
+                return super.onContextItemSelected(item);
+
+        }
     }
 
     // Returns a new loader after the initAlertsLoader() call
@@ -106,14 +139,5 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
     public void onLoaderReset(Loader loader) {
         // data is not available anymore, delete reference
         historyAdapter.swapCursor(null);
-    }
-
-    // Attach alertsAdapter to ListViewAlerts
-    private void initHistoryLoader() {
-        historyAdapter =
-                new DBHistoryCursorAdapter(getActivity(), R.layout.list_item_history, null, 0);
-        listViewHistory.setAdapter(historyAdapter);
-        // Prepare the loader.  Either re-connect with an existing one or start a new one.
-        getActivity().getSupportLoaderManager().initLoader(HISTORY_LOADER_ID, null, this);
     }
 }

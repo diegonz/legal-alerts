@@ -28,12 +28,13 @@
     <string name="action_manual_sync">Sync</string>
 
     <!-- Strings related to History fragment -->
-    <string name="fragment_history_context_menu_view">View on external app</string>
+    <string name="history_context_menu_view">View on external app</string>
+    <string name="history_context_menu_delete">Delete</string>
 
     <!-- Strings related to Alerts fragment -->
     <!-- Strings related to Alerts ListView items ContextMenu -->
-    <string name="list_view_alerts_context_menu_option_delete">Delete</string>
-    <string name="list_view_alerts_context_menu_option_edit">Edit</string>
+    <string name="alerts_context_menu_delete">Delete</string>
+    <string name="alerts_context_menu_edit">Edit</string>
 
     <!-- Strings related to Alerts Dialog -->
     <string name="button_dialog_alert_save">Save</string>

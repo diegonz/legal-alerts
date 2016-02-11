@@ -17,13 +17,13 @@
         android:layout_centerVertical="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_toStartOf="@+id/imageViewAlertListItemLiteral"
-        android:layout_toLeftOf="@+id/imageViewAlertListItemLiteral" />
+        android:layout_toStartOf="@+id/imageAlertListItemLiteralSearch"
+        android:layout_toLeftOf="@+id/imageAlertListItemLiteralSearch" />
 
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/imageViewAlertListItemLiteral"
+        android:id="@+id/imageAlertListItemLiteralSearch"
         android:src="@android:drawable/ic_secure"
         android:contentDescription="@string/fragment_alerts_text_image_literal_search"
         android:layout_centerVertical="true"

@@ -26,9 +26,9 @@ public class DBHistoryCursorAdapter extends ResourceCursorAdapter {
      * ViewHolder static class to store associated Views
      */
     static class ViewHolder{
-        @Bind(R.id.textViewHistoryListItemRelatedAlert) TextView textViewHistoryListItemRelatedAlert;
-        @Bind(R.id.textViewHistoryListItemDocumentName) TextView textViewHistoryListItemDocumentName;
-        @Bind(R.id.textViewHistoryListItemDocumentDate) TextView textViewHistoryListItemDocumentDate;
+        @Bind(R.id.historyListItemRelatedAlert) TextView textViewHistoryListItemRelatedAlert;
+        @Bind(R.id.historyListItemDocumentName) TextView textViewHistoryListItemDocumentName;
+        @Bind(R.id.historyListItemDocumentDate) TextView textViewHistoryListItemDocumentDate;
 
         public ViewHolder(View view) {
             ButterKnife.bind(this, view);

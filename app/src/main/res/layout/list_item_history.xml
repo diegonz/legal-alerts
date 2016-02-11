@@ -8,18 +8,18 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/textViewHistoryListItemRelatedAlert"
+        android:id="@+id/historyListItemRelatedAlert"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="@string/fragment_history_text_list_item"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_toStartOf="@+id/textViewHistoryListItemDocumentName"
-        android:layout_toLeftOf="@+id/textViewHistoryListItemDocumentName" />
+        android:layout_toStartOf="@+id/historyListItemDocumentName"
+        android:layout_toLeftOf="@+id/historyListItemDocumentName" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/textViewHistoryListItemDocumentName"
+        android:id="@+id/historyListItemDocumentName"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="@string/fragment_history_text_list_item"
         android:layout_alignParentEnd="true"
@@ -29,10 +29,10 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/textViewHistoryListItemDocumentDate"
+        android:id="@+id/historyListItemDocumentDate"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="@string/fragment_history_text_list_item"
-        android:layout_below="@+id/textViewHistoryListItemDocumentName"
+        android:layout_below="@+id/historyListItemDocumentName"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true" />
 
