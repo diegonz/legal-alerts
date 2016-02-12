@@ -20,7 +20,7 @@ import android.widget.TextView;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import es.smartidea.android.legalalerts.services.boeHandler.BoeXMLHandler;
+import es.smartidea.android.legalalerts.services.boeHandler.BoeHandler;
 import es.smartidea.android.legalalerts.database.dbContentProvider.DBContentProvider;
 import es.smartidea.android.legalalerts.database.dbCursorAdapter.DBHistoryCursorAdapter;
 import es.smartidea.android.legalalerts.database.DBContract;
@@ -106,7 +106,7 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
             case R.id.contextListHistoryView:
                 //noinspection StringConcatenationMissingWhitespace
                 startActivity(new Intent(Intent.ACTION_VIEW).setData(
-                        Uri.parse(BoeXMLHandler.BOE_BASE_URL + textViewDocument.getTag()))
+                        Uri.parse(BoeHandler.BOE_BASE_URL + textViewDocument.getTag()))
                 );
                 return true;
             case R.id.contextListHistoryDelete:

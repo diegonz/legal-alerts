@@ -11,18 +11,18 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import es.smartidea.android.legalalerts.R;
 import es.smartidea.android.legalalerts.alarms.AlarmWorker;
-import es.smartidea.android.legalalerts.services.boeHandler.BoeXMLHandler;
+import es.smartidea.android.legalalerts.services.boeHandler.BoeHandler;
 import es.smartidea.android.legalalerts.database.dbContentProvider.DBContentProvider;
 import es.smartidea.android.legalalerts.database.DBContract;
 import es.smartidea.android.legalalerts.utils.FileLogger;
@@ -42,12 +42,11 @@ public class AlertsService extends Service {
     private static final String ALERTS_ORDER_ASC_BY_NAME =
             DBContract.Alerts.COL_ALERT_NAME + " ASC";
     private static final String LAST_SUCCESSFUL_SYNC = AlarmWorker.LAST_SUCCESSFUL_SYNC;
-    private String todayDateString;
-    private BoeXMLHandler boeXMLHandler;
+    private BoeHandler boeHandler;
     // boolean flag indicating if service is running.
     private static boolean serviceRunning = false;
-    // Flag indicating today´s summary sync status
-    private static boolean todaySyncedOK = false;
+    // Last successful sync date in predefined string format
+    private String lastOkSyncDateInString;
     // SNOOZE dateString values
     private static final String SNOOZE_DATE_DEFAULT = AlarmWorker.SNOOZE_DATE_DEFAULT;
     private static final String SNOOZE_DATE_NAME = AlarmWorker.SNOOZE_DATE_NAME;
@@ -60,21 +59,24 @@ public class AlertsService extends Service {
     // Public static method returning service running state
     public static boolean isRunning() { return serviceRunning; }
 
-    // SetUp new BoeXMLHandler and associated listener methods
-    private void setupBoeHandler() {
+    /**
+     * SetUp new BoeHandler and associated listener methods
+     *
+     * @param context Context of service to set up BoeHandler
+     */
+    private void setupBoeHandler(final Context context) {
         @SuppressLint("SimpleDateFormat")
         final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
         final Date todayDate = new Date();
         Date lastSuccessfulSyncDate;
         ArrayList<String> daysToCheck = new ArrayList<>(1);
 
-        this.todayDateString = dateFormat.format(todayDate);
-        final String lastSuccessfulSyncString = PreferenceManager
-                .getDefaultSharedPreferences(this)
+        final String todayDateString = dateFormat.format(todayDate);
+        lastOkSyncDateInString = PreferenceManager
+                .getDefaultSharedPreferences(context)
                 .getString(LAST_SUCCESSFUL_SYNC, todayDateString);
-
         try {
-            lastSuccessfulSyncDate = dateFormat.parse(lastSuccessfulSyncString);
+            lastSuccessfulSyncDate = dateFormat.parse(lastOkSyncDateInString);
             // Add pending day to list, adding at least today´s date
             while (todayDate.after(lastSuccessfulSyncDate)) {
                 daysToCheck.add(dateFormat.format(lastSuccessfulSyncDate));
@@ -83,12 +85,11 @@ public class AlertsService extends Service {
         } catch (Exception e){
             e.printStackTrace();
         }
-        // Initialize BoeXMLHandler passing pending days to check as string array
-        boeXMLHandler = new BoeXMLHandler(daysToCheck.toArray(new String[daysToCheck.size()]));
+        // Initialize BoeHandler passing pending days to check as string array
+        boeHandler = new BoeHandler(daysToCheck.toArray(new String[daysToCheck.size()]));
         // TODO: Check a reference to service (Context)
-        final Context context = this;
-        // Set/send BoeXMLHandler event listener
-        boeXMLHandler.setBoeXMLHandlerEvents(new BoeXMLHandler.BoeXMLHandlerEvents() {
+        // Set/send BoeHandler event listener
+        boeHandler.setListener(new BoeHandler.BoeEvents() {
             @Override
             public void onWorkCompleted(final Map<String, String> searchResults, final Map<String, String> xmlPdfUrls) {
                 if (!searchResults.isEmpty()){
@@ -121,8 +122,21 @@ public class AlertsService extends Service {
             }
 
             @Override
-            public void todaySummaryResultOK(final boolean todaySyncResultOK) {
-                todaySyncedOK = todaySyncResultOK;
+            public void onSummaryFetchSuccess(String summaryDateInString) {
+                // Save each summary successfully processed as last successful sync date
+                lastOkSyncDateInString = summaryDateInString;
+                PreferenceManager.getDefaultSharedPreferences(context)
+                        .edit()
+                        .putString(LAST_SUCCESSFUL_SYNC, summaryDateInString)
+                        .apply(); // Call apply() to make changes in background (commit() is immediate)
+                // Log to file for debugging
+                FileLogger.logToExternalFile(
+                        String.format(Locale.getDefault(),
+                                "%s - BOE´s summary fetched ok, updating last sync date to: %s",
+                                LOG_TAG, summaryDateInString
+                        )
+                );
+
             }
         });
     }
@@ -223,8 +237,8 @@ public class AlertsService extends Service {
      * @param message String corresponding to Notification´s message
      **/
     public static void showAlertNotification(@NonNull final Context context,
-                                      @NonNull final String title,
-                                      @NonNull final String message) {
+                                             @NonNull final String title,
+                                             @NonNull final String message) {
 
         // If notification not enabled on user preferences return
         new Thread(new Runnable() {
@@ -263,22 +277,25 @@ public class AlertsService extends Service {
         // separate thread because the service normally runs in the process's
         // main thread, which we don't want to block.  We also make it
         // background priority so CPU-intensive work will not disrupt our UI.
+
+        // Get a reference to the Service (Context)
+        final Context context = this;
         new Thread(new Runnable() {
             @Override
             public void run() {
                 // Set TRUE to serviceRunning flag
                 serviceRunning = true;
                 //setup BoeHandler and BoeHandler.Listeners
-                setupBoeHandler();
+                setupBoeHandler(context);
                 // Start fetching summary using in a runnable using getApplicationContext()
-                boeXMLHandler.startFetchAndSearch(getAlertsFromDB(getApplicationContext()));
+                boeHandler.start(getAlertsFromDB(context));
             }
         }).start();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
         // Log to file for debugging
         FileLogger.logToExternalFile(LOG_TAG + " - Service started!");
         // If we get killed, after returning from here, AVOID restarting
@@ -294,29 +311,23 @@ public class AlertsService extends Service {
 
     @Override
     public void onDestroy() {
-        if (todaySyncedOK){
-            // Set LAST_SUCCESSFUL_SYNC to todayDateString
-            // TODO: CHECK getApplicationContext() vs this in services
-            PreferenceManager.getDefaultSharedPreferences(this)
-                    .edit()
-                    .putString(LAST_SUCCESSFUL_SYNC, todayDateString)
-                    .apply(); // Call apply() to make changes in background (commit() is immediate)
-        }
-        // Set snooze_alarm_date to "done"
+        // Set snooze_alarm_date to SNOOZE_DATE_DEFAULT
         PreferenceManager.getDefaultSharedPreferences(this)
                 .edit()
                 .putString(SNOOZE_DATE_NAME, SNOOZE_DATE_DEFAULT)
                 .apply(); // Call apply() to make changes in background (commit() is immediate)
 
-        Toast.makeText(this, "service done", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "service done", Toast.LENGTH_SHORT).show();
 
         // Log to file for debugging
-        FileLogger.logToExternalFile(LOG_TAG + " - Stopping service, Sync OK?: " + todaySyncedOK);
+        FileLogger.logToExternalFile(
+                LOG_TAG + " - Stopping service, last successful sync: " + lastOkSyncDateInString
+        );
 
         // Release as many resources as possible
-        if (boeXMLHandler != null){
-            boeXMLHandler.unsetBoeXMLHandlerEvents();
-            boeXMLHandler = null;
+        if (boeHandler != null){
+            boeHandler.unsetListener();
+            boeHandler = null;
         }
 
         // Set serviceRunning flag to FALSE
