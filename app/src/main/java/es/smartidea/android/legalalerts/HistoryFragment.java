@@ -22,7 +22,7 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import es.smartidea.android.legalalerts.services.boeHandler.BoeHandler;
 import es.smartidea.android.legalalerts.database.dbContentProvider.DBContentProvider;
-import es.smartidea.android.legalalerts.database.dbCursorAdapter.DBHistoryCursorAdapter;
+import es.smartidea.android.legalalerts.database.dbCursorAdapter.HistoryAdapter;
 import es.smartidea.android.legalalerts.database.DBContract;
 
 /**
@@ -38,7 +38,7 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
     // Unique Loader ID to correct management
     private static final int HISTORY_LOADER_ID = 2;
     // Declare DBAdapter
-    private DBHistoryCursorAdapter historyAdapter;
+    private HistoryAdapter historyAdapter;
     // ButterKnife bindings
     @Bind(R.id.listViewHistory) ListView listViewHistory;
 
@@ -48,7 +48,7 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
     // Attach alertsAdapter to ListViewAlerts
     private void initHistoryLoader() {
         historyAdapter =
-                new DBHistoryCursorAdapter(getActivity(), R.layout.list_item_history, null, 0);
+                new HistoryAdapter(getActivity(), R.layout.list_item_history, null, 0);
         listViewHistory.setAdapter(historyAdapter);
         // Prepare the loader.  Either re-connect with an existing one or start a new one.
         getActivity().getSupportLoaderManager().initLoader(HISTORY_LOADER_ID, null, this);
@@ -99,9 +99,9 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
         AdapterView.AdapterContextMenuInfo info =
                 (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         final TextView textViewDocument = ButterKnife.findById(
-                listViewHistory.getChildAt(info.position), R.id.historyListItemDocumentName);
+                listViewHistory.getChildAt(info.position), R.id.historyItemDocID);
         final TextView textViewAlert = ButterKnife.findById(
-                listViewHistory.getChildAt(info.position), R.id.historyListItemRelatedAlert);
+                listViewHistory.getChildAt(info.position), R.id.historyItemRelatedAlert);
         switch (item.getItemId()){
             case R.id.contextListHistoryView:
                 //noinspection StringConcatenationMissingWhitespace

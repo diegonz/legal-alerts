@@ -17,10 +17,11 @@ import es.smartidea.android.legalalerts.database.DBContract;
 /**
  * A custom ResourceCursorAdapter {@link ResourceCursorAdapter} subclass.
  * Binds alerts info to corresponding list view item.
- * Also sets on click event listeners for delete buttons
+ * Also binds data as tag object using a viewHolder class
+ * to reuse int id´s and avoid findViewById calls
  */
 
-public class DBAlertsCursorAdapter extends ResourceCursorAdapter {
+public class AlertsAdapter extends ResourceCursorAdapter {
     private LayoutInflater inflater;
 
     /**
@@ -37,7 +38,7 @@ public class DBAlertsCursorAdapter extends ResourceCursorAdapter {
         }
     }
 
-    public DBAlertsCursorAdapter(Context context, int layout, Cursor c, int flags) {
+    public AlertsAdapter(Context context, int layout, Cursor c, int flags) {
         super(context, layout, c, flags);
         this.inflater = LayoutInflater.from(context);
     }

@@ -23,10 +23,10 @@ import android.widget.Toast;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import es.smartidea.android.legalalerts.database.dbCursorAdapter.AlertsAdapter;
 import es.smartidea.android.legalalerts.services.AlertsService;
 import es.smartidea.android.legalalerts.services.ServiceStarter;
 import es.smartidea.android.legalalerts.database.dbContentProvider.DBContentProvider;
-import es.smartidea.android.legalalerts.database.dbCursorAdapter.DBAlertsCursorAdapter;
 import es.smartidea.android.legalalerts.database.DBContract;
 
 /**
@@ -49,7 +49,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     // Unique Loader ID to correct management
     private static final int ALERTS_LOADER_ID = 1;
     // Declare DBAdapter
-    private DBAlertsCursorAdapter alertsAdapter;
+    private AlertsAdapter alertsAdapter;
     // ButterKnife bindings
     @Bind(R.id.listViewAlerts) ListView listViewAlerts;
 
@@ -60,7 +60,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
      * Set alertsAdapter to ListViewAlerts and initialize Loader via LoaderManager
      */
     private void initAlertsLoader() {
-        alertsAdapter = new DBAlertsCursorAdapter(getActivity(), R.layout.list_item_alert, null, 0);
+        alertsAdapter = new AlertsAdapter(getActivity(), R.layout.list_item_alert, null, 0);
         listViewAlerts.setAdapter(alertsAdapter);
         // Prepare the loader.  Either re-connect with an existing one or start a new one.
         getActivity().getSupportLoaderManager().initLoader(ALERTS_LOADER_ID, null, this);
@@ -133,7 +133,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
             case R.id.contextListAlertsEdit:
                 // Show dialog passing to the factory method its alertName
                 // and TRUE or FALSE if marked as literal search
-                // on imageView tag´s added on DBAlertsCursorAdapter
+                // on imageView tag´s added on AlertsAdapter
                 CustomAlertDialogFragment.newInstance(
                         textView.getText().toString(),
                         imageView.getTag().equals(true)

@@ -12,30 +12,32 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import es.smartidea.android.legalalerts.R;
 import es.smartidea.android.legalalerts.database.DBContract;
+import es.smartidea.android.legalalerts.services.boeHandler.BoeHandler;
 
 /**
  * A custom ResourceCursorAdapter {@link ResourceCursorAdapter} subclass.
  * Binds history records info to corresponding list view item.
- * Also sets on click event listeners for view pdf buttons
+ * Also binds data as tag object using a viewHolder class
+ * to reuse int id´s and avoid findViewById calls
  */
 
-public class DBHistoryCursorAdapter extends ResourceCursorAdapter {
+public class HistoryAdapter extends ResourceCursorAdapter {
     private LayoutInflater inflater;
 
     /**
      * ViewHolder static class to store associated Views
      */
     static class ViewHolder{
-        @Bind(R.id.historyListItemRelatedAlert) TextView textViewHistoryListItemRelatedAlert;
-        @Bind(R.id.historyListItemDocumentName) TextView textViewHistoryListItemDocumentName;
-        @Bind(R.id.historyListItemDocumentDate) TextView textViewHistoryListItemDocumentDate;
+        @Bind(R.id.historyItemRelatedAlert) TextView textViewHistoryItemRelatedAlert;
+        @Bind(R.id.historyItemDocID) TextView textViewHistoryItemDocName;
+        @Bind(R.id.historyItemDocDate) TextView textViewHistoryItemDocDate;
 
         public ViewHolder(View view) {
             ButterKnife.bind(this, view);
         }
     }
 
-    public DBHistoryCursorAdapter(Context context, int layout, Cursor c, int flags) {
+    public HistoryAdapter(Context context, int layout, Cursor c, int flags) {
         super(context, layout, c, flags);
         this.inflater = LayoutInflater.from(context);
     }
@@ -68,11 +70,11 @@ public class DBHistoryCursorAdapter extends ResourceCursorAdapter {
                         DBContract.History.COL_HISTORY_DOCUMENT_URL)
                 );
         // Populate the ViewHolder fields
-        holder.textViewHistoryListItemRelatedAlert.setText(relatedAlertName);
-        holder.textViewHistoryListItemDocumentName.setText(relatedDocumentName);
-        holder.textViewHistoryListItemDocumentDate.setText(relatedPdfDocumentURL.substring(10,20));
+        holder.textViewHistoryItemRelatedAlert.setText(relatedAlertName);
+        holder.textViewHistoryItemDocName.setText(relatedDocumentName);
+        holder.textViewHistoryItemDocDate.setText(relatedPdfDocumentURL.substring(10,20));
 
         // Set PDF url as holder´s TextView tag
-        holder.textViewHistoryListItemDocumentName.setTag(relatedPdfDocumentURL);
+        holder.textViewHistoryItemDocName.setTag(BoeHandler.BOE_BASE_URL + relatedPdfDocumentURL);
     }
 }
