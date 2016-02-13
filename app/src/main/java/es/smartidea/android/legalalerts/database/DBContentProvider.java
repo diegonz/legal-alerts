@@ -1,4 +1,4 @@
-package es.smartidea.android.legalalerts.database.dbContentProvider;
+package es.smartidea.android.legalalerts.database;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
@@ -10,9 +10,6 @@ import android.net.Uri;
 
 import java.util.Arrays;
 import java.util.HashSet;
-
-import es.smartidea.android.legalalerts.database.DBContract;
-import es.smartidea.android.legalalerts.database.dbHelper.DBHelper;
 
 import android.support.annotation.NonNull;
 

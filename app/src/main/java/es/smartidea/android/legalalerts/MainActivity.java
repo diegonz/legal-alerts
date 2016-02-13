@@ -23,9 +23,9 @@ import android.view.View;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import es.smartidea.android.legalalerts.database.dbHelper.DBHelper;
+import es.smartidea.android.legalalerts.database.DBHelper;
 import es.smartidea.android.legalalerts.receivers.AlarmReceiver;
-import es.smartidea.android.legalalerts.database.dbContentProvider.DBContentProvider;
+import es.smartidea.android.legalalerts.database.DBContentProvider;
 import es.smartidea.android.legalalerts.database.DBContract;
 
 public class MainActivity extends AppCompatActivity
@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity
     void fabClickListener(View view) {
         switch (runningFragment) {
             case FRAGMENT_ALERTS:
-                new CustomAlertDialogFragment().show(getSupportFragmentManager(), DIALOG_TAG);
+                new LegalAlertDialog().show(getSupportFragmentManager(), DIALOG_TAG);
                 break;
             case FRAGMENT_HISTORY:
                 // Delete all items
@@ -178,7 +178,7 @@ public class MainActivity extends AppCompatActivity
         switch (afterSelectionTask){
             case START_DIALOG_ALERT:
                 // Launch Alerts dialog
-                new CustomAlertDialogFragment().show(getSupportFragmentManager(), DIALOG_TAG);
+                new LegalAlertDialog().show(getSupportFragmentManager(), DIALOG_TAG);
                 break;
             case START_SETTINGS_ACTIVITY:
                 // Launch Settings Activity

@@ -23,10 +23,10 @@ import android.widget.Toast;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import es.smartidea.android.legalalerts.database.dbCursorAdapter.AlertsAdapter;
+import es.smartidea.android.legalalerts.adapters.AlertsAdapter;
 import es.smartidea.android.legalalerts.services.AlertsService;
 import es.smartidea.android.legalalerts.services.ServiceStarter;
-import es.smartidea.android.legalalerts.database.dbContentProvider.DBContentProvider;
+import es.smartidea.android.legalalerts.database.DBContentProvider;
 import es.smartidea.android.legalalerts.database.DBContract;
 
 /**
@@ -128,13 +128,13 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
         TextView textView = ButterKnife.findById(
                 listViewAlerts.getChildAt(info.position), R.id.textViewAlertListItem);
         ImageView imageView = ButterKnife.findById(
-                listViewAlerts.getChildAt(info.position), R.id.imageAlertListItemLiteralSearch);
+                listViewAlerts.getChildAt(info.position), R.id.imageAlertIsLiteralSearch);
         switch (item.getItemId()) {
             case R.id.contextListAlertsEdit:
                 // Show dialog passing to the factory method its alertName
                 // and TRUE or FALSE if marked as literal search
                 // on imageView tag´s added on AlertsAdapter
-                CustomAlertDialogFragment.newInstance(
+                LegalAlertDialog.newInstance(
                         textView.getText().toString(),
                         imageView.getTag().equals(true)
                 ).show(getActivity().getSupportFragmentManager(), DIALOG_TAG);

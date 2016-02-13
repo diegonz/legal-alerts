@@ -1,4 +1,4 @@
-package es.smartidea.android.legalalerts.database.dbHelper;
+package es.smartidea.android.legalalerts.database;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;

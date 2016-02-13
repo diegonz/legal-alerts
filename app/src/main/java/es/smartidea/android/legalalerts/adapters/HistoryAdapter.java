@@ -1,4 +1,4 @@
-package es.smartidea.android.legalalerts.database.dbCursorAdapter;
+package es.smartidea.android.legalalerts.adapters;
 
 import android.content.Context;
 import android.database.Cursor;

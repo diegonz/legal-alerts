@@ -23,7 +23,7 @@ import java.util.Map;
 import es.smartidea.android.legalalerts.R;
 import es.smartidea.android.legalalerts.alarms.AlarmWorker;
 import es.smartidea.android.legalalerts.services.boeHandler.BoeHandler;
-import es.smartidea.android.legalalerts.database.dbContentProvider.DBContentProvider;
+import es.smartidea.android.legalalerts.database.DBContentProvider;
 import es.smartidea.android.legalalerts.database.DBContract;
 import es.smartidea.android.legalalerts.utils.FileLogger;
 

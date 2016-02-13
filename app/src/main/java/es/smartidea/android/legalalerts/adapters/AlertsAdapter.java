@@ -1,4 +1,4 @@
-package es.smartidea.android.legalalerts.database.dbCursorAdapter;
+package es.smartidea.android.legalalerts.adapters;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -29,7 +29,7 @@ public class AlertsAdapter extends ResourceCursorAdapter {
      */
     static class ViewHolder {
         @Bind(R.id.textViewAlertListItem) TextView textViewAlertListItem;
-        @Bind(R.id.imageAlertListItemLiteralSearch) ImageView imageViewAlertListItemLiteral;
+        @Bind(R.id.imageAlertIsLiteralSearch) ImageView imageViewAlertListItemLiteral;
 
         // Public constructor which receives a View to bind its contents to the holder
         public ViewHolder(View view) {

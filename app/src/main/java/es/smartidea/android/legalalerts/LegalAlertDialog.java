@@ -24,7 +24,7 @@ import butterknife.Bind;
 import butterknife.OnCheckedChanged;
 import butterknife.OnTextChanged;
 
-public class CustomAlertDialogFragment extends AppCompatDialogFragment {
+public class LegalAlertDialog extends AppCompatDialogFragment {
 
     /*
     * ButterKnife bindings - START
@@ -106,11 +106,11 @@ public class CustomAlertDialogFragment extends AppCompatDialogFragment {
      * with given parameters set to bundle
      *
      * @param alertName String representing alert name
-     * @return new instance of CustomAlertDialogFragment with given parameter as bundle
+     * @return new instance of LegalAlertDialog with given parameter as bundle
      */
     @NonNull
-    public static CustomAlertDialogFragment newInstance(String alertName, boolean isLiteralSearch) {
-        CustomAlertDialogFragment fragment = new CustomAlertDialogFragment();
+    public static LegalAlertDialog newInstance(String alertName, boolean isLiteralSearch) {
+        LegalAlertDialog fragment = new LegalAlertDialog();
 
         // Supply input
         Bundle bundle = new Bundle();
@@ -170,13 +170,13 @@ public class CustomAlertDialogFragment extends AppCompatDialogFragment {
                 .setNegativeButton(R.string.button_dialog_alert_cancel,
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
-                            CustomAlertDialogFragment.this.getDialog().cancel();
+                            LegalAlertDialog.this.getDialog().cancel();
                         }
                     }
                 ).setTitle(dialogTitleInt);
 
         /*
-        * Create the CustomAlertDialogFragment object to override
+        * Create the LegalAlertDialog object to override
         * positive button´s click listener using setOnShowListener
         * on the already created AlertDialog
         * */
@@ -215,7 +215,7 @@ public class CustomAlertDialogFragment extends AppCompatDialogFragment {
                                                 Snackbar.LENGTH_SHORT
                                         ).setAction("Action", null).show();
                                         // Dismiss the dialog after successful insert or update
-                                        CustomAlertDialogFragment.this.getDialog().dismiss();
+                                        LegalAlertDialog.this.getDialog().dismiss();
                                         break;
                                 }
                             } else {

@@ -21,8 +21,8 @@ import android.widget.TextView;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import es.smartidea.android.legalalerts.services.boeHandler.BoeHandler;
-import es.smartidea.android.legalalerts.database.dbContentProvider.DBContentProvider;
-import es.smartidea.android.legalalerts.database.dbCursorAdapter.HistoryAdapter;
+import es.smartidea.android.legalalerts.database.DBContentProvider;
+import es.smartidea.android.legalalerts.adapters.HistoryAdapter;
 import es.smartidea.android.legalalerts.database.DBContract;
 
 /**

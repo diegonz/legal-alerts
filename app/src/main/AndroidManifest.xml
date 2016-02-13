@@ -54,7 +54,7 @@
         </receiver>
 
         <provider
-            android:name=".database.dbContentProvider.DBContentProvider"
+            android:name=".database.DBContentProvider"
             android:authorities="es.smartidea.legalalerts.dbContentProvider"
             android:exported="false" />
 
