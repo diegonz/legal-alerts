@@ -3,7 +3,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="@dimen/list_item_alert_margin">
+    android:padding="@dimen/list_view_item_padding_8dp">
 
     <TextView
         android:layout_width="wrap_content"
@@ -13,8 +13,12 @@
         android:text="@string/fragment_history_text_list_item"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
         android:layout_toStartOf="@+id/historyItemDocID"
-        android:layout_toLeftOf="@+id/historyItemDocID" />
+        android:layout_toLeftOf="@+id/historyItemDocID"
+        android:layout_marginStart="@dimen/list_view_outer_item_margin_8dp"
+        android:layout_marginLeft="@dimen/list_view_outer_item_margin_8dp"
+        android:padding="@dimen/list_view_inner_item_padding_8dp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -24,7 +28,10 @@
         android:text="@string/fragment_history_text_list_item"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true" />
+        android:layout_alignParentTop="true"
+        android:layout_marginEnd="@dimen/list_view_outer_item_margin_16dp"
+        android:layout_marginRight="@dimen/list_view_outer_item_margin_16dp"
+        android:padding="@dimen/list_view_inner_item_padding_8dp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -34,6 +41,8 @@
         android:text="@string/fragment_history_text_list_item"
         android:layout_below="@+id/historyItemDocID"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true" />
+        android:layout_alignParentRight="true"
+        android:layout_marginEnd="@dimen/list_view_outer_item_margin_16dp"
+        android:layout_marginRight="@dimen/list_view_outer_item_margin_16dp" />
 
 </RelativeLayout>

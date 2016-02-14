@@ -87,7 +87,7 @@ public class ServiceStarter extends IntentService {
      */
     private void handleStartServiceDefault() {
         // Launch service if wan is available and user preference requirements are ok
-        if (isWanAvailable() && isPreferenceCheckOK(this)) {
+        if (isWanAvailable() && isPreferencesMet(this)) {
             // Log to file for debugging
             FileLogger.logToExternalFile(LOG_TAG + " - Preferences requirements OK, launching service.");
 
@@ -179,7 +179,7 @@ public class ServiceStarter extends IntentService {
      * @param context   Context of Application to get user preferences
      * @return  TRUE if user preferences are successfully checked
      */
-    public static boolean isPreferenceCheckOK(final Context context) {
+    public static boolean isPreferencesMet(final Context context) {
 
         // Get shared preferences
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);

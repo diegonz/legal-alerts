@@ -30,10 +30,8 @@ public class AlertsAdapter extends ResourceCursorAdapter {
     static class ViewHolder {
         @Bind(R.id.textViewAlertListItem) TextView textViewAlertListItem;
         @Bind(R.id.imageAlertIsLiteralSearch) ImageView imageViewAlertListItemLiteral;
-
-        // Public constructor which receives a View to bind its contents to the holder
+        @Bind(R.id.textViewIsLiteralSearch) TextView textViewIsLiteralSearch;
         public ViewHolder(View view) {
-            // Bind the ViewHolder with ButterKnife
             ButterKnife.bind(this, view);
         }
     }
@@ -44,7 +42,7 @@ public class AlertsAdapter extends ResourceCursorAdapter {
     }
 
     @Override
-    public View newView(final Context context, Cursor cursor, ViewGroup parent) {
+    public View newView(Context context, Cursor cursor, ViewGroup parent) {
         View view = inflater.inflate(R.layout.list_item_alert, parent, false);
         // Bind the ViewHolder with ButterKnife passing the View to ViewHolder constructor
         ViewHolder holder = new ViewHolder(view);
@@ -72,13 +70,20 @@ public class AlertsAdapter extends ResourceCursorAdapter {
                         .setImageResource(android.R.drawable.ic_secure);
                 // Set tag for imageView to TRUE according to literal search setup
                 holder.imageViewAlertListItemLiteral.setTag(true);
+                holder.textViewIsLiteralSearch.setText(R.string.fragment_alerts_text_literal_search);
                 break;
             case 1:
                 holder.imageViewAlertListItemLiteral
                         .setImageResource(android.R.drawable.ic_partial_secure);
                 // Set tag for imageView to FALSE according to literal search setup
                 holder.imageViewAlertListItemLiteral.setTag(false);
+                holder.textViewIsLiteralSearch.setText(R.string.fragment_alerts_text_not_literal_search);
                 break;
         }
+//        holder.imageViewAlertListItemLiteral.setImageResource(
+//                (cursor.getInt(cursor.getColumnIndexOrThrow(DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL)) == 0)
+//                        ? android.R.drawable.ic_secure
+//                        : android.R.drawable.ic_partial_secure
+//        );
     }
 }

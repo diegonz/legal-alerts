@@ -2,7 +2,8 @@
     <string name="app_name">Legal Alerts</string>
 
     <string name="fragment_alerts_text_list_item">Alert Item</string>
-    <string name="fragment_alerts_text_image_literal_search">Search literally</string>
+    <string name="fragment_alerts_text_literal_search">Literal expression</string>
+    <string name="fragment_alerts_text_not_literal_search">Not literal expression</string>
     <string name="fragment_history_text_list_item">Alert Item</string>
     <string name="list_item_history_text_delete">Delete</string>
 

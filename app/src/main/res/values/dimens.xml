@@ -6,7 +6,13 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
-    <dimen name="list_item_alert_margin">8dp</dimen>
+    <!-- ListView margins, using Android Design guidelines values. -->
+    <dimen name="list_view_item_padding_8dp">8dp</dimen>
+    <dimen name="list_view_inner_item_padding_8dp">8dp</dimen>
+    <dimen name="list_view_inner_item_padding_16dp">16dp</dimen>
+    <dimen name="list_view_outer_item_margin_8dp">8dp</dimen>
+    <dimen name="list_view_outer_item_margin_16dp">16dp</dimen>
+    <!-- Custom margins, using Android Design guidelines values. -->
     <dimen name="dialog_item_alert_margin">8dp</dimen>
     <dimen name="space_8dp">8dp</dimen>
     <dimen name="space_16dp">16dp</dimen>

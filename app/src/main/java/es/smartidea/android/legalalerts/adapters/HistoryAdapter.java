@@ -31,7 +31,6 @@ public class HistoryAdapter extends ResourceCursorAdapter {
         @Bind(R.id.historyItemRelatedAlert) TextView textViewHistoryItemRelatedAlert;
         @Bind(R.id.historyItemDocID) TextView textViewHistoryItemDocName;
         @Bind(R.id.historyItemDocDate) TextView textViewHistoryItemDocDate;
-
         public ViewHolder(View view) {
             ButterKnife.bind(this, view);
         }
@@ -75,6 +74,7 @@ public class HistoryAdapter extends ResourceCursorAdapter {
         holder.textViewHistoryItemDocDate.setText(relatedPdfDocumentURL.substring(10,20));
 
         // Set PDF url as holder´s TextView tag
+        //noinspection StringConcatenationMissingWhitespace
         holder.textViewHistoryItemDocName.setTag(BoeHandler.BOE_BASE_URL + relatedPdfDocumentURL);
     }
 }
