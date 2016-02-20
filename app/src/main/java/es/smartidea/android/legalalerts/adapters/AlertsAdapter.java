@@ -51,39 +51,28 @@ public class AlertsAdapter extends ResourceCursorAdapter {
     }
 
     @Override
-    public void bindView(View view, final Context context, final Cursor cursor) {
-        // Get associated ViewHolder
+    public void bindView(View view, Context context, Cursor cursor) {
+
         ViewHolder holder = (ViewHolder) view.getTag();
 
-        // Get alertName from DBCursor
         final String alertName =
                 cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Alerts.COL_ALERT_NAME));
 
-        // Populate the ViewHolder fields
+        // Populate the ViewHolder fields and set DB alert name tags
         holder.textViewAlertListItem.setText(alertName);
-        // Change the resource image to an open/closed padlock
-        // according if its set to not literal search
-        switch (cursor.getInt(
-                cursor.getColumnIndexOrThrow(DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL))){
-            case 0:
-                holder.imageViewAlertListItemLiteral
-                        .setImageResource(android.R.drawable.ic_secure);
-                // Set tag for imageView to TRUE according to literal search setup
-                holder.imageViewAlertListItemLiteral.setTag(true);
-                holder.textViewIsLiteralSearch.setText(R.string.fragment_alerts_text_literal_search);
-                break;
-            case 1:
-                holder.imageViewAlertListItemLiteral
-                        .setImageResource(android.R.drawable.ic_partial_secure);
-                // Set tag for imageView to FALSE according to literal search setup
-                holder.imageViewAlertListItemLiteral.setTag(false);
-                holder.textViewIsLiteralSearch.setText(R.string.fragment_alerts_text_not_literal_search);
-                break;
+        boolean isLiteralSearch = 0 == cursor.getInt(
+                        cursor.getColumnIndexOrThrow(DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL));
+        if (isLiteralSearch){
+
+            holder.imageViewAlertListItemLiteral
+                    .setImageResource(android.R.drawable.ic_secure);
+            // Set tag for textView to TRUE according to literal search setup
+            holder.textViewIsLiteralSearch.setText(R.string.fragment_alerts_text_literal_search);
+        } else {
+            holder.imageViewAlertListItemLiteral
+                    .setImageResource(android.R.drawable.ic_partial_secure);
+            // Set tag for textView to FALSE according to literal search setup
+            holder.textViewIsLiteralSearch.setText(R.string.fragment_alerts_text_not_literal_search);
         }
-//        holder.imageViewAlertListItemLiteral.setImageResource(
-//                (cursor.getInt(cursor.getColumnIndexOrThrow(DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL)) == 0)
-//                        ? android.R.drawable.ic_secure
-//                        : android.R.drawable.ic_partial_secure
-//        );
     }
 }

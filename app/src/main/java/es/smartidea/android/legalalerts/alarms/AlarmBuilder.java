@@ -91,7 +91,7 @@ public class AlarmBuilder {
             this.calendar.set(Calendar.MINUTE, this.minute);
             // check if this time has already passed, if TRUE add one day to the date of the alarm
             if (this.calendar.getTimeInMillis() < System.currentTimeMillis() &&
-                    AlarmWorker.isSyncUpToDate(this.context)) {
+                    AlarmDelayer.isSyncUpToDate(this.context)) {
                 this.calendar.add(Calendar.DATE, 1);
             }
             alarmMgr.setInexactRepeating(AlarmManager.RTC_WAKEUP, this.calendar.getTimeInMillis(),
@@ -105,13 +105,13 @@ public class AlarmBuilder {
         }
 
         /**
-         * Set new one-shot alarm which fires within about one hour
+         * Set new one-shot alarm which fires within about one hour (3600000L)
          * Also calls releases all references calling to releaseReferences
          */
         public void setRetryAlarm() {
             // Postpone checking one hour
             alarmMgr.set(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                    SystemClock.elapsedRealtime() + 3600000L,
+                    SystemClock.elapsedRealtime() + 1800000L,
                     alarmIntent);
             // Log to file for debugging
             FileLogger.logToExternalFile(LOG_TAG + " RETRY Alarm set!");

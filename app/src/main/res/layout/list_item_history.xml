@@ -13,24 +13,10 @@
         android:text="@string/fragment_history_text_list_item"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_centerVertical="true"
-        android:layout_toStartOf="@+id/historyItemDocID"
-        android:layout_toLeftOf="@+id/historyItemDocID"
+        android:layout_toStartOf="@+id/historyItemDocDate"
+        android:layout_toLeftOf="@+id/historyItemDocDate"
         android:layout_marginStart="@dimen/list_view_outer_item_margin_8dp"
         android:layout_marginLeft="@dimen/list_view_outer_item_margin_8dp"
-        android:padding="@dimen/list_view_inner_item_padding_8dp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/historyItemDocID"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="@string/fragment_history_text_list_item"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginEnd="@dimen/list_view_outer_item_margin_16dp"
-        android:layout_marginRight="@dimen/list_view_outer_item_margin_16dp"
         android:padding="@dimen/list_view_inner_item_padding_8dp" />
 
     <TextView
@@ -39,7 +25,18 @@
         android:id="@+id/historyItemDocDate"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="@string/fragment_history_text_list_item"
-        android:layout_below="@+id/historyItemDocID"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginEnd="@dimen/list_view_outer_item_margin_16dp"
+        android:layout_marginRight="@dimen/list_view_outer_item_margin_16dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/historyItemDocID"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="@string/fragment_history_text_list_item"
+        android:layout_below="@+id/historyItemRelatedAlert"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_marginEnd="@dimen/list_view_outer_item_margin_16dp"

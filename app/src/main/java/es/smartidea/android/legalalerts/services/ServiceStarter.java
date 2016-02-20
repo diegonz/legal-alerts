@@ -13,7 +13,7 @@ import android.support.annotation.NonNull;
 
 import java.io.IOException;
 
-import es.smartidea.android.legalalerts.alarms.AlarmWorker;
+import es.smartidea.android.legalalerts.alarms.AlarmDelayer;
 import es.smartidea.android.legalalerts.receivers.AlarmReceiver;
 import es.smartidea.android.legalalerts.okHttp.OkHttpGetURL;
 import es.smartidea.android.legalalerts.utils.FileLogger;
@@ -98,7 +98,7 @@ public class ServiceStarter extends IntentService {
             FileLogger.logToExternalFile(LOG_TAG + " - Don't meet requirements. Snoozing alarm one hour...");
 
             // Snooze alarm for 1 hour
-            AlarmWorker.snoozeAlarm(this);
+            AlarmDelayer.snoozeAlarm(this);
 
             // If service was not launched release the WakeLock
             AlertsWakeLock.doRelease();

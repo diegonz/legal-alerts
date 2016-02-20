@@ -19,9 +19,9 @@ import es.smartidea.android.legalalerts.utils.FileLogger;
  * from now to "about" one hour (InexactRepeating) if its
  * the same day as snoozing started.
  */
-public class AlarmWorker {
+public class AlarmDelayer {
 
-    private static final String LOG_TAG = "AlarmWorker";
+    private static final String LOG_TAG = "AlarmDelayer";
 
     public static final String LAST_SUCCESSFUL_SYNC = "last_successful_sync";
     // AlarmReceiver related String Broadcast actions & extras
@@ -32,7 +32,7 @@ public class AlarmWorker {
 
 
     // Private empty constructor to avoid instantiation
-    private AlarmWorker() {
+    private AlarmDelayer() {
     }
 
     /**

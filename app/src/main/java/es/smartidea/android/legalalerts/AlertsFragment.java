@@ -16,9 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import butterknife.Bind;
@@ -88,7 +86,6 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         View view = inflater.inflate(R.layout.fragment_alerts, container, false);
-        // Bind ButterKnife to view
         ButterKnife.bind(this, view);
         return view;
     }
@@ -104,7 +101,6 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        // Unbind ButterKnife
         ButterKnife.unbind(this);
         // Destroy LoaderManager when onPause()
         getActivity().getSupportLoaderManager().destroyLoader(ALERTS_LOADER_ID);
@@ -125,32 +121,32 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo info =
                 (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        TextView textView = ButterKnife.findById(
-                listViewAlerts.getChildAt(info.position), R.id.textViewAlertListItem);
-        ImageView imageView = ButterKnife.findById(
-                listViewAlerts.getChildAt(info.position), R.id.imageAlertIsLiteralSearch);
+        Cursor cursor = (Cursor) listViewAlerts.getAdapter().getItem(info.position);
+        final String alertName =
+                cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Alerts.COL_ALERT_NAME));
+        final boolean isLiteralSearchFlag =
+                cursor.getInt(cursor.getColumnIndexOrThrow(
+                        DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL)) == 0;
+
         switch (item.getItemId()) {
             case R.id.contextListAlertsEdit:
                 // Show dialog passing to the factory method its alertName
                 // and TRUE or FALSE if marked as literal search
                 // on imageView tag´s added on AlertsAdapter
-                LegalAlertDialog.newInstance(
-                        textView.getText().toString(),
-                        imageView.getTag().equals(true)
-                ).show(getActivity().getSupportFragmentManager(), DIALOG_TAG);
+                LegalAlertDialog.newInstance(alertName, isLiteralSearchFlag)
+                        .show(getActivity().getSupportFragmentManager(), DIALOG_TAG);
                 return true;
             case R.id.contextListAlertsDelete:
                 // Delete alert sending alertName to MainActivity deleteAlert() method.
-                final int hits =
-                        MainActivity.deleteAlert(getContext(), textView.getText().toString());
+                final int hits = MainActivity.deleteAlert(getContext(), alertName);
                 // Set textView (or ListView) as view for the SnackBar as since CoordinatorLayout
                 // manages animations an viewGroup relationship
                 // check url for details: https://goo.gl/XwjDM4
-                Snackbar.make(textView,
-                        hits + " Alerts named: " + textView.getText() + " deleted from DB",
-                        Snackbar.LENGTH_SHORT
-                ).setAction("Action", null).show();
-
+                Snackbar.make(
+                        listViewAlerts,
+                        hits + " Alerts named: " + alertName + " deleted from DB",
+                        Snackbar.LENGTH_SHORT).setAction("Action", null)
+                        .show();
                 return true;
             default:
                 return super.onContextItemSelected(item);

@@ -21,7 +21,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import es.smartidea.android.legalalerts.R;
-import es.smartidea.android.legalalerts.alarms.AlarmWorker;
+import es.smartidea.android.legalalerts.alarms.AlarmDelayer;
 import es.smartidea.android.legalalerts.services.boeHandler.BoeHandler;
 import es.smartidea.android.legalalerts.database.DBContentProvider;
 import es.smartidea.android.legalalerts.database.DBContract;
@@ -41,15 +41,15 @@ public class AlertsService extends Service {
 
     private static final String ALERTS_ORDER_ASC_BY_NAME =
             DBContract.Alerts.COL_ALERT_NAME + " ASC";
-    private static final String LAST_SUCCESSFUL_SYNC = AlarmWorker.LAST_SUCCESSFUL_SYNC;
+    private static final String LAST_SUCCESSFUL_SYNC = AlarmDelayer.LAST_SUCCESSFUL_SYNC;
     private BoeHandler boeHandler;
     // boolean flag indicating if service is running.
     private static boolean serviceRunning = false;
     // Last successful sync date in predefined string format
     private String lastOkSyncDateInString;
     // SNOOZE dateString values
-    private static final String SNOOZE_DATE_DEFAULT = AlarmWorker.SNOOZE_DATE_DEFAULT;
-    private static final String SNOOZE_DATE_NAME = AlarmWorker.SNOOZE_DATE_NAME;
+    private static final String SNOOZE_DATE_DEFAULT = AlarmDelayer.SNOOZE_DATE_DEFAULT;
+    private static final String SNOOZE_DATE_NAME = AlarmDelayer.SNOOZE_DATE_NAME;
 
 
     /*
@@ -219,7 +219,7 @@ public class AlertsService extends Service {
                     );
                     values.put(
                             DBContract.History.COL_HISTORY_DOCUMENT_URL,
-                            xmlPdfUrls.get(eachResult.getKey())
+                            BoeHandler.BOE_BASE_URL + xmlPdfUrls.get(eachResult.getKey())
                     );
                     // Do the C(RUD).
                     context.getContentResolver().insert(HISTORY_URI, values);

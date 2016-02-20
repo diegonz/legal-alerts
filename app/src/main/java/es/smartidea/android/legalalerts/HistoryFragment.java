@@ -16,11 +16,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import es.smartidea.android.legalalerts.services.boeHandler.BoeHandler;
 import es.smartidea.android.legalalerts.database.DBContentProvider;
 import es.smartidea.android.legalalerts.adapters.HistoryAdapter;
 import es.smartidea.android.legalalerts.database.DBContract;
@@ -98,23 +96,29 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo info =
                 (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        final TextView textViewDocument = ButterKnife.findById(
-                listViewHistory.getChildAt(info.position), R.id.historyItemDocID);
-        final TextView textViewAlert = ButterKnife.findById(
-                listViewHistory.getChildAt(info.position), R.id.historyItemRelatedAlert);
+        Cursor cursor = (Cursor) listViewHistory.getAdapter().getItem(info.position);
         switch (item.getItemId()){
             case R.id.contextListHistoryView:
                 //noinspection StringConcatenationMissingWhitespace
-                startActivity(new Intent(Intent.ACTION_VIEW).setData(
-                        Uri.parse(BoeHandler.BOE_BASE_URL + textViewDocument.getTag()))
+                final String relatedPdfDocumentURL =
+                        cursor.getString(cursor.getColumnIndexOrThrow(
+                                DBContract.History.COL_HISTORY_DOCUMENT_URL)
+                        );
+                startActivity(
+                        new Intent(Intent.ACTION_VIEW).setData(Uri.parse(relatedPdfDocumentURL))
                 );
                 return true;
             case R.id.contextListHistoryDelete:
+                final String relatedAlertName =
+                        cursor.getString(cursor.getColumnIndexOrThrow(
+                                DBContract.History.COL_HISTORY_RELATED_ALERT_NAME)
+                        );
+                final String relatedDocumentName =
+                        cursor.getString(cursor.getColumnIndexOrThrow(
+                                DBContract.History.COL_HISTORY_DOCUMENT_NAME)
+                        );
                 final int deletedItems = MainActivity.deleteHistory(
-                        getContext(),
-                        textViewDocument.getText().toString(),
-                        textViewAlert.getText().toString()
-                );
+                        getContext(), relatedDocumentName, relatedAlertName);
                 MainActivity.showSnackBar(listViewHistory, "Deleted " + deletedItems + " item(s).");
                 return true;
             default:

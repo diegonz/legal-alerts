@@ -169,7 +169,8 @@ public class BoeHandler {
                 if (urlPairs.size() > sizeBefore){
                     // Extract date from url, getting a substring from position 46
                     // Example URL: http://www.boe.es/diario_boe/xml.php?id=BOE-S-yyyyMMdd
-                    boeEvents.onSummaryFetchSuccess(summaryURLString.substring(46));
+                    //noinspection SingleCharacterStringConcatenation
+                    boeEvents.onSummaryFetchSuccess(summaryURLString.substring(summaryURLString.lastIndexOf("-")) + 1);
                 }
             } catch (Exception e) {
                 // Log to file for debugging

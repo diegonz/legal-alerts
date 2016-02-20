@@ -71,10 +71,6 @@ public class HistoryAdapter extends ResourceCursorAdapter {
         // Populate the ViewHolder fields
         holder.textViewHistoryItemRelatedAlert.setText(relatedAlertName);
         holder.textViewHistoryItemDocName.setText(relatedDocumentName);
-        holder.textViewHistoryItemDocDate.setText(relatedPdfDocumentURL.substring(10,20));
-
-        // Set PDF url as holder´s TextView tag
-        //noinspection StringConcatenationMissingWhitespace
-        holder.textViewHistoryItemDocName.setTag(BoeHandler.BOE_BASE_URL + relatedPdfDocumentURL);
+        holder.textViewHistoryItemDocDate.setText(relatedPdfDocumentURL.substring(27,37));
     }
 }

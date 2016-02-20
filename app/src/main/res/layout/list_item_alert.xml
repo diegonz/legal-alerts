@@ -11,7 +11,6 @@
         android:id="@+id/textViewAlertListItem"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="@string/fragment_alerts_text_list_item"
-        android:layout_centerVertical="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_toStartOf="@+id/imageAlertIsLiteralSearch"
@@ -26,7 +25,6 @@
         android:id="@+id/imageAlertIsLiteralSearch"
         android:src="@android:drawable/ic_secure"
         android:contentDescription="@string/fragment_alerts_text_literal_search"
-        android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="@dimen/list_view_outer_item_margin_8dp"
@@ -45,7 +43,8 @@
         android:text="@string/fragment_alerts_text_literal_search"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_below="@+id/imageAlertIsLiteralSearch"
-        android:padding="@dimen/list_view_inner_item_padding_8dp" />
+        android:layout_below="@+id/textViewAlertListItem"
+        android:layout_marginEnd="@dimen/list_view_outer_item_margin_8dp"
+        android:layout_marginRight="@dimen/list_view_outer_item_margin_8dp" />
 
 </RelativeLayout>
