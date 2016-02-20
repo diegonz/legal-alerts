@@ -34,24 +34,17 @@ import es.smartidea.android.legalalerts.database.DBContract;
  */
 public class AlertsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    // URI of DB
     private static final Uri ALERTS_URI = DBContentProvider.ALERTS_URI;
-    // Static String arguments for querying
     private static final String[] PROJECTION = DBContract.ALERTS_PROJECTION;
     private static final String SELECTION_NOTNULL = "((" +
             DBContract.Alerts.COL_ALERT_NAME + " NOTNULL) AND (" +
             DBContract.Alerts.COL_ALERT_NAME + " != '' ))";
-
     private static final String ORDER_ASC_BY_NAME = DBContract.Alerts.COL_ALERT_NAME + " ASC";
     private static final String DIALOG_TAG = "dialog_legal_alerts";
-    // Unique Loader ID to correct management
     private static final int ALERTS_LOADER_ID = 1;
-    // Declare DBAdapter
     private AlertsAdapter alertsAdapter;
-    // ButterKnife bindings
     @Bind(R.id.listViewAlerts) ListView listViewAlerts;
 
-    // Required empty public constructor
     public AlertsFragment() {}
 
     /**
@@ -63,10 +56,6 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
         // Prepare the loader.  Either re-connect with an existing one or start a new one.
         getActivity().getSupportLoaderManager().initLoader(ALERTS_LOADER_ID, null, this);
     }
-
-    /*
-    * LIFECYCLE START
-    * */
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -105,10 +94,6 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
         // Destroy LoaderManager when onPause()
         getActivity().getSupportLoaderManager().destroyLoader(ALERTS_LOADER_ID);
     }
-
-    /*
-    * LIFECYCLE END
-    * */
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
@@ -175,7 +160,6 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
         return super.onOptionsItemSelected(item);
     }
 
-    // Returns a new loader after the initAlertsLoader() call
     @Override
     public CursorLoader onCreateLoader(int id, Bundle args) {
         return new CursorLoader(

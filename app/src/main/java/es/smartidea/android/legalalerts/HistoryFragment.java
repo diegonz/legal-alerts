@@ -28,22 +28,18 @@ import es.smartidea.android.legalalerts.database.DBContract;
  */
 public class HistoryFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    // URI of DB
     private static final Uri HISTORY_URI = DBContentProvider.HISTORY_URI;
-    // Static String arguments for querying
     private static final String[] PROJECTION = DBContract.HISTORY_PROJECTION;
     private static final String ORDER_DESC_BY_ID = DBContract.History._ID + " DESC";
-    // Unique Loader ID to correct management
     private static final int HISTORY_LOADER_ID = 2;
-    // Declare DBAdapter
     private HistoryAdapter historyAdapter;
-    // ButterKnife bindings
     @Bind(R.id.listViewHistory) ListView listViewHistory;
 
-    // Required empty public constructor
     public HistoryFragment() {}
 
-    // Attach alertsAdapter to ListViewAlerts
+    /**
+     * Set historyAdapter to ListViewHistory and initialize Loader via LoaderManager
+     */
     private void initHistoryLoader() {
         historyAdapter =
                 new HistoryAdapter(getActivity(), R.layout.list_item_history, null, 0);
@@ -51,10 +47,6 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
         // Prepare the loader.  Either re-connect with an existing one or start a new one.
         getActivity().getSupportLoaderManager().initLoader(HISTORY_LOADER_ID, null, this);
     }
-
-    /*
-    * LIFECYCLE START
-    * */
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
@@ -80,10 +72,6 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
         ButterKnife.unbind(this);
         getActivity().getSupportLoaderManager().destroyLoader(HISTORY_LOADER_ID);
     }
-
-    /*
-    * LIFECYCLE END
-    * */
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo){
@@ -127,7 +115,6 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
         }
     }
 
-    // Returns a new loader after the initAlertsLoader() call
     @Override
     public CursorLoader onCreateLoader(int id, Bundle args) {
         return new CursorLoader(getActivity(), HISTORY_URI, PROJECTION, null, null, ORDER_DESC_BY_ID);
