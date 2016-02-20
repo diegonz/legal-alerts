@@ -217,6 +217,7 @@ public class AlertsService extends Service {
                             DBContract.History.COL_HISTORY_RELATED_ALERT_NAME,
                             eachResult.getValue()
                     );
+                    //noinspection StringConcatenationMissingWhitespace
                     values.put(
                             DBContract.History.COL_HISTORY_DOCUMENT_URL,
                             BoeHandler.BOE_BASE_URL + xmlPdfUrls.get(eachResult.getKey())

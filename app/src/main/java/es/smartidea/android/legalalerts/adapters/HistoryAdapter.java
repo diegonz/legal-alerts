@@ -54,23 +54,18 @@ public class HistoryAdapter extends ResourceCursorAdapter {
     public void bindView(View view, final Context context, Cursor cursor) {
         // Get associated ViewHolder
         ViewHolder holder = (ViewHolder) view.getTag();
-
-        // Get data from DBCursor
-        final String relatedAlertName =
+        // Populate the ViewHolder fields getting data from Cursor
+        holder.textViewHistoryItemRelatedAlert.setText(
                 cursor.getString(cursor.getColumnIndexOrThrow(
-                        DBContract.History.COL_HISTORY_RELATED_ALERT_NAME)
-                );
-        final String relatedDocumentName =
+                DBContract.History.COL_HISTORY_RELATED_ALERT_NAME)))
+        ;
+        holder.textViewHistoryItemDocName.setText(
                 cursor.getString(cursor.getColumnIndexOrThrow(
-                        DBContract.History.COL_HISTORY_DOCUMENT_NAME)
-                );
-        final String relatedPdfDocumentURL =
+                DBContract.History.COL_HISTORY_DOCUMENT_NAME))
+        );
+        holder.textViewHistoryItemDocDate.setText(
                 cursor.getString(cursor.getColumnIndexOrThrow(
-                        DBContract.History.COL_HISTORY_DOCUMENT_URL)
-                );
-        // Populate the ViewHolder fields
-        holder.textViewHistoryItemRelatedAlert.setText(relatedAlertName);
-        holder.textViewHistoryItemDocName.setText(relatedDocumentName);
-        holder.textViewHistoryItemDocDate.setText(relatedPdfDocumentURL.substring(27,37));
+                DBContract.History.COL_HISTORY_DOCUMENT_URL)
+        ).substring(27,37));
     }
 }

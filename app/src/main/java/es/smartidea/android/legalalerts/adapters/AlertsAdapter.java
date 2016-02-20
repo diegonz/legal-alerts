@@ -52,26 +52,16 @@ public class AlertsAdapter extends ResourceCursorAdapter {
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
-
         ViewHolder holder = (ViewHolder) view.getTag();
-
-        final String alertName =
-                cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Alerts.COL_ALERT_NAME));
-
-        // Populate the ViewHolder fields and set DB alert name tags
-        holder.textViewAlertListItem.setText(alertName);
-        boolean isLiteralSearch = 0 == cursor.getInt(
-                        cursor.getColumnIndexOrThrow(DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL));
-        if (isLiteralSearch){
-
-            holder.imageViewAlertListItemLiteral
-                    .setImageResource(android.R.drawable.ic_secure);
-            // Set tag for textView to TRUE according to literal search setup
+        // Populate the ViewHolder fields according to Cursor data
+        holder.textViewAlertListItem.setText(
+                cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Alerts.COL_ALERT_NAME))
+        );
+        if (0 == cursor.getInt(cursor.getColumnIndexOrThrow(DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL))){
+            holder.imageViewAlertListItemLiteral.setImageResource(android.R.drawable.ic_secure);
             holder.textViewIsLiteralSearch.setText(R.string.fragment_alerts_text_literal_search);
         } else {
-            holder.imageViewAlertListItemLiteral
-                    .setImageResource(android.R.drawable.ic_partial_secure);
-            // Set tag for textView to FALSE according to literal search setup
+            holder.imageViewAlertListItemLiteral.setImageResource(android.R.drawable.ic_partial_secure);
             holder.textViewIsLiteralSearch.setText(R.string.fragment_alerts_text_not_literal_search);
         }
     }
