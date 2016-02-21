@@ -12,7 +12,6 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import es.smartidea.android.legalalerts.R;
 import es.smartidea.android.legalalerts.database.DBContract;
-import es.smartidea.android.legalalerts.services.boeHandler.BoeHandler;
 
 /**
  * A custom ResourceCursorAdapter {@link ResourceCursorAdapter} subclass.

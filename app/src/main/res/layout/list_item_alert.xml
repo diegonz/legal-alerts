@@ -10,6 +10,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/textViewAlertListItem"
         android:textAppearance="?android:attr/textAppearanceLarge"
+        android:maxLength="100"
         android:text="@string/fragment_alerts_text_list_item"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"

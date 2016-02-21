@@ -11,6 +11,8 @@
         android:id="@+id/historyItemRelatedAlert"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="@string/fragment_history_text_list_item"
+        android:maxLength="100"
+        android:maxLines="1"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_toStartOf="@+id/historyItemDocDate"
