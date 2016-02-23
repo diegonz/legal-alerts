@@ -40,33 +40,32 @@ public class AlarmReceiver extends BroadcastReceiver {
                 ? intent.getAction()
                 : START_ALERTS_SERVICE;
 
-        switch (ALARM_TYPE){
-            case ALARM_SNOOZE:
-                // Create a snooze alarm passing correct alarm ID
-                new AlarmBuilder.Builder(context, ALARM_TYPE, SNOOZE_ALARM_ID).setRetryAlarm();
-                break;
+        if (ALARM_TYPE.equals(ALARM_SNOOZE)){
+            // Create a snooze alarm passing correct alarm ID
+            new AlarmBuilder.Builder(context, ALARM_TYPE, SNOOZE_ALARM_ID).setRetryAlarm();
 
-            default:
-                PendingIntent alarmIntent =
-                        PendingIntent.getService(
-                                context,
-                                DAILY_ALARM_ID,
-                                new Intent(context, ServiceStarter.class).setAction(ALARM_TYPE),
-                                PendingIntent.FLAG_NO_CREATE
-                        );
-                // Check if an alarm of same type exists
-                //noinspection VariableNotUsedInsideIf
-                if (alarmIntent == null) {
-                    // Alarm not exist, create it
-                    new AlarmBuilder.Builder(context, ALARM_TYPE, DAILY_ALARM_ID)
-                            .setHour(9).setMinute(30).setDailyAlarm();
-                    // Log to file for debugging
-                    FileLogger.logToExternalFile(LOG_TAG + " - CREATING " + ALARM_TYPE);
-                } else {
-                    // Log to file for debugging
-                    FileLogger.logToExternalFile(LOG_TAG + " -" + ALARM_TYPE + " already set SKIPPING.");
-                }
-                break;
+            // Log to file for debugging
+            FileLogger.logToExternalFile(LOG_TAG + " - CREATING " + ALARM_TYPE);
+        } else {
+            PendingIntent alarmIntent =
+                    PendingIntent.getService(
+                            context,
+                            DAILY_ALARM_ID,
+                            new Intent(context, ServiceStarter.class).setAction(START_ALERTS_SERVICE),
+                            PendingIntent.FLAG_NO_CREATE
+                    );
+            // Check if an alarm of same type exists
+            //noinspection VariableNotUsedInsideIf
+            if (alarmIntent == null) {
+                // Alarm not exist, create it
+                new AlarmBuilder.Builder(context, START_ALERTS_SERVICE, DAILY_ALARM_ID)
+                        .setHour(9).setMinute(30).setDailyAlarm();
+                // Log to file for debugging
+                FileLogger.logToExternalFile(LOG_TAG + " - CREATING " + ALARM_TYPE);
+            } else {
+                // Log to file for debugging
+                FileLogger.logToExternalFile(LOG_TAG + " -" + ALARM_TYPE + " already set SKIPPING.");
+            }
         }
     }
 }

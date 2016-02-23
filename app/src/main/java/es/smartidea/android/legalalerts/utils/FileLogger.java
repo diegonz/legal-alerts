@@ -78,10 +78,10 @@ public class FileLogger {
      *
      * @return existing or created File object referencing log file on external storage
      */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     private static File getExternalLogFile(){
         File logPath = new File(Environment.getExternalStorageDirectory().getPath() + LOG_FOLDER_PATH);
         if (!logPath.exists()) logPath.mkdirs();
-
         File logFile = new File(Environment.getExternalStorageDirectory().getPath() + LOG_FULL_PATH);
         if (!logFile.exists()) {
             try {

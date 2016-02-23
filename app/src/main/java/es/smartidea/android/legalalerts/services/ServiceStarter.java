@@ -75,7 +75,9 @@ public class ServiceStarter extends IntentService {
                 break;
             default:
                 // Log to file for debugging
-                FileLogger.logToExternalFile(LOG_TAG + " - @onHandleIntent() No matching action!: " + intentAction);
+                FileLogger.logToExternalFile(
+                        LOG_TAG + " - @onHandleIntent() No matching action!: " + intentAction
+                );
                 // If there is no matching action release the WakeLock
                 AlertsWakeLock.doRelease();
                 break;
