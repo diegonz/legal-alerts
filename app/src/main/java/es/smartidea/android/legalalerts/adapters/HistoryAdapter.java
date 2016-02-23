@@ -65,6 +65,6 @@ public class HistoryAdapter extends ResourceCursorAdapter {
         holder.textViewHistoryItemDocDate.setText(
                 cursor.getString(cursor.getColumnIndexOrThrow(
                 DBContract.History.COL_HISTORY_DOCUMENT_URL)
-        ).substring(27,37));
+        ).substring(26,36));    // Substring of document ID
     }
 }

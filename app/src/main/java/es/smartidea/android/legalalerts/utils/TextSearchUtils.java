@@ -48,8 +48,10 @@ public class TextSearchUtils {
                 boolean hasAllSearchItems = true;
                 for (String eachSearchItem : searchItemArray) {
                     // If item is not contained, set flag to false
-                    if (!isNormalizedStringContained(rawText, eachSearchItem))
+                    if (!isNormalizedStringContained(rawText, eachSearchItem)) {
                         hasAllSearchItems = false;
+                        break;
+                    }
                 }
                 // Add Boe to result if "hasAllSearchItems"
                 if (hasAllSearchItems) resultUrls.put(urlXml, searchQuery);

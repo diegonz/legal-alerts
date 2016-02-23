@@ -226,7 +226,8 @@ public class BoeHandler {
                                     eachAlert.getValue(),
                                     rawTextEntry.getValue(),
                                     rawTextEntry.getKey()
-                    ));
+                            )
+                    );
                 }
             } catch (Exception e) {
                 // Log to file for debugging

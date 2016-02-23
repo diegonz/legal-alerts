@@ -53,6 +53,7 @@
     <string name="text_dialog_default_switch_on">Enabled</string>
     <string name="text_dialog_default_switch_off">Disabled</string>
     <string name="text_dialog_alert_name_invalid">Insert at least three characters!</string>
+    <string name="text_dialog_alert_name_too_long">Insert a maximum of 100 characters!</string>
     <string name="text_dialog_error_inserting_or_updating">Alert could not be inserted or updated</string>
     <string name="text_dialog_inserted_or_updated_ok">Alert successfully inserted or updated</string>
     <string name="text_dialog_info_not_literal">Literal search is <b>disabled.</b>\n<i>Legal Alerts will search for all occurrences disregarding order or place.</i></string>

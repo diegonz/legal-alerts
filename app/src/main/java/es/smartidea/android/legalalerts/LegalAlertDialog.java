@@ -26,6 +26,10 @@ import butterknife.OnTextChanged;
 
 public class LegalAlertDialog extends AppCompatDialogFragment {
 
+    private final static long literalSwapDuration = 150L;
+    private final static int minLength = 3;
+    private final static int maxLength = 100;
+    private final static String ALERT_NAME = "alert_name";
     /*
     * ButterKnife bindings - START
     * */
@@ -36,9 +40,14 @@ public class LegalAlertDialog extends AppCompatDialogFragment {
     @Bind(R.id.editTextDialogAlert) EditText editTextDialogAlert;
 
     @OnTextChanged(R.id.editTextDialogAlert)
-    public void alertNameTextChanged() {
-        if (isAlertNameValid(editTextDialogAlert.length())) textInputLayout.setErrorEnabled(false);
-        else {
+    public void alertNameTextChanged(CharSequence text) {
+        if (isValidAlertNameLength(text.length())) {
+            textInputLayout.setErrorEnabled(false);
+            if (text.length() == maxLength){
+                textInputLayout.setError(getString(R.string.text_dialog_alert_name_too_long));
+                textInputLayout.setErrorEnabled(true);
+            }
+        } else {
             textInputLayout.setError(getString(R.string.text_dialog_alert_name_invalid));
             textInputLayout.setErrorEnabled(true);
         }
@@ -47,7 +56,7 @@ public class LegalAlertDialog extends AppCompatDialogFragment {
     @OnCheckedChanged(R.id.switchLiteralSearch)
     public void onIsLiteralChanged(boolean isChecked) {
         if (isChecked) {
-            YoYo.with(Techniques.SlideOutRight).duration(150L).withListener(
+            YoYo.with(Techniques.SlideOutRight).duration(literalSwapDuration).withListener(
                     new Animator.AnimatorListener() {
                         @Override
                         public void onAnimationStart(Animator animation) {
@@ -56,7 +65,7 @@ public class LegalAlertDialog extends AppCompatDialogFragment {
                         @Override
                         public void onAnimationEnd(Animator animation) {
                             textViewLiteralInfo.setText(R.string.text_dialog_info_literal_yes);
-                            YoYo.with(Techniques.SlideInLeft).duration(150L)
+                            YoYo.with(Techniques.SlideInLeft).duration(literalSwapDuration)
                                     .playOn(textViewLiteralInfo);
                         }
 
@@ -69,7 +78,7 @@ public class LegalAlertDialog extends AppCompatDialogFragment {
                         }
                     }).playOn(textViewLiteralInfo);
         } else {
-            YoYo.with(Techniques.SlideOutLeft).duration(150L).withListener(
+            YoYo.with(Techniques.SlideOutLeft).duration(literalSwapDuration).withListener(
                     new Animator.AnimatorListener() {
                         @Override
                         public void onAnimationStart(Animator animation) {
@@ -78,7 +87,7 @@ public class LegalAlertDialog extends AppCompatDialogFragment {
                         @Override
                         public void onAnimationEnd(Animator animation) {
                             textViewLiteralInfo.setText(R.string.text_dialog_info_not_literal);
-                            YoYo.with(Techniques.SlideInRight).duration(150L)
+                            YoYo.with(Techniques.SlideInRight).duration(literalSwapDuration)
                                     .playOn(textViewLiteralInfo);
                         }
 
@@ -102,34 +111,30 @@ public class LegalAlertDialog extends AppCompatDialogFragment {
     * */
 
     /**
-     * Static factory method receiving alertName and returning new instance
-     * with given parameters set to bundle
-     *
-     * @param alertName String representing alert name
-     * @return new instance of LegalAlertDialog with given parameter as bundle
-     */
-    @NonNull
-    public static LegalAlertDialog newInstance(String alertName, boolean isLiteralSearch) {
-        LegalAlertDialog fragment = new LegalAlertDialog();
-
-        // Supply input
-        Bundle bundle = new Bundle();
-        bundle.putString("alert_name", alertName);
-        bundle.putBoolean("is_literal_search", isLiteralSearch);
-        fragment.setArguments(bundle);
-
-        return fragment;
-    }
-
-    /**
      * Validates length of alert name
      *
      * @param textLength int representing alert name string length
      * @return true if given textLength is valid according to specifications
      */
-    private static boolean isAlertNameValid(int textLength) {
-        // Return true if alert name has 3 or more char
-        return textLength > 2;
+    private static boolean isValidAlertNameLength(int textLength) {
+        // Return true if alert name is in the accepted interval
+        return textLength >= minLength && textLength <= maxLength;
+    }
+
+    /**
+     * Static factory method receiving alertName and returning new instance
+     * with given parameters set to bundle
+     *
+     * @param receivedName @NonNull String representing alert name to edit
+     * @return new instance of LegalAlertDialog with given parameter as bundle
+     */
+    public static LegalAlertDialog newInstance(@NonNull String receivedName, boolean isLiteralSearch) {
+        LegalAlertDialog fragment = new LegalAlertDialog();
+        Bundle bundle = new Bundle();
+        bundle.putString(ALERT_NAME, receivedName);
+        bundle.putBoolean("is_literal_search", isLiteralSearch);
+        fragment.setArguments(bundle);
+        return fragment;
     }
 
     /*
@@ -150,21 +155,17 @@ public class LegalAlertDialog extends AppCompatDialogFragment {
         @SuppressLint("InflateParams")
         final View view =
                 LayoutInflater.from(this.getContext()).inflate(R.layout.dialog_legal_alerts, null);
-
-        // ButterKnife bind
         ButterKnife.bind(this, view);
-
         int dialogTitleInt = R.string.text_dialog_new_alert;
         // Get alert name if are present and set dialog title
         final Bundle bundle = getArguments();
         if (bundle != null) {
-            editTextDialogAlert.setText(bundle.getString("alert_name"));
+            editTextDialogAlert.setText(bundle.getString(ALERT_NAME));
             switchLiteralSearch.setChecked(bundle.getBoolean("is_literal_search"));
             dialogTitleInt = R.string.text_dialog_edit_alert;
         }
 
-        // Set builder View and positive button listener to null
-        // which will be overridden in setOnShowListener
+        // Set View and positive button listener to null (will be overridden in setOnShowListener)
         builder.setView(view)
                 .setPositiveButton(R.string.button_dialog_alert_save, null)
                 .setNegativeButton(R.string.button_dialog_alert_cancel,
@@ -174,7 +175,6 @@ public class LegalAlertDialog extends AppCompatDialogFragment {
                         }
                     }
                 ).setTitle(dialogTitleInt);
-
         /*
         * Create the LegalAlertDialog object to override
         * positive button´s click listener using setOnShowListener
@@ -189,12 +189,12 @@ public class LegalAlertDialog extends AppCompatDialogFragment {
                     new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            if (isAlertNameValid(editTextDialogAlert.length())) {
+                            if (isValidAlertNameLength(editTextDialogAlert.length())) {
                                 // Get int result and assign by ternary operator expression,
                                 // invoking correct method checking bundle nullity
                                 int result = bundle != null
                                         ? MainActivity.updateAlert(getContext(),
-                                                bundle.getString("alert_name"),
+                                                bundle.getString(ALERT_NAME),
                                                 editTextDialogAlert.getText().toString(),
                                                 switchLiteralSearch.isChecked())
                                         : MainActivity.insertNewAlert(getContext(),
@@ -219,32 +219,8 @@ public class LegalAlertDialog extends AppCompatDialogFragment {
                                         break;
                                 }
                             } else {
-                                YoYo.with(Techniques.Tada).duration(300L).withListener(
-                                        new Animator.AnimatorListener() {
-                                            @Override
-                                            public void onAnimationStart(Animator animation) {
-                                            }
-
-                                            @Override
-                                            public void onAnimationEnd(Animator animation) {
-                                                // Set error to TextInputLayout
-                                                // after setting error message
-                                                textInputLayout.setError(
-                                                        getString(R.string.text_dialog_alert_name_invalid)
-                                                );
-                                                textInputLayout.setErrorEnabled(true);
-                                            }
-
-                                            @Override
-                                            public void onAnimationCancel(Animator animation) {
-                                            }
-
-                                            @Override
-                                            public void onAnimationRepeat(Animator animation) {
-                                            }
-                                        }
-                                ).playOn(editTextDialogAlert);
-
+                                YoYo.with(Techniques.Tada).duration(300L).playOn(editTextDialogAlert);
+                                alertNameTextChanged(editTextDialogAlert.getText());
                                 Toast.makeText(getContext(),
                                     getString(R.string.text_dialog_alert_name_invalid),
                                     Toast.LENGTH_SHORT
