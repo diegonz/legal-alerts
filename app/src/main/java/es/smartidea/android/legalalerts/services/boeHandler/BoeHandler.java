@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import es.smartidea.android.legalalerts.okHttp.OkHttpGetURL;
+import es.smartidea.android.legalalerts.network.NetWorker;
 import es.smartidea.android.legalalerts.utils.FileLogger;
 import es.smartidea.android.legalalerts.utils.TextSearchUtils;
 
@@ -126,13 +126,13 @@ public class BoeHandler {
      */
     public void start(@NonNull Map<String, Boolean> alertsListFullData) {
         if (!alertsListFullData.isEmpty()) {
-            OkHttpGetURL okHttpGetURL = new OkHttpGetURL();
-            Map<String, String> xmlPdfUrls = handleSummaries(okHttpGetURL);
+            NetWorker netWorker = new NetWorker();
+            Map<String, String> xmlPdfUrls = handleSummaries(netWorker);
             // If there is any attachment
             if (!xmlPdfUrls.isEmpty()){
                 // Send search results to listener
                 boeEvents.onWorkCompleted(
-                        handleAttachments(okHttpGetURL, xmlPdfUrls, alertsListFullData),
+                        handleAttachments(netWorker, xmlPdfUrls, alertsListFullData),
                         xmlPdfUrls);
             } else {
                 // Send empty results
@@ -144,18 +144,18 @@ public class BoeHandler {
     /**
      * Fetches URLs for summary and others using custom OkHttp object
      *
-     * @param okHttpGetURL  Custom OkHttp implementation object instance
+     * @param netWorker  Custom OkHttp implementation object instance
      * @return  Map of String,String containing pairs (PDF and XML)
      * of BOE´s summary attached documents
      */
-    private Map<String, String> handleSummaries(OkHttpGetURL okHttpGetURL){
+    private Map<String, String> handleSummaries(NetWorker netWorker){
         //noinspection CollectionWithoutInitialCapacity
         Map<String, String> urlPairs = new HashMap<>();
         InputStream boeSummaryStream = null;
         for (String summaryURLString : summariesUrlStringArray) {
             // Fetches XML´s summaries URLs and sends it to parse rawData URLs
             try {
-                boeSummaryStream = okHttpGetURL.run(summaryURLString);
+                boeSummaryStream = netWorker.getUrlAsByteStream(summaryURLString);
                 xmlPullParserFactory = XmlPullParserFactory.newInstance();
                 XmlPullParser boeSummaryParser = xmlPullParserFactory.newPullParser();
                 boeSummaryParser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
@@ -169,8 +169,7 @@ public class BoeHandler {
                 if (urlPairs.size() > sizeBefore){
                     // Extract date from url, getting a substring from position 46
                     // Example URL: http://www.boe.es/diario_boe/xml.php?id=BOE-S-yyyyMMdd
-                    //noinspection SingleCharacterStringConcatenation
-                    boeEvents.onSummaryFetchSuccess(summaryURLString.substring(summaryURLString.lastIndexOf("-")) + 1);
+                    boeEvents.onSummaryFetchSuccess(summaryURLString.substring(46));
                 }
             } catch (Exception e) {
                 // Log to file for debugging
@@ -190,7 +189,7 @@ public class BoeHandler {
      * Fetches BOE´s summary attached documents using custom OkHttp object
      * and searches in each document looking for received search terms.
      *
-     * @param okHttpGetURL  Custom OkHttp implementation object instance
+     * @param netWorker  Custom OkHttp implementation object instance
      * @param urlPairs  Map of String,String containing pairs (PDF and XML)
      *                  of BOE´s summary attached documents
      * @param searchTerms   MAp containing search terms an
@@ -198,7 +197,7 @@ public class BoeHandler {
      * @return  Map containing each search term that was found
      * at least once and its associated PDF url
      */
-    private Map<String, String> handleAttachments(@NonNull OkHttpGetURL okHttpGetURL,
+    private Map<String, String> handleAttachments(@NonNull NetWorker netWorker,
                                                   @NonNull Map<String, String> urlPairs,
                                                   @NonNull Map<String, Boolean> searchTerms){
         //noinspection CollectionWithoutInitialCapacity
@@ -210,7 +209,7 @@ public class BoeHandler {
                 // Reset map if its not empty
                 if (!rawTextData.isEmpty()) rawTextData.clear();
 
-                boeStream = okHttpGetURL.run(BOE_BASE_URL + eachUrlPair.getKey());
+                boeStream = netWorker.getUrlAsByteStream(BOE_BASE_URL + eachUrlPair.getKey());
                 xmlPullParserFactory = XmlPullParserFactory.newInstance();
                 XmlPullParser boeParser = xmlPullParserFactory.newPullParser();
                 boeParser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);

@@ -30,9 +30,6 @@ public class LegalAlertDialog extends AppCompatDialogFragment {
     private final static int minLength = 3;
     private final static int maxLength = 100;
     private final static String ALERT_NAME = "alert_name";
-    /*
-    * ButterKnife bindings - START
-    * */
 
     @Bind(R.id.textInputLayoutDialogAlert) TextInputLayout textInputLayout;
     @Bind(R.id.textViewLiteralInfo) TextView textViewLiteralInfo;
@@ -102,14 +99,6 @@ public class LegalAlertDialog extends AppCompatDialogFragment {
         }
     }
 
-    /*
-    * ButterKnife bindings - END
-    * */
-
-    /*
-    * LOCAL_METHODS - START
-    * */
-
     /**
      * Validates length of alert name
      *
@@ -136,14 +125,6 @@ public class LegalAlertDialog extends AppCompatDialogFragment {
         fragment.setArguments(bundle);
         return fragment;
     }
-
-    /*
-    * LOCAL_METHODS - END
-    * */
-
-    /*
-    * Lifecycle - START
-    * */
 
     @NonNull
     @Override
@@ -234,8 +215,4 @@ public class LegalAlertDialog extends AppCompatDialogFragment {
         // Return the alertDialog, only pending to show().
         return alertDialog;
     }
-
-    /*
-    * Lifecycle - END
-    * */
 }
