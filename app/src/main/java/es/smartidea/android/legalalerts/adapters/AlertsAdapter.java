@@ -58,10 +58,10 @@ public class AlertsAdapter extends ResourceCursorAdapter {
                 cursor.getString(cursor.getColumnIndexOrThrow(DBContract.Alerts.COL_ALERT_NAME))
         );
         if (0 == cursor.getInt(cursor.getColumnIndexOrThrow(DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL))){
-            holder.imageViewAlertListItemLiteral.setImageResource(R.drawable.ic_closed_padlock_circle);
+            holder.imageViewAlertListItemLiteral.setImageResource(R.drawable.ic_closed_padlock);
             holder.textViewIsLiteralSearch.setText(R.string.fragment_alerts_text_literal_search);
         } else {
-            holder.imageViewAlertListItemLiteral.setImageResource(R.drawable.ic_open_padlock_circle);
+            holder.imageViewAlertListItemLiteral.setImageResource(R.drawable.ic_open_padlock);
             holder.textViewIsLiteralSearch.setText(R.string.fragment_alerts_text_not_literal_search);
         }
     }

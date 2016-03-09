@@ -24,7 +24,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/imageAlertIsLiteralSearch"
-        android:src="@drawable/ic_open_padlock_circle"
+        android:src="@drawable/ic_open_padlock"
         android:contentDescription="@string/fragment_alerts_text_literal_search"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"

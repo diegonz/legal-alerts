@@ -86,7 +86,7 @@ public class NotificationBuilder {
          * (context & notification) after using it calling to releaseReferences
          */
         public void send() {
-            notification.setSmallIcon(R.drawable.ic_stat_magnifyingglass);
+            notification.setSmallIcon(R.drawable.ic_stat_new_boe_alerts);
             Intent intent = new Intent(context, MainActivity.class);
             // Put Fragment (int) identifier on "start_on_fragment" (fragment to show OnNewIntent())
             intent.putExtra("start_on_fragment", MainActivity.FRAGMENT_HISTORY);
