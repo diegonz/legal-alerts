@@ -16,6 +16,7 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="nav_header_info_email">dgonzalez.BZ@gmail.com</string>
+    <string name="nav_header_info_text">Legal bulletins under control</string>
     <string name="nav_alerts">Legal Alerts</string>
     <string name="nav_new_alert">New Alert</string>
     <string name="nav_history">History</string>
