@@ -11,7 +11,7 @@ import es.smartidea.android.legalalerts.utils.FileLogger;
  */
 public class AlertsWakeLock {
 
-    private static final String LOG_TAG = "AlertsWakelock";
+    private final static String LOG_TAG = "AlertsWakelock";
     // Private static WakeLock reference
     private static PowerManager.WakeLock wakeLock;
 

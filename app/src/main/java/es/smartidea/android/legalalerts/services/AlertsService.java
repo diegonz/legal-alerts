@@ -29,28 +29,90 @@ import es.smartidea.android.legalalerts.utils.FileLogger;
 
 public class AlertsService extends Service {
 
-    private static final String LOG_TAG = "Service";
+    private final static String LOG_TAG = "Service";
 
-    // URI of DB
-    private static final Uri ALERTS_URI = DBContentProvider.ALERTS_URI;
-    // Static String arguments for querying
-    private static final String[] ALERTS_PROJECTION = DBContract.ALERTS_PROJECTION;
-    private static final String ALERTS_SELECTION_NOTNULL = "((" +
+    private final static Uri ALERTS_URI = DBContentProvider.ALERTS_URI;
+    private final static String[] ALERTS_PROJECTION = DBContract.ALERTS_PROJECTION;
+    private final static String ALERTS_SELECTION_NOTNULL = "((" +
             DBContract.Alerts.COL_ALERT_NAME + " NOTNULL) AND (" +
             DBContract.Alerts.COL_ALERT_NAME + " != '' ))";
-
-    private static final String ALERTS_ORDER_ASC_BY_NAME =
-            DBContract.Alerts.COL_ALERT_NAME + " ASC";
-    private static final String LAST_SUCCESSFUL_SYNC = AlarmDelayer.LAST_SUCCESSFUL_SYNC;
-    private BoeHandler boeHandler;
-    // boolean flag indicating if service is running.
+    private final static String ALERTS_ORDER_ASC_BY_NAME = DBContract.Alerts.COL_ALERT_NAME + " ASC";
+    private final static String LAST_SUCCESSFUL_SYNC = AlarmDelayer.LAST_SUCCESSFUL_SYNC;
+    private final static String SNOOZE_DATE_DEFAULT = AlarmDelayer.SNOOZE_DATE_DEFAULT;
+    private final static String SNOOZE_DATE_NAME = AlarmDelayer.SNOOZE_DATE_NAME;
     private static boolean serviceRunning = false;
-    // Last successful sync date in predefined string format
     private String lastOkSyncDateInString;
-    // SNOOZE dateString values
-    private static final String SNOOZE_DATE_DEFAULT = AlarmDelayer.SNOOZE_DATE_DEFAULT;
-    private static final String SNOOZE_DATE_NAME = AlarmDelayer.SNOOZE_DATE_NAME;
+    private BoeHandler boeHandler;
 
+    /*
+    * Lifecycle events START
+    * */
+
+    @Override
+    public void onCreate() {
+        // Start up the thread running the service.  Note that we create a
+        // separate thread because the service normally runs in the process's
+        // main thread, which we don't want to block.  We also make it
+        // background priority so CPU-intensive work will not disrupt our UI.
+
+        // Get a reference to the Service (Context)
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                serviceRunning = true;
+                setupBoeHandler(AlertsService.this);
+                boeHandler.start();
+            }
+        }).start();
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        //Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
+        // Log to file for debugging
+        FileLogger.logToExternalFile(LOG_TAG + " - Service started!");
+        // If we get killed, after returning from here, AVOID restarting
+        return START_NOT_STICKY;
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        // We don't provide binding, so return null
+        //noinspection ReturnOfNull
+        return null;
+    }
+
+    @Override
+    public void onDestroy() {
+        // Set snooze_alarm_date to SNOOZE_DATE_DEFAULT
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .edit()
+                .putString(SNOOZE_DATE_NAME, SNOOZE_DATE_DEFAULT)
+                .apply(); // Call apply() to make changes in background (commit() is immediate)
+
+        //Toast.makeText(this, "service done", Toast.LENGTH_SHORT).show();
+
+        // Log to file for debugging
+        FileLogger.logToExternalFile(
+                LOG_TAG + " - Stopping service, last successful sync: " + lastOkSyncDateInString
+        );
+
+        // Release as many resources as possible
+        if (boeHandler != null) {
+            boeHandler.unsetListener();
+            boeHandler = null;
+        }
+
+        // Set serviceRunning flag to FALSE
+        serviceRunning = false;
+
+        // Then release the WakeLock from its static reference
+        AlertsWakeLock.doRelease();
+    }
+
+    /*
+    * Lifecycle events END
+    * */
 
     /*
     * Service Methods START
@@ -66,38 +128,35 @@ public class AlertsService extends Service {
      */
     private void setupBoeHandler(final Context context) {
         @SuppressLint("SimpleDateFormat")
-        final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
         final Date todayDate = new Date();
-        Date lastSuccessfulSyncDate;
-        ArrayList<String> daysToCheck = new ArrayList<>(1);
+        lastOkSyncDateInString =
+                PreferenceManager.getDefaultSharedPreferences(context)
+                        .getString(LAST_SUCCESSFUL_SYNC, dateFormat.format(todayDate));
 
-        final String todayDateString = dateFormat.format(todayDate);
-        lastOkSyncDateInString = PreferenceManager
-                .getDefaultSharedPreferences(context)
-                .getString(LAST_SUCCESSFUL_SYNC, todayDateString);
+        ArrayList<String> daysToCheck = new ArrayList<>(1);
+        Date syncDate;
         try {
-            lastSuccessfulSyncDate = dateFormat.parse(lastOkSyncDateInString);
-            // Add pending day to list, adding at least today´s date
-            while (todayDate.after(lastSuccessfulSyncDate)) {
-                daysToCheck.add(dateFormat.format(lastSuccessfulSyncDate));
-                lastSuccessfulSyncDate = incrementDays(lastSuccessfulSyncDate, 1);
-            }
+            syncDate = dateFormat.parse(lastOkSyncDateInString);
         } catch (Exception e){
+            // TODO correct error handling
             e.printStackTrace();
+            syncDate = todayDate;
         }
-        // Initialize BoeHandler passing pending days to check as string array
-        boeHandler = new BoeHandler(daysToCheck.toArray(new String[daysToCheck.size()]));
-        // TODO: Check a reference to service (Context)
-        // Set/send BoeHandler event listener
-        boeHandler.setListener(new BoeHandler.BoeEvents() {
+        while (todayDate.after(syncDate)) {
+            daysToCheck.add(dateFormat.format(syncDate));
+            syncDate = incrementDays(syncDate, 1);
+        }
+        boeHandler = new BoeHandler();
+        boeHandler.setListener(new BoeHandler.BoeListener() {
             @Override
             public void onWorkCompleted(final Map<String, String> searchResults, final Map<String, String> xmlPdfUrls) {
-                if (!searchResults.isEmpty()){
+                if (!searchResults.isEmpty()) {
                     storeResultsOnDB(context, searchResults, xmlPdfUrls);
                     showAlertNotification(
                             context,
                             searchResults.size() + " " +
-                            getString(R.string.notification_ok_results_title),
+                                    getString(R.string.notification_ok_results_title),
                             getString(R.string.notification_ok_results_description)
                     );
 
@@ -139,6 +198,9 @@ public class AlertsService extends Service {
 
             }
         });
+        boeHandler.setAlertsAndDates(
+                getAlertsFromDB(context), daysToCheck.toArray(new String[daysToCheck.size()])
+        );
     }
 
     /**
@@ -266,79 +328,5 @@ public class AlertsService extends Service {
 
     /*
     * Service Methods END
-    * */
-
-    /*
-    * Lifecycle events START
-    * */
-
-    @Override
-    public void onCreate() {
-        // Start up the thread running the service.  Note that we create a
-        // separate thread because the service normally runs in the process's
-        // main thread, which we don't want to block.  We also make it
-        // background priority so CPU-intensive work will not disrupt our UI.
-
-        // Get a reference to the Service (Context)
-        final Context context = this;
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                // Set TRUE to serviceRunning flag
-                serviceRunning = true;
-                //setup BoeHandler and BoeHandler.Listeners
-                setupBoeHandler(context);
-                // Start fetching summary using in a runnable using getApplicationContext()
-                boeHandler.start(getAlertsFromDB(context));
-            }
-        }).start();
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        //Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
-        // Log to file for debugging
-        FileLogger.logToExternalFile(LOG_TAG + " - Service started!");
-        // If we get killed, after returning from here, AVOID restarting
-        return START_NOT_STICKY;
-    }
-
-    @Override
-    public IBinder onBind(Intent intent) {
-        // We don't provide binding, so return null
-        //noinspection ReturnOfNull
-        return null;
-    }
-
-    @Override
-    public void onDestroy() {
-        // Set snooze_alarm_date to SNOOZE_DATE_DEFAULT
-        PreferenceManager.getDefaultSharedPreferences(this)
-                .edit()
-                .putString(SNOOZE_DATE_NAME, SNOOZE_DATE_DEFAULT)
-                .apply(); // Call apply() to make changes in background (commit() is immediate)
-
-        //Toast.makeText(this, "service done", Toast.LENGTH_SHORT).show();
-
-        // Log to file for debugging
-        FileLogger.logToExternalFile(
-                LOG_TAG + " - Stopping service, last successful sync: " + lastOkSyncDateInString
-        );
-
-        // Release as many resources as possible
-        if (boeHandler != null){
-            boeHandler.unsetListener();
-            boeHandler = null;
-        }
-
-        // Set serviceRunning flag to FALSE
-        serviceRunning = false;
-
-        // Then release the WakeLock from its static reference
-        AlertsWakeLock.doRelease();
-    }
-
-    /*
-    * Lifecycle events END
     * */
 }

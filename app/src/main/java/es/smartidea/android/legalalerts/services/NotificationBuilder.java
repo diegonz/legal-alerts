@@ -89,7 +89,7 @@ public class NotificationBuilder {
             notification.setSmallIcon(R.drawable.ic_stat_new_boe_alerts);
             Intent intent = new Intent(context, MainActivity.class);
             // Put Fragment (int) identifier on "start_on_fragment" (fragment to show OnNewIntent())
-            intent.putExtra("start_on_fragment", MainActivity.FRAGMENT_HISTORY);
+            intent.putExtra("start_on_fragment", MainActivity.FRAGMENT_HISTORY_ID);
             intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             PendingIntent pendingIntent =
                     PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);

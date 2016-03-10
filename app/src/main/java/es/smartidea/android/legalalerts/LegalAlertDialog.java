@@ -30,7 +30,6 @@ public class LegalAlertDialog extends AppCompatDialogFragment {
     private final static int minLength = 3;
     private final static int maxLength = 100;
     private final static String ALERT_NAME = "alert_name";
-
     @Bind(R.id.textInputLayoutDialogAlert) TextInputLayout textInputLayout;
     @Bind(R.id.textViewLiteralInfo) TextView textViewLiteralInfo;
     @Bind(R.id.switchLiteralSearch) SwitchCompat switchLiteralSearch;

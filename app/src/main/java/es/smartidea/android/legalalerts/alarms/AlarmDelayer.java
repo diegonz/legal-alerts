@@ -21,19 +21,14 @@ import es.smartidea.android.legalalerts.utils.FileLogger;
  */
 public class AlarmDelayer {
 
-    private static final String LOG_TAG = "AlarmDelayer";
+    private final static String LOG_TAG = "AlarmDelayer";
 
-    public static final String LAST_SUCCESSFUL_SYNC = "last_successful_sync";
-    // AlarmReceiver related String Broadcast actions & extras
+    public final static String LAST_SUCCESSFUL_SYNC = "last_successful_sync";
+    public final static String SNOOZE_DATE_NAME = "snooze_alarm_date";
+    public final static String SNOOZE_DATE_DEFAULT = "default_value";
     private final static String ALARM_SNOOZE = AlarmReceiver.ALARM_SNOOZE;
-    // SNOOZE dateString default value
-    public static final String SNOOZE_DATE_NAME = "snooze_alarm_date";
-    public static final String SNOOZE_DATE_DEFAULT = "default_value";
 
-
-    // Private empty constructor to avoid instantiation
-    private AlarmDelayer() {
-    }
+    private AlarmDelayer() {}
 
     /**
      * Checks last successful sync date against today´s date

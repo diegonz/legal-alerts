@@ -13,7 +13,6 @@ public class TextSearchUtils {
     private final static Pattern NOT_ASCII_REGEXP = Pattern.compile("[^\\p{ASCII}]");
     private final static Pattern SPACE_REGEXP = Pattern.compile("\\s");
 
-    // Public empty constructor
     private TextSearchUtils() {}
 
     /**
@@ -32,6 +31,7 @@ public class TextSearchUtils {
                                                          @NonNull String urlXml) {
 
         Map<String, String> resultUrls = new HashMap<>(0);
+        // TODO Check literal search implementation
         if (isLiteralSearch) {
             try {
                 if (isNormalizedStringContained(rawText, searchQuery)) {
@@ -42,21 +42,18 @@ public class TextSearchUtils {
             }
         } else {
             try {
-                // Split alert items by space with pre-compiled regexp
                 String[] searchItemArray = SPACE_REGEXP.split(searchQuery);
-                // Flag that indicates every search query where successful
                 boolean hasAllSearchItems = true;
                 for (String eachSearchItem : searchItemArray) {
-                    // If item is not contained, set flag to false
                     if (!isNormalizedStringContained(rawText, eachSearchItem)) {
                         hasAllSearchItems = false;
                         break;
                     }
                 }
-                // Add Boe to result if "hasAllSearchItems"
-                if (hasAllSearchItems) resultUrls.put(urlXml, searchQuery);
+                if (hasAllSearchItems) {
+                    resultUrls.put(urlXml, searchQuery);
+                }
             } catch (Exception e) {
-                // Log to file for debugging
                 FileLogger.logToExternalFile(LOG_TAG + " - ERROR: while searching for: " + searchQuery);
                 e.printStackTrace();
             }
@@ -77,14 +74,12 @@ public class TextSearchUtils {
      **/
     private static boolean isNormalizedStringContained(String mainText, String searchItem) {
         // TODO: Check alternatives like: org.apache.commons.lang3.StringUtils.containsIgnoreCase
-        String normalizedMainText = NOT_ASCII_REGEXP
+        final String normalizedMainText = NOT_ASCII_REGEXP
                 .matcher(Normalizer.normalize(mainText, Normalizer.Form.NFD))
                 .replaceAll("");
-        String normalizedSearchItem = NOT_ASCII_REGEXP
+        final String normalizedSearchItem = NOT_ASCII_REGEXP
                 .matcher(Normalizer.normalize(searchItem, Normalizer.Form.NFD))
                 .replaceAll("");
-
         return normalizedMainText.toLowerCase().contains(normalizedSearchItem.toLowerCase());
     }
-
 }

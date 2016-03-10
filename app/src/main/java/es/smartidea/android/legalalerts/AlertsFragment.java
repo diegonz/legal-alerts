@@ -34,14 +34,14 @@ import es.smartidea.android.legalalerts.database.DBContract;
  */
 public class AlertsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    private static final Uri ALERTS_URI = DBContentProvider.ALERTS_URI;
-    private static final String[] PROJECTION = DBContract.ALERTS_PROJECTION;
-    private static final String SELECTION_NOTNULL = "((" +
+    private final static Uri ALERTS_URI = DBContentProvider.ALERTS_URI;
+    private final static String[] PROJECTION = DBContract.ALERTS_PROJECTION;
+    private final static String SELECTION_NOTNULL = "((" +
             DBContract.Alerts.COL_ALERT_NAME + " NOTNULL) AND (" +
             DBContract.Alerts.COL_ALERT_NAME + " != '' ))";
-    private static final String ORDER_ASC_BY_NAME = DBContract.Alerts.COL_ALERT_NAME + " ASC";
-    private static final String DIALOG_TAG = "dialog_legal_alerts";
-    private static final int ALERTS_LOADER_ID = 1;
+    private final static String ORDER_ASC_BY_NAME = DBContract.Alerts.COL_ALERT_NAME + " ASC";
+    private final static String DIALOG_TAG = "dialog_legal_alerts";
+    private final static int ALERTS_LOADER_ID = 1;
     private AlertsAdapter alertsAdapter;
     @Bind(R.id.listViewAlerts) ListView listViewAlerts;
 

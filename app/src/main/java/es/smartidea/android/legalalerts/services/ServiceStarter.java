@@ -26,12 +26,10 @@ import es.smartidea.android.legalalerts.utils.FileLogger;
  */
 public class ServiceStarter extends IntentService {
 
-    private static final String LOG_TAG = "ServiceLauncher";
+    private final static String LOG_TAG = "ServiceLauncher";
 
-    public final static String START_ALERTS_SERVICE =
-            "es.smartidea.legalalerts.START_ALERTS_SERVICE";
-    public final static String START_MANUAL_SYNC_SERVICE =
-            "es.smartidea.legalalerts.START_MANUAL_SYNC_SERVICE";
+    public final static String START_ALERTS_SERVICE = "es.smartidea.legalalerts.START_ALERTS_SERVICE";
+    public final static String START_MANUAL_SYNC_SERVICE = "es.smartidea.legalalerts.START_MANUAL_SYNC_SERVICE";
     private final static String ALARM_SNOOZE = AlarmReceiver.ALARM_SNOOZE;
 
     public ServiceStarter() {

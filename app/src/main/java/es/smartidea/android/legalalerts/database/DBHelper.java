@@ -5,8 +5,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import es.smartidea.android.legalalerts.database.DBContract;
-
 /**
  * DBHelper class, does CRUD stuff on DB
  * It contains and handles query and methods to CRUD and upgrade/downgrade DB
@@ -16,21 +14,19 @@ import es.smartidea.android.legalalerts.database.DBContract;
 public class DBHelper extends SQLiteOpenHelper {
 
     // String query "tokens" with preceding space
-    public static final String TEXT_TYPE = " TEXT", INT_TYPE = " INT", NOT_NULL = " NOT NULL";
-    private static final String ON_CONFLICT_IGNORE = " ON CONFLICT IGNORE";
-    private static final String DEFAULT_0 = " DEFAULT 0";
-    public static final String SPACE_OPEN_BRACKET = " (", SPACE_CLOSE_BRACKET_SEMICOLON = " );";
-    // String query "tokens" with later space
-    private static final String UNIQUE = "UNIQUE ", COMMA_SEP = ", ";
-    // String query "tokens" with space before and after
-    private static final String INT_PRIMARY_KEY = " INTEGER PRIMARY KEY, ";
-    public static final String CLOSE_BRACKET_SPACE = ") ";
+    public final static String TEXT_TYPE = " TEXT", INT_TYPE = " INT", NOT_NULL = " NOT NULL";
+    public final static String SPACE_OPEN_BRACKET = " (", SPACE_CLOSE_BRACKET_SEMICOLON = " );";
+    public final static String CLOSE_BRACKET_SPACE = ") ";
+    private final static String ON_CONFLICT_IGNORE = " ON CONFLICT IGNORE";
+    private final static String DEFAULT_0 = " DEFAULT 0";
+    private final static String UNIQUE = "UNIQUE ", COMMA_SEP = ", ";
+    private final static String INT_PRIMARY_KEY = " INTEGER PRIMARY KEY, ";
 
     /*
     *  Start ALERTS table
     * */
 
-    public static final String SQL_CREATE_ALERTS_TABLE =
+    public final static String SQL_CREATE_ALERTS_TABLE =
         "CREATE TABLE " + DBContract.Alerts.TABLE_NAME + SPACE_OPEN_BRACKET +
             DBContract.Alerts._ID + INT_PRIMARY_KEY +
             DBContract.Alerts.COL_ALERT_NAME + TEXT_TYPE + NOT_NULL + COMMA_SEP +
@@ -38,7 +34,7 @@ public class DBHelper extends SQLiteOpenHelper {
             UNIQUE + SPACE_OPEN_BRACKET + DBContract.Alerts.COL_ALERT_NAME + CLOSE_BRACKET_SPACE +
                 ON_CONFLICT_IGNORE + SPACE_CLOSE_BRACKET_SEMICOLON;
 
-    public static final String SQL_DELETE_ALERTS_TABLE =
+    public final static String SQL_DELETE_ALERTS_TABLE =
         "DROP TABLE IF EXISTS " + DBContract.Alerts.TABLE_NAME + ';';
 
     /*
@@ -49,7 +45,7 @@ public class DBHelper extends SQLiteOpenHelper {
     *  Start HISTORY table
     * */
 
-    public static final String SQL_CREATE_HISTORY_TABLE =
+    public final static String SQL_CREATE_HISTORY_TABLE =
         "CREATE TABLE " + DBContract.History.TABLE_NAME + SPACE_OPEN_BRACKET +
             DBContract.History._ID + INT_PRIMARY_KEY +
             DBContract.History.COL_HISTORY_RELATED_ALERT_NAME + TEXT_TYPE + NOT_NULL + COMMA_SEP +
@@ -59,7 +55,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 COMMA_SEP + DBContract.History.COL_HISTORY_DOCUMENT_NAME + CLOSE_BRACKET_SPACE +
                 ON_CONFLICT_IGNORE + SPACE_CLOSE_BRACKET_SEMICOLON;
 
-    public static final String SQL_DELETE_HISTORY_TABLE =
+    public final static String SQL_DELETE_HISTORY_TABLE =
         "DROP TABLE IF EXISTS " + DBContract.History.TABLE_NAME + ';';
 
     /*

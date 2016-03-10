@@ -31,19 +31,14 @@ import es.smartidea.android.legalalerts.database.DBContract;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    // URI of Alerts table into DB
-    private static final Uri ALERTS_URI = DBContentProvider.ALERTS_URI;
-    private static final Uri HISTORY_URI = DBContentProvider.HISTORY_URI;
-    private static final String WHERE_NAME_EQUALS = DBContract.Alerts.COL_ALERT_NAME + '=';
-
-    // Integer Fragment identifiers
-    public static final int FRAGMENT_ALERTS = 0;
-    public static final int FRAGMENT_HISTORY = 1;
-    private int runningFragment = -1;   // initialized to -1, forcing first replacement and update.
-    private static final String DIALOG_TAG = "dialog_legal_alerts";
-    // Running fragment string
-    private static final String RUNNING_FRAGMENT_STRING = "running_fragment";
-    // ButterKnife bindings
+    private final static Uri ALERTS_URI = DBContentProvider.ALERTS_URI;
+    private final static Uri HISTORY_URI = DBContentProvider.HISTORY_URI;
+    private final static String WHERE_NAME_EQUALS = DBContract.Alerts.COL_ALERT_NAME + '=';
+    private final static String DIALOG_TAG = "dialog_legal_alerts";
+    private final static String RUNNING_FRAGMENT_STRING = "running_fragment";
+    public final static int FRAGMENT_ALERTS_ID = 0;
+    public final static int FRAGMENT_HISTORY_ID = 1;
+    private int runningFragment = -1;
     @Bind(R.id.nav_view) NavigationView navigationView;
     @Bind(R.id.drawer_layout) DrawerLayout drawer;
     @Bind(R.id.toolbar) Toolbar toolbar;
@@ -51,10 +46,10 @@ public class MainActivity extends AppCompatActivity
     @OnClick(R.id.fab)
     void fabClickListener(View view) {
         switch (runningFragment) {
-            case FRAGMENT_ALERTS:
+            case FRAGMENT_ALERTS_ID:
                 new LegalAlertDialog().show(getSupportFragmentManager(), DIALOG_TAG);
                 break;
-            case FRAGMENT_HISTORY:
+            case FRAGMENT_HISTORY_ID:
                 // Delete all items
                 showSnackBar(view, "Deleted " + deleteHistory(this, null, null) + " item(s).");
                 break;
@@ -85,12 +80,12 @@ public class MainActivity extends AppCompatActivity
             // Check/start new alarm
             sendBroadcast(new Intent(this, AlarmReceiver.class));
             // Starting from scratch, getIntExtra from intent to replace
-            // corresponding fragment, defaulting to FRAGMENT_ALERTS
-            replaceFragment(getIntent().getIntExtra("start_on_fragment", FRAGMENT_ALERTS));
+            // corresponding fragment, defaulting to FRAGMENT_ALERTS_ID
+            replaceFragment(getIntent().getIntExtra("start_on_fragment", FRAGMENT_ALERTS_ID));
         } else {
             // Replace fragment according to intent extras or savedInstanceState
-            // If starting from scratch it defaults to FRAGMENT_ALERTS
-            replaceFragment(savedInstanceState.getInt(RUNNING_FRAGMENT_STRING, FRAGMENT_ALERTS));
+            // If starting from scratch it defaults to FRAGMENT_ALERTS_ID
+            replaceFragment(savedInstanceState.getInt(RUNNING_FRAGMENT_STRING, FRAGMENT_ALERTS_ID));
         }
     }
 
@@ -99,7 +94,7 @@ public class MainActivity extends AppCompatActivity
         super.onNewIntent(intent);
         // Check intent extras and start fragment replacing
         if (intent.hasExtra("start_on_fragment")) {
-            replaceFragment(intent.getIntExtra("start_on_fragment", FRAGMENT_ALERTS));
+            replaceFragment(intent.getIntExtra("start_on_fragment", FRAGMENT_ALERTS_ID));
         }
         setDrawerCheckedItemAndTitle(runningFragment);
     }
@@ -155,22 +150,22 @@ public class MainActivity extends AppCompatActivity
 
         switch (id){
             case R.id.nav_alerts:
-                replaceFragment(FRAGMENT_ALERTS);
+                replaceFragment(FRAGMENT_ALERTS_ID);
                 break;
             case R.id.nav_add_alert:
                 afterSelectionTask = START_DIALOG_ALERT;
                 break;
             case R.id.nav_history:
-                replaceFragment(FRAGMENT_HISTORY);
+                replaceFragment(FRAGMENT_HISTORY_ID);
                 break;
             case R.id.nav_settings:
                 afterSelectionTask = START_SETTINGS_ACTIVITY;
                 break;
             case R.id.nav_share:
-//            replaceFragment(FRAGMENT_ALERTS);
+//            replaceFragment(FRAGMENT_ALERTS_ID);
                 break;
             case R.id.nav_info:
-//            replaceFragment(FRAGMENT_ALERTS);
+//            replaceFragment(FRAGMENT_ALERTS_ID);
                 break;
         }
 
@@ -308,7 +303,7 @@ public class MainActivity extends AppCompatActivity
         if (runningFragment != fragmentID) {
             try {
                 switch (fragmentID) {
-                    case FRAGMENT_ALERTS:
+                    case FRAGMENT_ALERTS_ID:
                         getSupportFragmentManager().beginTransaction()
                                 .setCustomAnimations(R.anim.slide_in_left, R.anim.slide_out_right)
                                 .replace(
@@ -318,7 +313,7 @@ public class MainActivity extends AppCompatActivity
                         // Setup FAB button after replacing
                         setupFabButton(android.R.drawable.ic_input_add, R.string.fab_description_alerts);
                         break;
-                    case FRAGMENT_HISTORY:
+                    case FRAGMENT_HISTORY_ID:
                         getSupportFragmentManager().beginTransaction()
                                 .setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left)
                                 .replace(R.id.fragmentMainPlaceholder,
@@ -355,11 +350,11 @@ public class MainActivity extends AppCompatActivity
     private void setDrawerCheckedItemAndTitle(final int fragmentID) {
         // Select item on drawer
         switch (fragmentID) {
-            case FRAGMENT_ALERTS:
+            case FRAGMENT_ALERTS_ID:
                 navigationView.setCheckedItem(R.id.nav_alerts);
                 setTitle(getResources().getString(R.string.nav_alerts));
                 break;
-            case FRAGMENT_HISTORY:
+            case FRAGMENT_HISTORY_ID:
                 navigationView.setCheckedItem(R.id.nav_history);
                 setTitle(getResources().getString(R.string.nav_history));
                 break;

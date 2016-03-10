@@ -11,7 +11,7 @@ import es.smartidea.android.legalalerts.utils.FileLogger;
 
 public class AlarmReceiver extends BroadcastReceiver {
 
-    private static final String LOG_TAG = "AlarmReceiver";
+    private final static String LOG_TAG = "AlarmReceiver";
 
     // ServiceLauncherReceiver related String Broadcast actions & extras
     public final static String ALARM_SNOOZE = "es.smartidea.legalalerts.ALARM_SNOOZE";
@@ -19,10 +19,7 @@ public class AlarmReceiver extends BroadcastReceiver {
     public final static int SNOOZE_ALARM_ID = 1;
     private final static String START_ALERTS_SERVICE = ServiceStarter.START_ALERTS_SERVICE;
 
-
-    // AlarmReceiver public empty constructor
-    public AlarmReceiver() {
-    }
+    public AlarmReceiver() {}
 
     @Override
     public void onReceive(Context context, Intent intent) {

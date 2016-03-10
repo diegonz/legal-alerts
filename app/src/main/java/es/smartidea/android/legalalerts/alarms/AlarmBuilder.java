@@ -19,9 +19,8 @@ import es.smartidea.android.legalalerts.utils.FileLogger;
 * */
 public class AlarmBuilder {
 
-    private static final String LOG_TAG = "AlarmBuilder";
+    private final static String LOG_TAG = "AlarmBuilder";
 
-    // Private empty constructor to avoid instantiation
     private AlarmBuilder() {}
 
     // Static Builder class

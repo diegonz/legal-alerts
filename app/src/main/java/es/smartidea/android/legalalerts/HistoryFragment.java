@@ -28,10 +28,10 @@ import es.smartidea.android.legalalerts.database.DBContract;
  */
 public class HistoryFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    private static final Uri HISTORY_URI = DBContentProvider.HISTORY_URI;
-    private static final String[] PROJECTION = DBContract.HISTORY_PROJECTION;
-    private static final String ORDER_DESC_BY_ID = DBContract.History._ID + " DESC";
-    private static final int HISTORY_LOADER_ID = 2;
+    private final static Uri HISTORY_URI = DBContentProvider.HISTORY_URI;
+    private final static String[] PROJECTION = DBContract.HISTORY_PROJECTION;
+    private final static String ORDER_DESC_BY_ID = DBContract.History._ID + " DESC";
+    private final static int HISTORY_LOADER_ID = 2;
     private HistoryAdapter historyAdapter;
     @Bind(R.id.listViewHistory) ListView listViewHistory;
 

@@ -23,20 +23,19 @@ import android.support.annotation.NonNull;
 
 @SuppressWarnings("ConstantConditions")
 public class DBContentProvider extends ContentProvider {
-    // DBHelper declaration
-    private DBHelper dbHelper;
-    //UriMatcher values
-    private static final String AUTHORITY = "es.smartidea.legalalerts.dbContentProvider";
+    private final static String AUTHORITY = "es.smartidea.legalalerts.dbContentProvider";
     // Access URI to Alerts table
-    private static final int ALERTS_URI_INT = 10;
-    private static final String ALERTS_PATH = "alerts_table";
-    public static final Uri ALERTS_URI = Uri.parse("content://" + AUTHORITY + '/' + ALERTS_PATH);
+    private final static int ALERTS_URI_INT = 10;
+    private final static String ALERTS_PATH = "alerts_table";
+    public final static Uri ALERTS_URI = Uri.parse("content://" + AUTHORITY + '/' + ALERTS_PATH);
     // Access URI to History table
-    private static final int HISTORY_URI_INT = 20;
-    private static final String HISTORY_PATH = "history_table";
-    public static final Uri HISTORY_URI = Uri.parse("content://" + AUTHORITY + '/' + HISTORY_PATH);
+    private final static int HISTORY_URI_INT = 20;
+    private final static String HISTORY_PATH = "history_table";
+    public final static Uri HISTORY_URI = Uri.parse("content://" + AUTHORITY + '/' + HISTORY_PATH);
 
     private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+
+    private DBHelper dbHelper;
 
     static {
         sUriMatcher.addURI(AUTHORITY, ALERTS_PATH, ALERTS_URI_INT);

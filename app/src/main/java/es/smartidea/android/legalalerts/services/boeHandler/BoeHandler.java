@@ -26,118 +26,64 @@ import es.smartidea.android.legalalerts.utils.TextSearchUtils;
  * and holds it to offer a query by containing text method.
  *
  * */
-
 @SuppressWarnings("StringConcatenationMissingWhitespace")
 public class BoeHandler {
 
-    private static final String LOG_TAG = "BoeHandler";
-    // BOE base string tokens
+    private final static String LOG_TAG = "BoeHandler";
+
     public final static String BOE_BASE_URL = "http://www.boe.es";
     public final static String BOE_BASE_ID = "/diario_boe/xml.php?id=BOE-S-";
-
-    private XmlPullParserFactory xmlPullParserFactory;
-    private String[] summariesUrlStringArray;
-
-    /**
-     * Set of strings containing all XML tags to be gathered
-     * for each attached document to any BOE summary
-     */
     @SuppressWarnings("SpellCheckingInspection")
     private final static Set<String> searchableTextTags =
             new HashSet<>(Arrays.asList("alerta", "materia", "p", "palabra", "titulo", "texto"));
+    private XmlPullParserFactory xmlPullParserFactory;
+    private String[] summariesUrlStringArray;
+    private Map<String, Boolean> alertsMap;
+    private BoeListener boeListener;
 
     /**
-    * This variable represents the listener passed in by the owning object,
-    * the observer must implement the events interface and passes messages up to the parent
-    * */
-    private BoeEvents boeEvents;
+     * Public constructor, it sets to null internal listener reference
+     */
+    public BoeHandler() {
+        this.boeListener = null;
+    }
 
     /**
-     * Public constructor, it sets to null internal listener reference and
-     * sets receivedDates elements as suffix to boeBaseURLStrings´ elements,
+     * <p>
+     * Sets receivedDates elements as suffix to boeBaseURLStrings´ elements,
      * creating summariesUrlStringArray which references to BOE´s summary,
      * according to receivedDates.
      *
      * It also initializes other used variables.
+     * <p/>
      *
+     * @param alertsMap String Boolean map representing alerts to search
      * @param receivedDates VarArgs String[] containing dates in yyyyMMdd format
      */
-    public BoeHandler(@NonNull String... receivedDates) {
-        // Set null this listener
-        this.boeEvents = null;
-        this.summariesUrlStringArray = new String[receivedDates.length];
+    public void setAlertsAndDates(@NonNull Map<String, Boolean> alertsMap,
+                                  @NonNull String... receivedDates) {
+        this.alertsMap = alertsMap;
+        summariesUrlStringArray = new String[receivedDates.length];
         for (int i = 0; i < receivedDates.length; i++) {
             this.summariesUrlStringArray[i] = BOE_BASE_URL + BOE_BASE_ID + receivedDates[i];
-
-            // Log to file for debugging
-            FileLogger.logToExternalFile(LOG_TAG + " - " + "SummaryURL: " + summariesUrlStringArray[i]);
-
+            FileLogger.logToExternalFile(LOG_TAG + " - SummaryURL: " + summariesUrlStringArray[i]);
         }
     }
 
     /**
-    * Inner callback interface class to enable async communication with parent object
-    * This interface defines what type of messages can be communicated to owner object
-    */
-    public interface BoeEvents {
-        /**
-         * Notifies search completed successfully, sends result data to the listener
-         * through defined parameters
-         *
-         * @param searchResults Map containing search results as url of XML as key
-         *                      and search term as value.
-         * @param xmlPdfUrls    Map containing XML and PDF urls for each attachment document
-         */
-        void onWorkCompleted(final Map<String, String> searchResults,
-                             final Map<String, String> xmlPdfUrls);
-
-        /**
-         * Notifies summary has been processed successfully , sending a string
-         * representing those summary date
-         *
-         * @param summaryDateInString   string representing summary´s date
-         *                              that has been processed ok
-         */
-        void onSummaryFetchSuccess(final String summaryDateInString);
-    }
-
-    /**
-     * Assign the listener implementing events interface that will receive the events
-     * Binds given listener to internal (this) listener
-     *
-     * @param listener received listener to reference in (bind)
-     */
-    public void setListener(BoeEvents listener) {
-        this.boeEvents = listener;
-    }
-
-    /**
-     * Binds to null inner BoeHandler reference
-     */
-    public void unsetListener() {
-        this.boeEvents = null;
-    }
-
-    /**
      * Starts fetching summaries and attachments and search for every item received
-     *
-     * @param alertsListFullData Map String,Boolean containing search items and literal
-     *                           search flag.
+     * sending work results via listener interface
      */
-    public void start(@NonNull Map<String, Boolean> alertsListFullData) {
-        if (!alertsListFullData.isEmpty()) {
-            NetWorker netWorker = new NetWorker();
-            Map<String, String> xmlPdfUrls = handleSummaries(netWorker);
-            // If there is any attachment
+    public void start() {
+        if (!alertsMap.isEmpty()) {
+            Map<String, String> resultMap, xmlPdfUrls;
+            xmlPdfUrls = handleSummaries(new NetWorker());
             if (!xmlPdfUrls.isEmpty()){
-                // Send search results to listener
-                boeEvents.onWorkCompleted(
-                        handleAttachments(netWorker, xmlPdfUrls, alertsListFullData),
-                        xmlPdfUrls);
+                resultMap = handleAttachments(new NetWorker(), xmlPdfUrls, alertsMap);
             } else {
-                // Send empty results
-                boeEvents.onWorkCompleted(xmlPdfUrls, xmlPdfUrls);
+                resultMap = xmlPdfUrls;
             }
+            boeListener.onWorkCompleted(resultMap, xmlPdfUrls);
         }
     }
 
@@ -148,7 +94,7 @@ public class BoeHandler {
      * @return  Map of String,String containing pairs (PDF and XML)
      * of BOE´s summary attached documents
      */
-    private Map<String, String> handleSummaries(NetWorker netWorker){
+    private Map<String, String> handleSummaries(@NonNull NetWorker netWorker){
         //noinspection CollectionWithoutInitialCapacity
         Map<String, String> urlPairs = new HashMap<>();
         InputStream boeSummaryStream = null;
@@ -169,7 +115,7 @@ public class BoeHandler {
                 if (urlPairs.size() > sizeBefore){
                     // Extract date from url, getting a substring from position 46
                     // Example URL: http://www.boe.es/diario_boe/xml.php?id=BOE-S-yyyyMMdd
-                    boeEvents.onSummaryFetchSuccess(summaryURLString.substring(46));
+                    boeListener.onSummaryFetchSuccess(summaryURLString.substring(46));
                 }
             } catch (Exception e) {
                 // Log to file for debugging
@@ -215,28 +161,24 @@ public class BoeHandler {
                 boeParser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
                 // Set xml´s encoding to latin1 (ISO-8859-1)
                 boeParser.setInput(boeStream, "ISO-8859-1");
-                // Send parser, BOE´s document id to enable not-summary features.
+                // Send parser, BOE´s document id to enable not-summary features. TODO Check implementation
                 rawTextData.putAll(getDataFromXML(boeParser, eachUrlPair.getKey()));
                 Map.Entry<String,String> rawTextEntry = rawTextData.entrySet().iterator().next();
                 for (Map.Entry<String, Boolean> eachAlert : searchTerms.entrySet()) {
+                    // TODO Decouple Search functionality
                     searchResults.putAll(
                             TextSearchUtils.rawDataSearchQuery(
-                                    eachAlert.getKey(),
-                                    eachAlert.getValue(),
-                                    rawTextEntry.getValue(),
-                                    rawTextEntry.getKey()
+                                    eachAlert.getKey(), eachAlert.getValue(),
+                                    rawTextEntry.getValue(), rawTextEntry.getKey()
                             )
                     );
                 }
             } catch (Exception e) {
-                // Log to file for debugging
                 FileLogger.logToExternalFile(LOG_TAG + " ERROR while trying to download BOE´s attachments!");
-
                 e.printStackTrace();
             } finally {
                 if (boeStream != null){
                     try {
-                        // Close Stream
                         boeStream.close();
                     } catch (Exception e){
                         e.printStackTrace();
@@ -244,8 +186,6 @@ public class BoeHandler {
                 }
             }
         }
-
-        // Return results, can be empty
         return searchResults;
     }
 
@@ -320,4 +260,48 @@ public class BoeHandler {
             return new HashMap<>(0);
         }
     }
+
+    /**
+     * Inner callback interface class to enable async communication with parent object
+     * This interface defines what type of messages can be communicated to owner object
+     */
+    public interface BoeListener {
+        /**
+         * Notifies search completed successfully, sends result data to the listener
+         * through defined parameters
+         *
+         * @param searchResults Map containing search results as url of XML as key
+         *                      and search term as value.
+         * @param xmlPdfUrls    Map containing XML and PDF urls for each attachment document
+         */
+        void onWorkCompleted(final Map<String, String> searchResults,
+                             final Map<String, String> xmlPdfUrls);
+
+        /**
+         * Notifies summary has been processed successfully , sending a string
+         * representing those summary date
+         *
+         * @param summaryDateInString string representing summary´s date
+         *                            that has been processed ok
+         */
+        void onSummaryFetchSuccess(final String summaryDateInString);
+    }
+
+    /**
+     * Assign the listener implementing events interface that will receive the events
+     * Binds given listener to internal (this) listener
+     *
+     * @param listener received listener to reference in (bind)
+     */
+    public void setListener(BoeListener listener) {
+        this.boeListener = listener;
+    }
+
+    /**
+     * Binds to null inner BoeHandler reference
+     */
+    public void unsetListener() {
+        this.boeListener = null;
+    }
+
 }
