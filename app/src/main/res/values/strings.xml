@@ -30,11 +30,13 @@
     <string name="action_manual_sync">Sync</string>
 
     <!-- Strings related to History fragment -->
+    <string name="history_context_menu_title">Modify Record</string>
     <string name="history_context_menu_view">Open PDF&#8230;</string>
     <string name="history_context_menu_delete">Delete</string>
 
     <!-- Strings related to Alerts fragment -->
     <!-- Strings related to Alerts ListView items ContextMenu -->
+    <string name="alerts_context_menu_title">Modify Alert</string>
     <string name="alerts_context_menu_delete">Delete</string>
     <string name="alerts_context_menu_edit">Edit</string>
 

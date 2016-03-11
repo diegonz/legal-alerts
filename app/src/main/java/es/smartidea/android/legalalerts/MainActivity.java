@@ -2,6 +2,7 @@ package es.smartidea.android.legalalerts;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -29,7 +30,7 @@ import es.smartidea.android.legalalerts.database.DBContentProvider;
 import es.smartidea.android.legalalerts.database.DBContract;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, DialogInterface.OnDismissListener{
 
     private final static Uri ALERTS_URI = DBContentProvider.ALERTS_URI;
     private final static Uri HISTORY_URI = DBContentProvider.HISTORY_URI;
@@ -38,7 +39,7 @@ public class MainActivity extends AppCompatActivity
     private final static String RUNNING_FRAGMENT_STRING = "running_fragment";
     public final static int FRAGMENT_ALERTS_ID = 0;
     public final static int FRAGMENT_HISTORY_ID = 1;
-    private int runningFragment = -1;
+    private static int runningFragment = -1;
     @Bind(R.id.nav_view) NavigationView navigationView;
     @Bind(R.id.drawer_layout) DrawerLayout drawer;
     @Bind(R.id.toolbar) Toolbar toolbar;
@@ -90,13 +91,19 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onRestart() {
+        super.onRestart();
+        updateDrawer();
+    }
+
+    @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         // Check intent extras and start fragment replacing
         if (intent.hasExtra("start_on_fragment")) {
             replaceFragment(intent.getIntExtra("start_on_fragment", FRAGMENT_ALERTS_ID));
         }
-        setDrawerCheckedItemAndTitle(runningFragment);
+        updateDrawer();
     }
 
     @Override
@@ -141,19 +148,16 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-        final int START_DIALOG_ALERT = 1;
+        final int LAUNCH_DIALOG_ALERT = 1;
         final int START_SETTINGS_ACTIVITY = 2;
         int afterSelectionTask = 0;
 
-        switch (id){
+        switch (item.getItemId()){
             case R.id.nav_alerts:
                 replaceFragment(FRAGMENT_ALERTS_ID);
                 break;
             case R.id.nav_add_alert:
-                afterSelectionTask = START_DIALOG_ALERT;
+                afterSelectionTask = LAUNCH_DIALOG_ALERT;
                 break;
             case R.id.nav_history:
                 replaceFragment(FRAGMENT_HISTORY_ID);
@@ -169,19 +173,21 @@ public class MainActivity extends AppCompatActivity
                 break;
         }
 
-        // Launch afterSelectionTask if there is any
         switch (afterSelectionTask){
-            case START_DIALOG_ALERT:
-                // Launch Alerts dialog
+            case LAUNCH_DIALOG_ALERT:
                 new LegalAlertDialog().show(getSupportFragmentManager(), DIALOG_TAG);
                 break;
             case START_SETTINGS_ACTIVITY:
-                // Launch Settings Activity
                 startActivity(new Intent(this, SettingsActivity.class));
                 break;
         }
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        updateDrawer();
     }
 
     /*
@@ -291,15 +297,11 @@ public class MainActivity extends AppCompatActivity
     // UI
 
     /**
-     * replaceFragment (final int fragmentID)
-     * <p>
-     * Replaces Fragment given by fragmentID on main fragment placeholder
+     * Replaces Fragment according to given fragmentID on main fragment placeholder
      *
      * @param fragmentID : Numeric ID of objective fragment
      **/
     public void replaceFragment(final int fragmentID) {
-
-        // Check if runningFragment is the same received
         if (runningFragment != fragmentID) {
             try {
                 switch (fragmentID) {
@@ -310,8 +312,6 @@ public class MainActivity extends AppCompatActivity
                                         R.id.fragmentMainPlaceholder,
                                         AlertsFragment.class.newInstance())
                                 .commit();
-                        // Setup FAB button after replacing
-                        setupFabButton(android.R.drawable.ic_input_add, R.string.fab_description_alerts);
                         break;
                     case FRAGMENT_HISTORY_ID:
                         getSupportFragmentManager().beginTransaction()
@@ -319,8 +319,6 @@ public class MainActivity extends AppCompatActivity
                                 .replace(R.id.fragmentMainPlaceholder,
                                         HistoryFragment.class.newInstance())
                                 .commit();
-                        // Set FAB icon after replacing
-                        setupFabButton(android.R.drawable.ic_menu_delete, R.string.fab_description_history);
                         break;
                     default:
                         getSupportFragmentManager().beginTransaction()
@@ -328,8 +326,6 @@ public class MainActivity extends AppCompatActivity
                                 .replace(R.id.fragmentMainPlaceholder,
                                         AlertsFragment.class.newInstance())
                                 .commit();
-                        // Setup FAB button after replacing
-                        setupFabButton(android.R.drawable.ic_input_add, R.string.fab_description_alerts);
                         break;
                 }
                 // Change running fragment id
@@ -338,7 +334,14 @@ public class MainActivity extends AppCompatActivity
                 e.printStackTrace();
             }
         }
-        // Set drawer and title after replacing
+        updateFabButton();
+        updateDrawer();
+    }
+
+    /**
+     * Sets title and checked navigation drawer item according to currently running fragment
+     */
+    public void updateDrawer(){
         setDrawerCheckedItemAndTitle(runningFragment);
     }
 
@@ -347,7 +350,7 @@ public class MainActivity extends AppCompatActivity
      *
      * @param fragmentID int containing fragment ID
      */
-    private void setDrawerCheckedItemAndTitle(final int fragmentID) {
+    public void setDrawerCheckedItemAndTitle(final int fragmentID) {
         // Select item on drawer
         switch (fragmentID) {
             case FRAGMENT_ALERTS_ID:
@@ -362,20 +365,31 @@ public class MainActivity extends AppCompatActivity
     }
 
     /**
-     * Sets FAB icon according to given int resource ID
-     *
-     * @param iconID    int ID of drawable resource to set as FAB icon
-     * @param contentDescription    int ID of string resource to set
-     *                              as FAB´s content description
+     * Sets FAB icon and content description according current fragment
+     * and its known int resource IDs
      */
-    private void setupFabButton(final int iconID, final int contentDescription){
+    private void updateFabButton(){
+        int iconID, contentDescription;
+        switch (runningFragment){
+            case FRAGMENT_ALERTS_ID:
+                iconID = R.drawable.ic_add_new;
+                contentDescription = R.string.fab_description_alerts;
+                break;
+            case FRAGMENT_HISTORY_ID:
+                iconID = R.drawable.ic_delete_sweep_white;
+                contentDescription = R.string.fab_description_history;
+                break;
+            default:
+                iconID = R.drawable.ic_add_new;
+                contentDescription = R.string.fab_description_alerts;
+                break;
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             fab.setImageDrawable(getResources().getDrawable(iconID, getTheme()));
         } else {
             //noinspection deprecation
             fab.setImageDrawable(getResources().getDrawable(iconID));
         }
-        // Set content description
         fab.setContentDescription(getString(contentDescription));
     }
 

@@ -2,8 +2,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/contextListHistoryView"
+        android:icon="@drawable/ic_open_in_new_black"
         android:title="@string/history_context_menu_view" />
     <item
         android:id="@+id/contextListHistoryDelete"
+        android:icon="@drawable/ic_delete_black"
         android:title="@string/history_context_menu_delete" />
 </menu>

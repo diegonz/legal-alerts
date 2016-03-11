@@ -98,8 +98,8 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        // Inflate context menu
-        getActivity().getMenuInflater().inflate(R.menu.list_view_alerts_context, menu);
+        menu.setHeaderTitle(R.string.alerts_context_menu_title);
+        getActivity().getMenuInflater().inflate(R.menu.alerts_context, menu);
     }
 
     @Override

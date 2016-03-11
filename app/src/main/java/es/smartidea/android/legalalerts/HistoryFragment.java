@@ -76,8 +76,8 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo){
         super.onCreateContextMenu(menu, v, menuInfo);
-        // Inflate context menu
-        getActivity().getMenuInflater().inflate(R.menu.list_view_history_context, menu);
+        menu.setHeaderTitle(R.string.history_context_menu_title);
+        getActivity().getMenuInflater().inflate(R.menu.history_context, menu);
     }
 
     @Override

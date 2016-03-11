@@ -1,6 +1,7 @@
 package es.smartidea.android.legalalerts;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -213,5 +214,14 @@ public class LegalAlertDialog extends AppCompatDialogFragment {
         });
         // Return the alertDialog, only pending to show().
         return alertDialog;
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        super.onDismiss(dialog);
+        final Activity activity = getActivity();
+        if (activity instanceof DialogInterface.OnDismissListener) {
+            ((DialogInterface.OnDismissListener) activity).onDismiss(dialog);
+        }
     }
 }
