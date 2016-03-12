@@ -19,6 +19,7 @@ public class FileLogger {
     private final static String LOG_FOLDER_PATH = SEPARATOR + "LegalAlerts" + SEPARATOR + "log";
     private final static String LOG_FULL_PATH = LOG_FOLDER_PATH + SEPARATOR + LOG_FILE_NAME;
 
+    @SuppressWarnings("unused")
     public static void logToInternalFile(final Context context, final String receivedLogText){
         try {
             //BufferedWriter for performance, TRUE on FileWriter to set append to file flag
@@ -96,7 +97,7 @@ public class FileLogger {
     /**
      * Checks if external storage is available for read and write
      *
-     * @return  TRUE if writo to external storage is available
+     * @return  TRUE if writing to external storage is available
      */
     private static boolean isExternalStorageWritable() {
         return Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState());

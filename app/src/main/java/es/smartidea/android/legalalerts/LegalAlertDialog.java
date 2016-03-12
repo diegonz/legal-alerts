@@ -130,7 +130,6 @@ public class LegalAlertDialog extends AppCompatDialogFragment {
     @Override
     public android.support.v7.app.AlertDialog onCreateDialog(Bundle savedInstanceState) {
 
-        // Use the Builder class for convenient dialog construction
         final android.support.v7.app.AlertDialog.Builder builder =
                 new android.support.v7.app.AlertDialog.Builder(this.getContext());
         @SuppressLint("InflateParams")
@@ -138,14 +137,12 @@ public class LegalAlertDialog extends AppCompatDialogFragment {
                 LayoutInflater.from(this.getContext()).inflate(R.layout.dialog_legal_alerts, null);
         ButterKnife.bind(this, view);
         int dialogTitleInt = R.string.text_dialog_new_alert;
-        // Get alert name if are present and set dialog title
         final Bundle bundle = getArguments();
         if (bundle != null) {
             editTextDialogAlert.setText(bundle.getString(ALERT_NAME));
             switchLiteralSearch.setChecked(bundle.getBoolean("is_literal_search"));
             dialogTitleInt = R.string.text_dialog_edit_alert;
         }
-
         // Set View and positive button listener to null (will be overridden in setOnShowListener)
         builder.setView(view)
                 .setPositiveButton(R.string.button_dialog_alert_save, null)
@@ -171,8 +168,6 @@ public class LegalAlertDialog extends AppCompatDialogFragment {
                         @Override
                         public void onClick(View v) {
                             if (isValidAlertNameLength(editTextDialogAlert.length())) {
-                                // Get int result and assign by ternary operator expression,
-                                // invoking correct method checking bundle nullity
                                 int result = bundle != null
                                         ? MainActivity.updateAlert(getContext(),
                                                 bundle.getString(ALERT_NAME),
@@ -183,7 +178,6 @@ public class LegalAlertDialog extends AppCompatDialogFragment {
                                                 switchLiteralSearch.isChecked());
                                 switch (result){
                                     case -1:
-                                        // Show action was unsuccessful and DON´T dismiss the dialog
                                         Toast.makeText(getContext(),
                                                 getString(R.string.text_dialog_error_inserting_or_updating),
                                                 Toast.LENGTH_SHORT
@@ -195,7 +189,6 @@ public class LegalAlertDialog extends AppCompatDialogFragment {
                                                 getString(R.string.text_dialog_inserted_or_updated_ok),
                                                 Snackbar.LENGTH_SHORT
                                         ).setAction("Action", null).show();
-                                        // Dismiss the dialog after successful insert or update
                                         LegalAlertDialog.this.getDialog().dismiss();
                                         break;
                                 }
@@ -212,7 +205,6 @@ public class LegalAlertDialog extends AppCompatDialogFragment {
                 );
             }
         });
-        // Return the alertDialog, only pending to show().
         return alertDialog;
     }
 

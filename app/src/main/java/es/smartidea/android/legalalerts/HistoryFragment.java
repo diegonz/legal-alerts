@@ -44,15 +44,12 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
         historyAdapter =
                 new HistoryAdapter(getActivity(), R.layout.list_item_history, null, 0);
         listViewHistory.setAdapter(historyAdapter);
-        // Prepare the loader.  Either re-connect with an existing one or start a new one.
         getActivity().getSupportLoaderManager().initLoader(HISTORY_LOADER_ID, null, this);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_history, container, false);
-        // Bind ButterKnife to view
         ButterKnife.bind(this, view);
         return view;
     }
@@ -60,7 +57,6 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        // Attach alertsAdapter to ListViewAlerts
         initHistoryLoader();
         registerForContextMenu(listViewHistory);
     }
@@ -68,7 +64,6 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        // Unbind ButterKnife
         ButterKnife.unbind(this);
         getActivity().getSupportLoaderManager().destroyLoader(HISTORY_LOADER_ID);
     }
@@ -128,7 +123,6 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
 
     @Override
     public void onLoaderReset(Loader loader) {
-        // data is not available anymore, delete reference
         historyAdapter.swapCursor(null);
     }
 }

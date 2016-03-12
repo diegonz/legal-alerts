@@ -53,20 +53,17 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     private void initAlertsLoader() {
         alertsAdapter = new AlertsAdapter(getActivity(), R.layout.list_item_alert, null, 0);
         listViewAlerts.setAdapter(alertsAdapter);
-        // Prepare the loader.  Either re-connect with an existing one or start a new one.
         getActivity().getSupportLoaderManager().initLoader(ALERTS_LOADER_ID, null, this);
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        // It is explicitly stated that the fragment has menu options to contribute
         setHasOptionsMenu(true);
         super.onCreate(savedInstanceState);
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        // Add fragment´s contributed options BEFORE calling super method
         inflater.inflate(R.menu.fragment_alerts_menu, menu);
         super.onCreateOptionsMenu(menu, inflater);
     }
@@ -82,7 +79,6 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        // Set alertsAdapter to ListViewAlerts
         initAlertsLoader();
         registerForContextMenu(listViewAlerts);
     }
@@ -91,7 +87,6 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     public void onDestroyView() {
         super.onDestroyView();
         ButterKnife.unbind(this);
-        // Destroy LoaderManager when onPause()
         getActivity().getSupportLoaderManager().destroyLoader(ALERTS_LOADER_ID);
     }
 
@@ -112,21 +107,13 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
         final boolean isLiteralSearchFlag =
                 cursor.getInt(cursor.getColumnIndexOrThrow(
                         DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL)) == 0;
-
         switch (item.getItemId()) {
             case R.id.contextListAlertsEdit:
-                // Show dialog passing to the factory method its alertName
-                // and TRUE or FALSE if marked as literal search
-                // on imageView tag´s added on AlertsAdapter
                 LegalAlertDialog.newInstance(alertName, isLiteralSearchFlag)
                         .show(getActivity().getSupportFragmentManager(), DIALOG_TAG);
                 return true;
             case R.id.contextListAlertsDelete:
-                // Delete alert sending alertName to MainActivity deleteAlert() method.
                 final int hits = MainActivity.deleteAlert(getContext(), alertName);
-                // Set textView (or ListView) as view for the SnackBar as since CoordinatorLayout
-                // manages animations an viewGroup relationship
-                // check url for details: https://goo.gl/XwjDM4
                 Snackbar.make(
                         listViewAlerts,
                         hits + " Alerts named: " + alertName + " deleted from DB",
@@ -140,23 +127,17 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         if (item.getItemId() == R.id.action_refresh) {
-            // Start manual sync if service is not already running
             if (AlertsService.isRunning()) {
                 Toast.makeText(getContext(),
                         getString(R.string.text_toast_service_already_running),
                         Toast.LENGTH_SHORT
                 ).show();
             } else {
-                // Starting manual download and search of XML data trough IntentService
                 ServiceStarter.startServiceManual(getContext());
             }
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -175,7 +156,6 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
 
     @Override
     public void onLoaderReset(Loader loader) {
-        // data is not available anymore, delete reference
         alertsAdapter.swapCursor(null);
     }
 }
