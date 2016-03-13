@@ -2,11 +2,13 @@ package es.smartidea.android.legalalerts.utils;
 
 import android.content.Context;
 import android.os.Environment;
+import android.util.Log;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.Locale;
 
 @SuppressWarnings("StringConcatenationMissingWhitespace")
@@ -18,6 +20,7 @@ public class FileLogger {
     private final static String LOG_FILE_NAME = "legalalerts-log.txt";
     private final static String LOG_FOLDER_PATH = SEPARATOR + "LegalAlerts" + SEPARATOR + "log";
     private final static String LOG_FULL_PATH = LOG_FOLDER_PATH + SEPARATOR + LOG_FILE_NAME;
+    private static final String LOG_TAG = "FileLogger";
 
     @SuppressWarnings("unused")
     public static void logToInternalFile(final Context context, final String receivedLogText){
@@ -57,18 +60,20 @@ public class FileLogger {
             try {
                 //BufferedWriter for performance, true to set append to file flag
                 BufferedWriter buf = new BufferedWriter(new FileWriter(getExternalLogFile(), true));
-                buf.append(String.format(
-                        Locale.getDefault(),
-                        "Timestamp: %d",
-                        System.currentTimeMillis())
+                buf.append(
+                        String.format(
+                                Locale.getDefault(),
+                                "Date: %1$tA %1$tb %1$td %1$tY - %1$tI:%1$tM %1$Tp",
+                                Calendar.getInstance()
+                        )
                 );
                 buf.newLine();
                 buf.append(receivedLogText);
                 buf.newLine();
                 buf.close();
             } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                Log.e(LOG_TAG, "Error writing external log file!");
+                //e.printStackTrace();
             }
         }
     }
@@ -88,8 +93,8 @@ public class FileLogger {
             try {
                 logFile.createNewFile();
             } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                Log.e(LOG_TAG, "Error creating new external log file!");
+                //e.printStackTrace();
             }
         }
         return logFile;

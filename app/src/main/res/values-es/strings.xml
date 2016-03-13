@@ -1,0 +1,89 @@
+<resources>
+    <string name="app_name">Alerta Legal</string>
+
+    <string name="fragment_alerts_text_list_item">Ítem alerta</string>
+    <string name="fragment_alerts_text_literal_search">Búsqueda literal</string>
+    <string name="fragment_alerts_text_not_literal_search">Búsqueda no literal</string>
+    <string name="fragment_history_text_list_item">Ítem alerta</string>
+    <string name="list_item_history_text_delete">Borrar</string>
+
+    <!-- Strings related to FAB Button -->
+    <string name="fab_description_alerts">Crear nueva alerta</string>
+    <string name="fab_description_history">Borrar todos los registros</string>
+
+    <!-- Strings related to NavDrawer -->
+    <string name="navigation_drawer_open">Abrir menú lateral</string>
+    <string name="navigation_drawer_close">Cerrar menú lateral</string>
+
+    <string name="nav_header_info_email">dgonzalez.BZ@gmail.com</string>
+    <string name="nav_header_info_text">Boletines legales bajo control</string>
+    <string name="nav_alerts">Alertas</string>
+    <string name="nav_new_alert">Nueva Alerta</string>
+    <string name="nav_history">Historial</string>
+    <string name="nav_settings">Ajustes</string>
+    <string name="nav_more">Más</string>
+    <string name="nav_share">Compartir App</string>
+    <string name="nav_info">Acerca de</string>
+
+    <!-- Strings related to ToolBar (ActionBar) -->
+    <string name="action_settings">Ajustes</string>
+    <string name="action_manual_sync">Sincronizar</string>
+
+    <!-- Strings related to History fragment -->
+    <string name="history_context_menu_title">Opciones de Registro</string>
+    <string name="history_context_menu_view">Abrir PDF…</string>
+    <string name="history_context_menu_delete">Borrar</string>
+
+    <!-- Strings related to Alerts fragment -->
+    <!-- Strings related to Alerts ListView items ContextMenu -->
+    <string name="alerts_context_menu_title">Modificar Alerta</string>
+    <string name="alerts_context_menu_delete">Borrar</string>
+    <string name="alerts_context_menu_edit">Editar</string>
+
+    <!-- Strings related to Confirmation Dialog -->
+    <string name="button_dialog_confirmation_yes">Sí</string>
+    <string name="button_dialog_confirmation_no">No</string>
+    <string name="title_dialog_confirmation_delete_alert">Confirmar borrado</string>
+    <string name="text_dialog_confirmation_delete_alert">¿Está seguro de que quiere eliminar esta alerta?</string>
+
+    <!-- Strings related to Alerts Dialog -->
+    <string name="button_dialog_alert_save">Guardar</string>
+    <string name="button_dialog_alert_cancel">Cancelar</string>
+    <string name="text_dialog_new_alert">Nueva Alerta</string>
+    <string name="text_dialog_edit_alert">Editar Alerta</string>
+    <string name="text_dialog_literal_search_title"><b>Búsqueda Literal</b></string>
+    <string name="text_dialog_alert_hint">Nombre de la alerta</string>
+    <string name="text_dialog_default_switch_on">Habilitado</string>
+    <string name="text_dialog_default_switch_off">Deshabilitado</string>
+    <string name="text_dialog_alert_name_invalid">¡Introduzca al menos tres caracteres!</string>
+    <string name="text_dialog_alert_name_too_long">¡Introduzca 100 caracteres como máximo!</string>
+    <string name="text_dialog_error_inserting_or_updating">No ha sido posible inserta o actualizar la alerta</string>
+    <string name="text_dialog_inserted_or_updated_ok">Alerta insertada o actualizada correctamente</string>
+    <string name="text_dialog_info_not_literal">La búsqueda literal está <b>deshabilitada.</b>\n<i>Se buscará una coincidencia de cada palabra sin tener en cuenta orden o posición.</i></string>
+    <string name="text_dialog_info_literal_yes">La búsqueda literal está <b>habilitada.</b>\n<i>Se buscará una coincidencia exacta con el patrón introducido.</i></string>
+
+    <!-- Toast Messages Strings -->
+    <string name="text_toast_no_wan">Falló la sincronización manual, no se encontraron redes activas</string>
+    <string name="text_toast_service_already_running">El servicio ya se está ejecutando…</string>
+
+    <!-- Strings related notifications messages -->
+    <string name="notification_no_results_title">¡No se han encontrado resultados!</string>
+    <string name="notification_no_results_description">No se encontraron coincidencias en los datos XML</string>
+    <string name="notification_ok_results_title">Nuevas alertas encontradas!</string>
+    <string name="notification_ok_results_description">¡Se han encontrado nuevas coincidencias para los términos de búsqueda!</string>
+
+    <!-- Strings related to Settings -->
+    <string name="title_activity_settings">Ajustes de Alertas</string>
+    <!-- Example settings for Data & Sync -->
+    <string name="pref_header_data_sync">Datos &amp; sincronización</string>
+    <string name="pref_title_sync_charging_only">Sincronizar sólo durante la carga</string>
+    <string name="pref_title_sync_unmetered_only">Sincronizar sólo a través de redes ilimitadas (WiFi)</string>
+
+    <!-- Example settings for Notifications -->
+    <string name="pref_header_notifications">Notificaciones</string>
+    <string name="pref_title_new_message_notifications">Notificaciones de nuevas alertas</string>
+    <string name="pref_title_ringtone">Tono</string>
+    <string name="pref_ringtone_silent">Silencio</string>
+    <string name="pref_title_vibrate">Vibración</string>
+
+</resources>

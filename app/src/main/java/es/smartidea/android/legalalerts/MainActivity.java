@@ -20,24 +20,24 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.OnLongClick;
 import es.smartidea.android.legalalerts.database.DBHelper;
 import es.smartidea.android.legalalerts.receivers.AlarmReceiver;
 import es.smartidea.android.legalalerts.database.DBContentProvider;
 import es.smartidea.android.legalalerts.database.DBContract;
 
-public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener,
-        DialogInterface.OnDismissListener{
+public class MainActivity extends AppCompatActivity implements
+        NavigationView.OnNavigationItemSelectedListener, DialogInterface.OnDismissListener {
 
-    private final static Uri ALERTS_URI = DBContentProvider.ALERTS_URI;
-    private final static Uri HISTORY_URI = DBContentProvider.HISTORY_URI;
     private final static String WHERE_NAME_EQUALS = DBContract.Alerts.COL_ALERT_NAME + '=';
     private final static String DIALOG_TAG = "dialog_legal_alerts";
     private final static String RUNNING_FRAGMENT_STRING = "running_fragment";
+    private String fabHint;
     public final static int FRAGMENT_ALERTS_ID = 0;
     public final static int FRAGMENT_HISTORY_ID = 1;
     private static int runningFragment = -1;
@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity
     @Bind(R.id.toolbar) Toolbar toolbar;
     @Bind(R.id.fab) FloatingActionButton fab;
 
-    @OnClick(R.id.fab) void fabClickListener(View view) {
+    @OnClick(R.id.fab) void fabClick(View view) {
         switch (runningFragment) {
             case FRAGMENT_ALERTS_ID:
                 new LegalAlertDialog().show(getSupportFragmentManager(), DIALOG_TAG);
@@ -57,6 +57,10 @@ public class MainActivity extends AppCompatActivity
                 showSnackBar(view, "Deleted " + deleteHistory(this, null, null) + " item(s).");
                 break;
         }
+    }
+    @OnLongClick(R.id.fab) boolean fabLongClick(View view){
+        Toast.makeText(this, fabHint, Toast.LENGTH_SHORT).show();
+        return true;
     }
 
     @Override
@@ -70,11 +74,10 @@ public class MainActivity extends AppCompatActivity
         drawer.addDrawerListener(toggle);
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
-
         int targetFragment;
         if (savedInstanceState == null) {
-            sendBroadcast(new Intent(this, AlarmReceiver.class));
             targetFragment = getIntent().getIntExtra("start_on_fragment", FRAGMENT_ALERTS_ID);
+            sendBroadcast(new Intent(this, AlarmReceiver.class));
         } else {
             targetFragment = savedInstanceState.getInt(RUNNING_FRAGMENT_STRING, FRAGMENT_ALERTS_ID);
         }
@@ -183,7 +186,7 @@ public class MainActivity extends AppCompatActivity
         values.put(DBContract.Alerts.COL_ALERT_NAME, alertName);
         int literalSearchIntValue = (isLiteralSearch) ? 0 : 1;
         values.put(DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL, literalSearchIntValue);
-        Uri resultID = context.getContentResolver().insert(ALERTS_URI, values);
+        Uri resultID = context.getContentResolver().insert(DBContentProvider.ALERTS_URI, values);
         return resultID != null ? Integer.parseInt(resultID.getLastPathSegment()) : -1;
     }
 
@@ -202,10 +205,8 @@ public class MainActivity extends AppCompatActivity
         values.put(DBContract.Alerts.COL_ALERT_NAME, newName);
         int literalSearchIntValue = (isLiteralSearch) ? 0 : 1;
         values.put(DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL, literalSearchIntValue);
-        return context.getContentResolver()
-                .update(ALERTS_URI, values, WHERE_NAME_EQUALS + '\'' + oldName + '\'', null) < 1
-                ? -1
-                : 1;
+        return context.getContentResolver().update(DBContentProvider.ALERTS_URI, values,
+                WHERE_NAME_EQUALS + '\'' + oldName + '\'', null) < 1 ? -1 : 1;
     }
 
     /**
@@ -216,8 +217,8 @@ public class MainActivity extends AppCompatActivity
      * @return int representing number of deleted items
      */
     public static int deleteAlert(Context context, String alertName){
-        return context.getContentResolver().delete(
-                ALERTS_URI, DBContract.Alerts.COL_ALERT_NAME + "='" + alertName + '\'', null);
+        return context.getContentResolver().delete(DBContentProvider.ALERTS_URI,
+                DBContract.Alerts.COL_ALERT_NAME + "='" + alertName + '\'', null);
     }
 
     /**
@@ -231,18 +232,18 @@ public class MainActivity extends AppCompatActivity
      * @return  <type>int</type> indicating number of items deleted or -1 if no action taken.
      */
     public static int deleteHistory(Context context, @Nullable String documentName, @Nullable String alertName){
-        if (!(documentName == null) && !(alertName == null)){
+        if (documentName != null && alertName != null){
             //noinspection StringConcatenationMissingWhitespace
-            final String WHERE = DBHelper.SPACE_OPEN_BRACKET +
+            String WHERE = DBHelper.SPACE_OPEN_BRACKET +
                     DBContract.History.COL_HISTORY_DOCUMENT_NAME + "='" + documentName + '\'' +
                     DBHelper.CLOSE_BRACKET_SPACE + " AND " + DBHelper.SPACE_OPEN_BRACKET +
                     DBContract.History.COL_HISTORY_RELATED_ALERT_NAME + "='" + alertName + '\'' +
                     DBHelper.CLOSE_BRACKET_SPACE;
-            return context.getContentResolver().delete(HISTORY_URI, WHERE, null);
-
+            return context.getContentResolver().delete(DBContentProvider.HISTORY_URI, WHERE, null);
         } else if (documentName == null && alertName == null) {
-            return context.getContentResolver().delete(HISTORY_URI, null, null);
-        } else return -1;
+            return context.getContentResolver().delete(DBContentProvider.HISTORY_URI, null, null);
+        }
+        return -1;
     }
 
     /**
@@ -252,6 +253,7 @@ public class MainActivity extends AppCompatActivity
      **/
     public void replaceFragment(int fragmentID) {
         if (runningFragment != fragmentID) {
+            // TODO refactor implementation
             try {
                 switch (fragmentID) {
                     case FRAGMENT_ALERTS_ID:
@@ -333,7 +335,8 @@ public class MainActivity extends AppCompatActivity
             //noinspection deprecation
             fab.setImageDrawable(getResources().getDrawable(iconID));
         }
-        fab.setContentDescription(getString(contentDescription));
+        fabHint = getString(contentDescription);
+        fab.setContentDescription(fabHint);
     }
 
     /**

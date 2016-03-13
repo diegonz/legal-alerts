@@ -28,9 +28,9 @@ public class ServiceStarter extends IntentService {
 
     private final static String LOG_TAG = "ServiceLauncher";
 
-    public final static String START_ALERTS_SERVICE = "es.smartidea.legalalerts.START_ALERTS_SERVICE";
-    public final static String START_MANUAL_SYNC_SERVICE = "es.smartidea.legalalerts.START_MANUAL_SYNC_SERVICE";
-    private final static String ALARM_SNOOZE = AlarmReceiver.ALARM_SNOOZE;
+    public final static String ALARM_SYNC = "es.smartidea.legalalerts.ALARM_SYNC";
+    public final static String MANUAL_SYNC = "es.smartidea.legalalerts.MANUAL_SYNC";
+    public final static String MANUAL_SYNC_STRING = "MANUAL_SYNC";
 
     public ServiceStarter() {
         super("ServiceStarter");
@@ -44,7 +44,7 @@ public class ServiceStarter extends IntentService {
      */
     public static void startServiceManual(Context context) {
         Intent intent = new Intent(context, ServiceStarter.class);
-        intent.setAction(START_MANUAL_SYNC_SERVICE);
+        intent.setAction(MANUAL_SYNC);
         context.startService(intent);
     }
 
@@ -56,13 +56,13 @@ public class ServiceStarter extends IntentService {
         AlertsWakeLock.setWakeLock(this);
 
         switch (intent.getAction()) {
-            case START_ALERTS_SERVICE:
+            case ALARM_SYNC:
                 handleStartServiceDefault();
                 break;
-            case START_MANUAL_SYNC_SERVICE:
+            case MANUAL_SYNC:
                 handleStartServiceManual();
                 break;
-            case ALARM_SNOOZE:
+            case AlarmReceiver.ALARM_SNOOZE:
                 handleStartServiceDefault();
                 break;
             default:
@@ -101,7 +101,8 @@ public class ServiceStarter extends IntentService {
             // Log to file for debugging
             FileLogger.logToExternalFile(LOG_TAG + " - Manual sync started, launching service.");
             // Manual sync requested TODO: Add confirm dialog according to user preferences
-            startService(new Intent(this, AlertsService.class));
+            startService(new Intent(this, AlertsService.class)
+                    .putExtra(MANUAL_SYNC_STRING, MANUAL_SYNC));
         } else {
             Toast.makeText(this, getText(R.string.text_toast_no_wan), Toast.LENGTH_SHORT).show();
             // Log to file for debugging

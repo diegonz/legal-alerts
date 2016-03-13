@@ -31,38 +31,26 @@ public class AlertsService extends Service {
 
     private final static String LOG_TAG = "Service";
 
-    private final static Uri ALERTS_URI = DBContentProvider.ALERTS_URI;
-    private final static String[] ALERTS_PROJECTION = DBContract.ALERTS_PROJECTION;
     private final static String ALERTS_SELECTION_NOTNULL = "((" +
             DBContract.Alerts.COL_ALERT_NAME + " NOTNULL) AND (" +
             DBContract.Alerts.COL_ALERT_NAME + " != '' ))";
-    private final static String ALERTS_ORDER_ASC_BY_NAME = DBContract.Alerts.COL_ALERT_NAME + " ASC";
-    private final static String LAST_SUCCESSFUL_SYNC = AlarmDelayer.LAST_SUCCESSFUL_SYNC;
-    private final static String SNOOZE_DATE_DEFAULT = AlarmDelayer.SNOOZE_DATE_DEFAULT;
-    private final static String SNOOZE_DATE_NAME = AlarmDelayer.SNOOZE_DATE_NAME;
     private static boolean serviceRunning = false;
     private String lastSyncDateString;
     private BoeHandler boeHandler;
 
     @Override
-    public void onCreate() {
-        // Start up the thread running the service.  Note that we create a
-        // separate thread because the service normally runs in the process's
-        // main thread, which we don't want to block.  We also make it
-        // background priority so CPU-intensive work will not disrupt our UI.
+    public void onCreate() {}
+
+    @Override
+    public int onStartCommand(final Intent intent, int flags, int startId) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 serviceRunning = true;
-                setupBoeHandler();
+                setupBoeHandler(intent.hasExtra(ServiceStarter.MANUAL_SYNC_STRING));
                 boeHandler.start();
             }
         }).start();
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        // If we get killed, after returning from here, AVOID restarting
         return START_NOT_STICKY;
     }
 
@@ -76,9 +64,9 @@ public class AlertsService extends Service {
     @Override
     public void onDestroy() {
         PreferenceManager.getDefaultSharedPreferences(this).edit()
-                .putString(SNOOZE_DATE_NAME, SNOOZE_DATE_DEFAULT).apply();
+                .putString(AlarmDelayer.SNOOZE_DATE_NAME, AlarmDelayer.SNOOZE_DATE_DEFAULT).apply();
         PreferenceManager.getDefaultSharedPreferences(AlertsService.this).edit()
-                .putString(LAST_SUCCESSFUL_SYNC, lastSyncDateString).apply();
+                .putString(AlarmDelayer.LAST_SUCCESSFUL_SYNC, lastSyncDateString).apply();
         FileLogger.logToExternalFile(
                 LOG_TAG + " - Stopping service, last successful sync: " + lastSyncDateString
         );
@@ -99,15 +87,16 @@ public class AlertsService extends Service {
      * Setup new BoeHandler with corresponding search terms (Alerts) and Dates
      * also creates and sets associated listener methods
      */
-    private void setupBoeHandler() {
+    private void setupBoeHandler(boolean manualSync) {
         @SuppressLint("SimpleDateFormat")
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-        final Date todayDate = new Date();
+        Date syncDate, todayDate = new Date();
         lastSyncDateString = PreferenceManager.getDefaultSharedPreferences(this)
-                .getString(LAST_SUCCESSFUL_SYNC, dateFormat.format(todayDate));
-        Date syncDate;
+                .getString(AlarmDelayer.LAST_SUCCESSFUL_SYNC, dateFormat.format(todayDate));
+        //lastSyncDateString = "20160307";
         try {
-            syncDate = incrementOneDay(dateFormat.parse(lastSyncDateString));
+            syncDate = manualSync ? dateFormat.parse(lastSyncDateString) :
+                    incrementOneDay(dateFormat.parse(lastSyncDateString));
         } catch (ParseException e){
             FileLogger.logToExternalFile(LOG_TAG + " - " + " Exception while parsing Date!\n" + e.toString());
             syncDate = todayDate;
@@ -176,27 +165,26 @@ public class AlertsService extends Service {
      */
     private static Map<String, Boolean> getAlertsFromDB(@NonNull final Context context) {
 
-        Cursor alertsCursor = context.getContentResolver().query(ALERTS_URI,
-                ALERTS_PROJECTION, ALERTS_SELECTION_NOTNULL, null, ALERTS_ORDER_ASC_BY_NAME);
-        Map<String, Boolean> alertsList;
+        Cursor alertsCursor = context.getContentResolver().query(
+                DBContentProvider.ALERTS_URI,
+                DBContract.ALERTS_PROJECTION,
+                ALERTS_SELECTION_NOTNULL,
+                null,
+                DBContract.Alerts.COL_ALERT_NAME + " ASC"
+        );
         if (alertsCursor != null) {
-            alertsList = new HashMap<>(alertsCursor.getCount());
-            try {
-                while (alertsCursor.moveToNext()) {
-                    // reverseBooleanValue = eval( COL_ALERT_SEARCH_NOT_LITERAL == 0 )
-                    alertsList.put(
-                            alertsCursor.getString(alertsCursor.getColumnIndexOrThrow(
-                                    DBContract.Alerts.COL_ALERT_NAME)),
-                            alertsCursor.getInt(alertsCursor.getColumnIndexOrThrow(
-                                    DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL)) == 0
-                    );
-                }
-                return alertsList;
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                alertsCursor.close();
+            Map<String, Boolean> alertsList = new HashMap<>(alertsCursor.getCount());
+            while (alertsCursor.moveToNext()) {
+                // reverseBooleanValue = eval( COL_ALERT_SEARCH_NOT_LITERAL == 0 )
+                alertsList.put(
+                        alertsCursor.getString(alertsCursor.getColumnIndexOrThrow(
+                                DBContract.Alerts.COL_ALERT_NAME)),
+                        alertsCursor.getInt(alertsCursor.getColumnIndexOrThrow(
+                                DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL)) == 0
+                );
             }
+            alertsCursor.close();
+            return alertsList;
         }
         return new HashMap<>(0);
     }

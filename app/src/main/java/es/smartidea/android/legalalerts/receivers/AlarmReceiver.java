@@ -17,7 +17,7 @@ public class AlarmReceiver extends BroadcastReceiver {
     public final static String ALARM_SNOOZE = "es.smartidea.legalalerts.ALARM_SNOOZE";
     public final static int DAILY_ALARM_ID = 0;
     public final static int SNOOZE_ALARM_ID = 1;
-    private final static String START_ALERTS_SERVICE = ServiceStarter.START_ALERTS_SERVICE;
+    private final static String START_ALERTS_SERVICE = ServiceStarter.ALARM_SYNC;
 
     public AlarmReceiver() {}
 
