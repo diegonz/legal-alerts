@@ -4,7 +4,7 @@
     <string name="fragment_alerts_text_list_item">Ítem alerta</string>
     <string name="fragment_alerts_text_literal_search">Búsqueda literal</string>
     <string name="fragment_alerts_text_not_literal_search">Búsqueda no literal</string>
-    <string name="fragment_history_text_list_item">Ítem alerta</string>
+    <string name="fragment_history_text_list_item">Ítem historial</string>
     <string name="list_item_history_text_delete">Borrar</string>
 
     <!-- Strings related to FAB Button -->

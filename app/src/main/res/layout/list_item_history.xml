@@ -27,8 +27,10 @@
         android:id="@+id/historyItemDocDate"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="@string/fragment_history_text_list_item"
+        android:layout_below="@+id/historyItemRelatedAlert"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
         android:layout_marginEnd="@dimen/list_view_outer_item_margin_16dp"
         android:layout_marginRight="@dimen/list_view_outer_item_margin_16dp" />
 

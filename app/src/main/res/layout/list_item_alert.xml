@@ -14,10 +14,8 @@
         android:text="@string/fragment_alerts_text_list_item"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_toStartOf="@+id/textViewIsLiteralSearch"
-        android:layout_toLeftOf="@+id/textViewIsLiteralSearch"
-        android:layout_marginStart="@dimen/list_view_outer_item_margin_8dp"
-        android:layout_marginLeft="@dimen/list_view_outer_item_margin_8dp"
+        android:layout_toStartOf="@+id/imageAlertIsLiteralSearch"
+        android:layout_toLeftOf="@+id/imageAlertIsLiteralSearch"
         android:padding="@dimen/list_view_inner_item_padding_8dp" />
 
     <ImageView
@@ -26,16 +24,10 @@
         android:id="@+id/imageAlertIsLiteralSearch"
         android:src="@drawable/ic_open_padlock"
         android:contentDescription="@string/fragment_alerts_text_literal_search"
-        android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
         android:layout_marginEnd="@dimen/list_view_outer_item_margin_8dp"
-        android:layout_marginRight="@dimen/list_view_outer_item_margin_8dp"
-        android:paddingLeft="@dimen/list_view_inner_item_padding_8dp"
-        android:paddingStart="@dimen/list_view_inner_item_padding_8dp"
-        android:paddingRight="@dimen/list_view_inner_item_padding_8dp"
-        android:paddingEnd="@dimen/list_view_inner_item_padding_8dp"
-        android:paddingTop="@dimen/list_view_inner_item_padding_8dp"/>
-
+        android:layout_marginRight="@dimen/list_view_outer_item_margin_8dp" />
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -44,7 +36,7 @@
         android:text="@string/fragment_alerts_text_literal_search"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_below="@+id/imageAlertIsLiteralSearch"
+        android:layout_below="@+id/textViewAlertListItem"
         android:layout_marginEnd="@dimen/list_view_outer_item_margin_8dp"
         android:layout_marginRight="@dimen/list_view_outer_item_margin_8dp" />
 

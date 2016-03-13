@@ -4,31 +4,31 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_alerts"
-            android:icon="@android:drawable/ic_popup_reminder"
+            android:icon="@drawable/ic_menu_text_alarm"
             android:title="@string/nav_alerts" />
         <item
             android:id="@+id/nav_add_alert"
-            android:icon="@android:drawable/ic_input_add"
+            android:icon="@drawable/ic_menu_add"
             android:title="@string/nav_new_alert" />
         <item
             android:id="@+id/nav_history"
-            android:icon="@android:drawable/ic_menu_recent_history"
+            android:icon="@drawable/ic_menu_history"
             android:title="@string/nav_history" />
-        <item
-            android:id="@+id/nav_settings"
-            android:icon="@drawable/ic_menu_manage"
-            android:title="@string/nav_settings" />
     </group>
 
     <item android:title="@string/nav_more">
         <menu>
+            <item
+                android:id="@+id/nav_settings"
+                android:icon="@drawable/ic_menu_manage"
+                android:title="@string/nav_settings" />
             <item
                 android:id="@+id/nav_share"
                 android:icon="@drawable/ic_menu_share"
                 android:title="@string/nav_share" />
             <item
                 android:id="@+id/nav_info"
-                android:icon="@android:drawable/ic_menu_info_details"
+                android:icon="@drawable/ic_menu_info"
                 android:title="@string/nav_info" />
         </menu>
     </item>
