@@ -1,11 +1,12 @@
 package es.smartidea.android.legalalerts;
 
+import android.animation.Animator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.support.annotation.NonNull;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatDialogFragment;
@@ -18,29 +19,28 @@ import android.widget.Toast;
 
 import com.daimajia.androidanimations.library.Techniques;
 import com.daimajia.androidanimations.library.YoYo;
-import com.nineoldandroids.animation.Animator;
 
+import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.Bind;
 import butterknife.OnCheckedChanged;
 import butterknife.OnTextChanged;
 
 public class LegalAlertDialog extends AppCompatDialogFragment {
 
-    private final static long literalSwapDuration = 150L;
-    private final static int minLength = 3;
-    private final static int maxLength = 100;
-    private final static String ALERT_NAME = "alert_name";
-    @Bind(R.id.textInputLayoutDialogAlert) TextInputLayout textInputLayout;
-    @Bind(R.id.textViewLiteralInfo) TextView textViewLiteralInfo;
-    @Bind(R.id.switchLiteralSearch) SwitchCompat switchLiteralSearch;
-    @Bind(R.id.editTextDialogAlert) EditText editTextDialogAlert;
+    private static final long LITERAL_SWAP_DURATION = 150L;
+    private static final int MIN_LENGTH = 3;
+    private static final int MAX_LENGTH = 100;
+    private static final String ALERT_NAME = "alert_name";
+    @BindView(R.id.textInputLayoutDialogAlert) TextInputLayout textInputLayout;
+    @BindView(R.id.textViewLiteralInfo) TextView textViewLiteralInfo;
+    @BindView(R.id.switchLiteralSearch) SwitchCompat switchLiteralSearch;
+    @BindView(R.id.editTextDialogAlert) EditText editTextDialogAlert;
 
     @OnTextChanged(R.id.editTextDialogAlert)
     public void alertNameTextChanged(CharSequence text) {
         if (isValidAlertNameLength(text.length())) {
             textInputLayout.setErrorEnabled(false);
-            if (text.length() == maxLength){
+            if (text.length() == MAX_LENGTH){
                 textInputLayout.setError(getString(R.string.text_dialog_alert_name_too_long));
                 textInputLayout.setErrorEnabled(true);
             }
@@ -53,47 +53,53 @@ public class LegalAlertDialog extends AppCompatDialogFragment {
     @OnCheckedChanged(R.id.switchLiteralSearch)
     public void onIsLiteralChanged(boolean isChecked) {
         if (isChecked) {
-            YoYo.with(Techniques.SlideOutRight).duration(literalSwapDuration).withListener(
+            YoYo.with(Techniques.SlideOutRight).duration(LITERAL_SWAP_DURATION).withListener(
                     new Animator.AnimatorListener() {
                         @Override
                         public void onAnimationStart(Animator animation) {
+                            //do nothing
                         }
 
                         @Override
                         public void onAnimationEnd(Animator animation) {
                             textViewLiteralInfo.setText(R.string.text_dialog_info_literal_yes);
-                            YoYo.with(Techniques.SlideInLeft).duration(literalSwapDuration)
+                            YoYo.with(Techniques.SlideInLeft).duration(LITERAL_SWAP_DURATION)
                                     .playOn(textViewLiteralInfo);
                         }
 
                         @Override
                         public void onAnimationCancel(Animator animation) {
+                            //do nothing
                         }
 
                         @Override
                         public void onAnimationRepeat(Animator animation) {
+                            //do nothing
                         }
                     }).playOn(textViewLiteralInfo);
         } else {
-            YoYo.with(Techniques.SlideOutLeft).duration(literalSwapDuration).withListener(
+            YoYo.with(Techniques.SlideOutLeft).duration(LITERAL_SWAP_DURATION).withListener(
                     new Animator.AnimatorListener() {
                         @Override
                         public void onAnimationStart(Animator animation) {
+                            //do nothing
                         }
 
                         @Override
                         public void onAnimationEnd(Animator animation) {
                             textViewLiteralInfo.setText(R.string.text_dialog_info_not_literal);
-                            YoYo.with(Techniques.SlideInRight).duration(literalSwapDuration)
+                            YoYo.with(Techniques.SlideInRight).duration(LITERAL_SWAP_DURATION)
                                     .playOn(textViewLiteralInfo);
                         }
 
                         @Override
                         public void onAnimationCancel(Animator animation) {
+                            //do nothing
                         }
 
                         @Override
                         public void onAnimationRepeat(Animator animation) {
+                            //do nothing
                         }
                     }).playOn(textViewLiteralInfo);
         }
@@ -107,7 +113,7 @@ public class LegalAlertDialog extends AppCompatDialogFragment {
      */
     private static boolean isValidAlertNameLength(int textLength) {
         // Return true if alert name is in the accepted interval
-        return textLength >= minLength && textLength <= maxLength;
+        return textLength >= MIN_LENGTH && textLength <= MAX_LENGTH;
     }
 
     /**
@@ -159,6 +165,8 @@ public class LegalAlertDialog extends AppCompatDialogFragment {
         * on the already created AlertDialog
         * */
         final android.support.v7.app.AlertDialog alertDialog = builder.create();
+        // Avoid NPE warning about get attributes*
+        //noinspection ConstantConditions
         alertDialog.getWindow().getAttributes().windowAnimations = R.style.dialog_animation;
         alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
             @Override
@@ -168,29 +176,29 @@ public class LegalAlertDialog extends AppCompatDialogFragment {
                         @Override
                         public void onClick(View v) {
                             if (isValidAlertNameLength(editTextDialogAlert.length())) {
-                                int result = bundle != null
-                                        ? MainActivity.updateAlert(getContext(),
-                                                bundle.getString(ALERT_NAME),
-                                                editTextDialogAlert.getText().toString(),
-                                                switchLiteralSearch.isChecked())
-                                        : MainActivity.insertNewAlert(getContext(),
-                                                editTextDialogAlert.getText().toString(),
-                                                switchLiteralSearch.isChecked());
-                                switch (result){
-                                    case -1:
-                                        Toast.makeText(getContext(),
-                                                getString(R.string.text_dialog_error_inserting_or_updating),
-                                                Toast.LENGTH_SHORT
-                                        ).show();
-                                        break;
-                                    default:
-                                        Snackbar.make(
-                                                getActivity().findViewById(R.id.fragmentMainPlaceholder),
-                                                getString(R.string.text_dialog_inserted_or_updated_ok),
-                                                Snackbar.LENGTH_SHORT
-                                        ).setAction("Action", null).show();
-                                        LegalAlertDialog.this.getDialog().dismiss();
-                                        break;
+                                int result;
+                                if (bundle != null)
+                                    result = MainActivity.updateAlert(getContext(),
+                                        bundle.getString(ALERT_NAME),
+                                        editTextDialogAlert.getText().toString(),
+                                        switchLiteralSearch.isChecked());
+                                else result = MainActivity.insertNewAlert(getContext(),
+                                        editTextDialogAlert.getText().toString(),
+                                        switchLiteralSearch.isChecked());
+                                if (result == -1) {
+                                    Toast.makeText(getContext(),
+                                            getString(R.string.text_dialog_error_inserting_or_updating),
+                                            Toast.LENGTH_SHORT
+                                    ).show();
+
+                                } else {
+                                    Snackbar.make(
+                                            getActivity().findViewById(R.id.fragmentMainPlaceholder),
+                                            getString(R.string.text_dialog_inserted_or_updated_ok),
+                                            Snackbar.LENGTH_SHORT
+                                    ).setAction("Action", null).show();
+                                    LegalAlertDialog.this.getDialog().dismiss();
+
                                 }
                             } else {
                                 YoYo.with(Techniques.Tada).duration(300L).playOn(editTextDialogAlert);

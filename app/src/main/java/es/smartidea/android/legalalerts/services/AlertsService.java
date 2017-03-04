@@ -22,16 +22,18 @@ import java.util.Map;
 
 import es.smartidea.android.legalalerts.R;
 import es.smartidea.android.legalalerts.alarms.AlarmDelayer;
-import es.smartidea.android.legalalerts.services.boeHandler.BoeHandler;
+import es.smartidea.android.legalalerts.services.builders.NotificationBuilder;
+import es.smartidea.android.legalalerts.services.handlers.boe.BoeHandler;
 import es.smartidea.android.legalalerts.database.DBContentProvider;
 import es.smartidea.android.legalalerts.database.DBContract;
+import es.smartidea.android.legalalerts.services.wakelock.AlertsWakeLock;
 import es.smartidea.android.legalalerts.utils.FileLogger;
 
 public class AlertsService extends Service {
 
-    private final static String LOG_TAG = "Service";
+    private static final String LOG_TAG = "Service";
 
-    private final static String ALERTS_SELECTION_NOTNULL = "((" +
+    private static final String ALERTS_SELECTION_NOTNULL = "((" +
             DBContract.Alerts.COL_ALERT_NAME + " NOTNULL) AND (" +
             DBContract.Alerts.COL_ALERT_NAME + " != '' ))";
     private static boolean serviceRunning = false;
@@ -39,7 +41,9 @@ public class AlertsService extends Service {
     private BoeHandler boeHandler;
 
     @Override
-    public void onCreate() {}
+    public void onCreate() {
+        // do nothing
+    }
 
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
@@ -90,7 +94,8 @@ public class AlertsService extends Service {
     private void setupBoeHandler(boolean manualSync) {
         @SuppressLint("SimpleDateFormat")
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-        Date syncDate, todayDate = new Date();
+        Date syncDate;
+        Date todayDate = new Date();
         lastSyncDateString = PreferenceManager.getDefaultSharedPreferences(this)
                 .getString(AlarmDelayer.LAST_SUCCESSFUL_SYNC, dateFormat.format(todayDate));
         //lastSyncDateString = "20160307";
@@ -201,7 +206,7 @@ public class AlertsService extends Service {
     private int storeResultsOnDB(@NonNull final Map<String, String> resultUrlsAndAlerts,
                                  @NonNull final Map<String, String> xmlPdfUrls) {
 
-        final Uri HISTORY_URI = DBContentProvider.HISTORY_URI;
+        final Uri historyUri = DBContentProvider.HISTORY_URI;
         ContentValues values = new ContentValues();
         Uri resultID;
         int insertCount = 0;
@@ -218,7 +223,7 @@ public class AlertsService extends Service {
                     DBContract.History.COL_HISTORY_DOCUMENT_URL,
                     BoeHandler.BOE_BASE_URL + xmlPdfUrls.get(eachResult.getKey())
             );
-            resultID = this.getContentResolver().insert(HISTORY_URI, values);
+            resultID = this.getContentResolver().insert(historyUri, values);
             if (resultID != null && Integer.parseInt(resultID.getLastPathSegment()) != -1){
                 insertCount++;
             }

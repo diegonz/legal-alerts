@@ -1,4 +1,4 @@
-package es.smartidea.android.legalalerts.services.boeHandler;
+package es.smartidea.android.legalalerts.services.handlers.boe;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -29,12 +29,12 @@ import es.smartidea.android.legalalerts.utils.TextSearchUtils;
 @SuppressWarnings("StringConcatenationMissingWhitespace")
 public class BoeHandler {
 
-    private final static String LOG_TAG = "BoeHandler";
+    private static final String LOG_TAG = "BoeHandler";
 
-    public final static String BOE_BASE_URL = "http://www.boe.es";
-    public final static String BOE_BASE_ID = "/diario_boe/xml.php?id=BOE-S-";
+    public static final String BOE_BASE_URL = "http://www.boe.es";
+    private static final String BOE_BASE_ID = "/diario_boe/xml.php?id=BOE-S-";
     @SuppressWarnings("SpellCheckingInspection")
-    private final static Set<String> searchableTextTags =
+    private static final Set<String> searchableTextTags =
             new HashSet<>(Arrays.asList("alerta", "materia", "p", "palabra", "titulo", "texto"));
     private XmlPullParserFactory xmlPullParserFactory;
     private String[] summariesUrlStringArray;
@@ -76,7 +76,8 @@ public class BoeHandler {
      */
     public void start() {
         if (!alertsMap.isEmpty()) {
-            Map<String, String> resultMap, xmlPdfUrls;
+            Map<String, String> resultMap;
+            Map<String, String> xmlPdfUrls;
             xmlPdfUrls = handleSummaries(new NetWorker());
             if (!xmlPdfUrls.isEmpty()){
                 resultMap = handleAttachments(new NetWorker(), xmlPdfUrls, alertsMap);
@@ -124,7 +125,11 @@ public class BoeHandler {
                 e.printStackTrace();
             } finally {     // Close the stream
                 if (boeSummaryStream != null){
-                    try {boeSummaryStream.close();} catch (Exception e) {e.printStackTrace();}
+                    try {
+                        boeSummaryStream.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
@@ -153,7 +158,8 @@ public class BoeHandler {
         for (Map.Entry<String, String> eachUrlPair : urlPairs.entrySet()){
             try {
                 // Reset map if its not empty
-                if (!rawTextData.isEmpty()) rawTextData.clear();
+                if (!rawTextData.isEmpty())
+                    rawTextData.clear();
 
                 boeStream = netWorker.getUrlAsByteStream(BOE_BASE_URL + eachUrlPair.getKey());
                 xmlPullParserFactory = XmlPullParserFactory.newInstance();
@@ -244,7 +250,8 @@ public class BoeHandler {
                                     }
                                     break;
                             }
-                        } else if (searchableTextTags.contains(name)) rawTextStringBuilder.append(text);
+                        } else if (searchableTextTags.contains(name))
+                            rawTextStringBuilder.append(text);
                         break;
                 }
                 event = boeParser.next();

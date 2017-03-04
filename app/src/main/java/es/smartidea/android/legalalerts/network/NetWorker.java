@@ -3,14 +3,13 @@ package es.smartidea.android.legalalerts.network;
 import java.io.IOException;
 import java.io.InputStream;
 
-import es.smartidea.android.legalalerts.services.boeHandler.BoeHandler;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
 public class NetWorker {
 
-    OkHttpClient okHttpClient;
+    private OkHttpClient okHttpClient;
 
     public NetWorker() {
         this.okHttpClient = new OkHttpClient();
@@ -23,7 +22,7 @@ public class NetWorker {
      * @return OkHttpClient Response of http document according to given URL
      * @throws IOException If cannot resolve/fetch given URL
      */
-    public Response getUrlAsResponse(String url) throws IOException {
+    private Response getUrlAsResponse(String url) throws IOException {
         Request request = new Request.Builder().url(url).build();
         return okHttpClient.newCall(request).execute();
     }
@@ -46,17 +45,10 @@ public class NetWorker {
      * @return boolean value true if WAN is available and false on working network unavailability
      */
     public boolean isWanAvailable(){
-        Response response = null;
-        try {
-            response = getUrlAsResponse(BoeHandler.BOE_BASE_URL);
+        try (Response response = getUrlAsResponse("http://www.google.com")) {
             return response.isSuccessful();
         } catch (IOException e){
             return false;
-        } finally {
-            if (response != null){
-                response.body().close();
-            }
         }
-
     }
 }

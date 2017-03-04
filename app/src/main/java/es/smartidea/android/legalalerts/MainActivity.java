@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -22,43 +21,129 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnLongClick;
-import es.smartidea.android.legalalerts.database.DBHelper;
-import es.smartidea.android.legalalerts.receivers.AlarmReceiver;
 import es.smartidea.android.legalalerts.database.DBContentProvider;
 import es.smartidea.android.legalalerts.database.DBContract;
+import es.smartidea.android.legalalerts.receivers.AlarmReceiver;
 
 public class MainActivity extends AppCompatActivity implements
-        NavigationView.OnNavigationItemSelectedListener, DialogInterface.OnDismissListener {
+        NavigationView.OnNavigationItemSelectedListener,
+        DialogInterface.OnDismissListener {
 
-    private final static String WHERE_NAME_EQUALS = DBContract.Alerts.COL_ALERT_NAME + '=';
-    private final static String DIALOG_TAG = "dialog_legal_alerts";
-    private final static String RUNNING_FRAGMENT_STRING = "running_fragment";
+    public static final int FRAGMENT_ALERTS_ID = 0;
+    public static final int FRAGMENT_HISTORY_ID = 1;
+    private static final String WHERE_NAME_EQUALS = DBContract.Alerts.COL_ALERT_NAME + '=';
+    private static final String DIALOG_TAG = "dialog_legal_alerts";
+    private static final String RUNNING_FRAGMENT_STRING = "running_fragment";
+    @BindView(R.id.nav_view)
+    NavigationView navigationView;
+    @BindView(R.id.drawer_layout)
+    DrawerLayout drawer;
+    @BindView(R.id.toolbar)
+    Toolbar toolbar;
+    @BindView(R.id.fab)
+    FloatingActionButton fab;
+    private int runningFragment = -1;
     private String fabHint;
-    public final static int FRAGMENT_ALERTS_ID = 0;
-    public final static int FRAGMENT_HISTORY_ID = 1;
-    private static int runningFragment = -1;
 
-    @Bind(R.id.nav_view) NavigationView navigationView;
-    @Bind(R.id.drawer_layout) DrawerLayout drawer;
-    @Bind(R.id.toolbar) Toolbar toolbar;
-    @Bind(R.id.fab) FloatingActionButton fab;
+    /**
+     * Activity method to insert new Alerts into Database according to given alertName
+     * and boolean flag isLiteralSearch
+     *
+     * @param context         Context to get ContentResolver
+     * @param alertName       String representing the search term to be stored
+     * @param isLiteralSearch boolean flag indicating if search
+     *                        term has literal search set to TRUE
+     * @return int indicating DB ID, returns minus one (-1) if there was an
+     * error or same search term already existed into DB
+     */
+    public static int insertNewAlert(Context context, String alertName, boolean isLiteralSearch) {
+        ContentValues values = new ContentValues();
+        values.put(DBContract.Alerts.COL_ALERT_NAME, alertName);
+        int literalSearchIntValue = isLiteralSearch ? 0 : 1;
+        values.put(DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL, literalSearchIntValue);
+        Uri resultID = context.getContentResolver().insert(DBContentProvider.ALERTS_URI, values);
+        return resultID != null ? Integer.parseInt(resultID.getLastPathSegment()) : -1;
+    }
 
-    @OnClick(R.id.fab) void fabClick(View view) {
-        switch (runningFragment) {
-            case FRAGMENT_ALERTS_ID:
-                new LegalAlertDialog().show(getSupportFragmentManager(), DIALOG_TAG);
-                break;
-            case FRAGMENT_HISTORY_ID:
-                // Delete all items
-                showSnackBar(view, "Deleted " + deleteHistory(this, null, null) + " item(s).");
-                break;
+    /**
+     * Activity method to update Alerts into Database according to given alertName
+     *
+     * @param context         Context to get ContentResolver
+     * @param oldName         String representing previous alertName to be updated
+     * @param newName         String representing new alertName to update
+     * @param isLiteralSearch boolean flag indicating if search
+     *                        term has literal search set to TRUE
+     * @return int representing updating success, 1 if updated ok, -1 if no update was produced
+     */
+    public static int updateAlert(Context context, String oldName, String newName, boolean isLiteralSearch) {
+        ContentValues values = new ContentValues();
+        values.put(DBContract.Alerts.COL_ALERT_NAME, newName);
+        int literalSearchIntValue = isLiteralSearch ? 0 : 1;
+        values.put(DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL, literalSearchIntValue);
+        return context.getContentResolver().update(DBContentProvider.ALERTS_URI, values,
+                WHERE_NAME_EQUALS + '\'' + oldName + '\'', null) < 1 ? -1 : 1;
+    }
+
+    /**
+     * Activity method to delete Alerts into Database according to given alertName
+     *
+     * @param context   Context to get ContentResolver
+     * @param alertName String representing alertName to be deleted
+     * @return int representing number of deleted items
+     */
+    public static int deleteAlert(Context context, String alertName) {
+        return context.getContentResolver().delete(DBContentProvider.ALERTS_URI,
+                DBContract.Alerts.COL_ALERT_NAME + "='" + alertName + '\'', null);
+    }
+
+    /**
+     * Delete items from history table according to given parameters or deletes all items
+     * if <var>documentName</var> and <var>alertName</var> where passed as NULL
+     *
+     * @param context      <type>Context</type> reference to get ContentResolver
+     * @param documentName <annotation>@Nullable</annotation> <type>String</type> corresponding
+     *                     to history item to delete
+     * @param alertName    @Nullable <type>String</type> corresponding to history item to delete
+     * @return <type>int</type> indicating number of items deleted or -1 if no action taken.
+     */
+    public static int deleteHistory(Context context, @Nullable String documentName, @Nullable String alertName) {
+        if (documentName != null && alertName != null) {
+            //noinspection StringConcatenationMissingWhitespace
+            String where = " (" + DBContract.History.COL_HISTORY_DOCUMENT_NAME + "='" + documentName
+                    + '\'' + ") AND (" + DBContract.History.COL_HISTORY_RELATED_ALERT_NAME + "='"
+                    + alertName + '\'' + ") ";
+            return context.getContentResolver().delete(DBContentProvider.HISTORY_URI, where, null);
+        } else if (documentName == null && alertName == null) {
+            return context.getContentResolver().delete(DBContentProvider.HISTORY_URI, null, null);
+        }
+        return -1;
+    }
+
+    /**
+     * Shows a SnackBar with given text
+     *
+     * @param view    Parent view to show the SnackBar on.
+     * @param message String containing message to show
+     */
+    public static void showSnackBar(@NonNull View view, @NonNull String message) {
+        Snackbar.make(view, message, Snackbar.LENGTH_SHORT).setAction("Action", null).show();
+    }
+
+    @OnClick(R.id.fab)
+    void fabClick(View view) {
+        if (runningFragment == FRAGMENT_ALERTS_ID) {
+            new LegalAlertDialog().show(getSupportFragmentManager(), DIALOG_TAG);
+        } else if (runningFragment == FRAGMENT_HISTORY_ID) {// Delete all items
+            showSnackBar(view, "Deleted " + deleteHistory(this, null, null) + " item(s).");
         }
     }
-    @OnLongClick(R.id.fab) boolean fabLongClick(View view){
+
+    @OnLongClick(R.id.fab)
+    boolean fabLongClick(View view) {
         Toast.makeText(this, fabHint, Toast.LENGTH_SHORT).show();
         return true;
     }
@@ -130,36 +215,36 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        final int LAUNCH_DIALOG_ALERT = 1, START_SETTINGS_ACTIVITY = 2;
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        final int launchDialogAlert = 1;
+        final int startSettingsActivity = 2;
         int afterSelectionTask = 0;
-        switch (item.getItemId()){
-            case R.id.nav_alerts:
-                replaceFragment(FRAGMENT_ALERTS_ID);
-                break;
+        switch (item.getItemId()) {
             case R.id.nav_add_alert:
-                afterSelectionTask = LAUNCH_DIALOG_ALERT;
+                afterSelectionTask = launchDialogAlert;
                 break;
             case R.id.nav_history:
                 replaceFragment(FRAGMENT_HISTORY_ID);
                 break;
             case R.id.nav_settings:
-                afterSelectionTask = START_SETTINGS_ACTIVITY;
+                afterSelectionTask = startSettingsActivity;
                 break;
+            case R.id.nav_alerts:
             case R.id.nav_share:
-            replaceFragment(FRAGMENT_ALERTS_ID);
-                break;
             case R.id.nav_info:
-            replaceFragment(FRAGMENT_ALERTS_ID);
+            default:
+                replaceFragment(FRAGMENT_ALERTS_ID);
                 break;
         }
         drawer.closeDrawer(GravityCompat.START);
         switch (afterSelectionTask) {
-            case LAUNCH_DIALOG_ALERT:
+            case launchDialogAlert:
                 new LegalAlertDialog().show(getSupportFragmentManager(), DIALOG_TAG);
                 break;
-            case START_SETTINGS_ACTIVITY:
+            case startSettingsActivity:
                 startActivity(new Intent(this, SettingsActivity.class));
+                break;
+            default:
                 break;
         }
         return true;
@@ -168,82 +253,6 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onDismiss(DialogInterface dialog) {
         updateDrawer();
-    }
-
-    /**
-     * Activity method to insert new Alerts into Database according to given alertName
-     * and boolean flag isLiteralSearch
-     *
-     * @param context   Context to get ContentResolver
-     * @param alertName String representing the search term to be stored
-     * @param isLiteralSearch boolean flag indicating if search
-     *                        term has literal search set to TRUE
-     * @return int indicating DB ID, returns minus one (-1) if there was an
-     * error or same search term already existed into DB
-     */
-    public static int insertNewAlert(Context context, String alertName, boolean isLiteralSearch){
-        ContentValues values = new ContentValues();
-        values.put(DBContract.Alerts.COL_ALERT_NAME, alertName);
-        int literalSearchIntValue = (isLiteralSearch) ? 0 : 1;
-        values.put(DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL, literalSearchIntValue);
-        Uri resultID = context.getContentResolver().insert(DBContentProvider.ALERTS_URI, values);
-        return resultID != null ? Integer.parseInt(resultID.getLastPathSegment()) : -1;
-    }
-
-    /**
-     * Activity method to update Alerts into Database according to given alertName
-     *
-     * @param context   Context to get ContentResolver
-     * @param oldName   String representing previous alertName to be updated
-     * @param newName   String representing new alertName to update
-     * @param isLiteralSearch   boolean flag indicating if search
-     *                          term has literal search set to TRUE
-     * @return int representing updating success, 1 if updated ok, -1 if no update was produced
-     */
-    public static int updateAlert(Context context, String oldName, String newName, boolean isLiteralSearch){
-        ContentValues values = new ContentValues();
-        values.put(DBContract.Alerts.COL_ALERT_NAME, newName);
-        int literalSearchIntValue = (isLiteralSearch) ? 0 : 1;
-        values.put(DBContract.Alerts.COL_ALERT_SEARCH_NOT_LITERAL, literalSearchIntValue);
-        return context.getContentResolver().update(DBContentProvider.ALERTS_URI, values,
-                WHERE_NAME_EQUALS + '\'' + oldName + '\'', null) < 1 ? -1 : 1;
-    }
-
-    /**
-     * Activity method to delete Alerts into Database according to given alertName
-     *
-     * @param context   Context to get ContentResolver
-     * @param alertName String representing alertName to be deleted
-     * @return int representing number of deleted items
-     */
-    public static int deleteAlert(Context context, String alertName){
-        return context.getContentResolver().delete(DBContentProvider.ALERTS_URI,
-                DBContract.Alerts.COL_ALERT_NAME + "='" + alertName + '\'', null);
-    }
-
-    /**
-     * Delete items from history table according to given parameters or deletes all items
-     * if <var>documentName</var> and <var>alertName</var> where passed as NULL
-     *
-     * @param context       <type>Context</type> reference to get ContentResolver
-     * @param documentName  <annotation>@Nullable</annotation> <type>String</type> corresponding
-     *                      to history item to delete
-     * @param alertName     @Nullable <type>String</type> corresponding to history item to delete
-     * @return  <type>int</type> indicating number of items deleted or -1 if no action taken.
-     */
-    public static int deleteHistory(Context context, @Nullable String documentName, @Nullable String alertName){
-        if (documentName != null && alertName != null){
-            //noinspection StringConcatenationMissingWhitespace
-            String WHERE = DBHelper.SPACE_OPEN_BRACKET +
-                    DBContract.History.COL_HISTORY_DOCUMENT_NAME + "='" + documentName + '\'' +
-                    DBHelper.CLOSE_BRACKET_SPACE + " AND " + DBHelper.SPACE_OPEN_BRACKET +
-                    DBContract.History.COL_HISTORY_RELATED_ALERT_NAME + "='" + alertName + '\'' +
-                    DBHelper.CLOSE_BRACKET_SPACE;
-            return context.getContentResolver().delete(DBContentProvider.HISTORY_URI, WHERE, null);
-        } else if (documentName == null && alertName == null) {
-            return context.getContentResolver().delete(DBContentProvider.HISTORY_URI, null, null);
-        }
-        return -1;
     }
 
     /**
@@ -256,18 +265,13 @@ public class MainActivity extends AppCompatActivity implements
             // TODO refactor implementation
             try {
                 switch (fragmentID) {
-                    case FRAGMENT_ALERTS_ID:
-                        getSupportFragmentManager().beginTransaction()
-                                .setCustomAnimations(R.anim.slide_in_left, R.anim.slide_out_right)
-                                .replace(R.id.fragmentMainPlaceholder, AlertsFragment.class.newInstance())
-                                .commit();
-                        break;
                     case FRAGMENT_HISTORY_ID:
                         getSupportFragmentManager().beginTransaction()
                                 .setCustomAnimations(R.anim.slide_in_right, R.anim.slide_out_left)
                                 .replace(R.id.fragmentMainPlaceholder, HistoryFragment.class.newInstance())
                                 .commit();
                         break;
+                    case FRAGMENT_ALERTS_ID:
                     default:
                         getSupportFragmentManager().beginTransaction()
                                 .setCustomAnimations(R.anim.slide_in_left, R.anim.slide_out_right)
@@ -290,15 +294,12 @@ public class MainActivity extends AppCompatActivity implements
      * @param fragmentID int containing fragment ID
      */
     public void setDrawerCheckedItemAndTitle(int fragmentID) {
-        switch (fragmentID) {
-            case FRAGMENT_ALERTS_ID:
-                navigationView.setCheckedItem(R.id.nav_alerts);
-                setTitle(getResources().getString(R.string.nav_alerts));
-                break;
-            case FRAGMENT_HISTORY_ID:
-                navigationView.setCheckedItem(R.id.nav_history);
-                setTitle(getResources().getString(R.string.nav_history));
-                break;
+        if (fragmentID == FRAGMENT_ALERTS_ID) {
+            navigationView.setCheckedItem(R.id.nav_alerts);
+            setTitle(getResources().getString(R.string.nav_alerts));
+        } else if (fragmentID == FRAGMENT_HISTORY_ID) {
+            navigationView.setCheckedItem(R.id.nav_history);
+            setTitle(getResources().getString(R.string.nav_history));
         }
     }
 
@@ -313,39 +314,22 @@ public class MainActivity extends AppCompatActivity implements
      * Sets FAB icon and content description according current fragment
      * and its known int resource IDs
      */
-    private void updateFabButton(){
-        int iconID, contentDescription;
-        switch (runningFragment){
-            case FRAGMENT_ALERTS_ID:
-                iconID = R.drawable.ic_add_new;
-                contentDescription = R.string.fab_description_alerts;
-                break;
+    private void updateFabButton() {
+        int iconID;
+        int contentDescription;
+        switch (runningFragment) {
             case FRAGMENT_HISTORY_ID:
                 iconID = R.drawable.ic_delete_sweep_white;
                 contentDescription = R.string.fab_description_history;
                 break;
+            case FRAGMENT_ALERTS_ID:
             default:
                 iconID = R.drawable.ic_add_new;
                 contentDescription = R.string.fab_description_alerts;
                 break;
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            fab.setImageDrawable(getResources().getDrawable(iconID, getTheme()));
-        } else {
-            //noinspection deprecation
-            fab.setImageDrawable(getResources().getDrawable(iconID));
-        }
+        fab.setImageDrawable(getResources().getDrawable(iconID, getTheme()));
         fabHint = getString(contentDescription);
         fab.setContentDescription(fabHint);
-    }
-
-    /**
-     * Shows a SnackBar with given text
-     *
-     * @param view  Parent view to show the SnackBar on.
-     * @param message   String containing message to show
-     */
-    public static void showSnackBar(@NonNull View view, @NonNull String message){
-        Snackbar.make(view, message, Snackbar.LENGTH_SHORT).setAction("Action", null).show();
     }
 }

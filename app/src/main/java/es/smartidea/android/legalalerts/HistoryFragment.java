@@ -17,10 +17,11 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
-import es.smartidea.android.legalalerts.database.DBContentProvider;
+import butterknife.Unbinder;
 import es.smartidea.android.legalalerts.adapters.HistoryAdapter;
+import es.smartidea.android.legalalerts.database.DBContentProvider;
 import es.smartidea.android.legalalerts.database.DBContract;
 
 /**
@@ -28,12 +29,13 @@ import es.smartidea.android.legalalerts.database.DBContract;
  */
 public class HistoryFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    private final static Uri HISTORY_URI = DBContentProvider.HISTORY_URI;
-    private final static String[] PROJECTION = DBContract.HISTORY_PROJECTION;
-    private final static String ORDER_DESC_BY_ID = DBContract.History._ID + " DESC";
-    private final static int HISTORY_LOADER_ID = 2;
+    private static final Uri HISTORY_URI = DBContentProvider.HISTORY_URI;
+    private static final String[] PROJECTION = DBContract.HISTORY_PROJECTION;
+    private static final String ORDER_DESC_BY_ID = DBContract.History.ID + " DESC";
+    private static final int HISTORY_LOADER_ID = 2;
     private HistoryAdapter historyAdapter;
-    @Bind(R.id.listViewHistory) ListView listViewHistory;
+    @BindView(R.id.listViewHistory) ListView listViewHistory;
+    private Unbinder unbinder;
 
     public HistoryFragment() {}
 
@@ -50,7 +52,7 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         View view = inflater.inflate(R.layout.fragment_history, container, false);
-        ButterKnife.bind(this, view);
+        unbinder = ButterKnife.bind(this, view);
         return view;
     }
 
@@ -64,7 +66,7 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        ButterKnife.unbind(this);
+        unbinder.unbind();
         getActivity().getSupportLoaderManager().destroyLoader(HISTORY_LOADER_ID);
     }
 
@@ -82,26 +84,18 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
         Cursor cursor = (Cursor) listViewHistory.getAdapter().getItem(info.position);
         switch (item.getItemId()){
             case R.id.contextListHistoryView:
-                //noinspection StringConcatenationMissingWhitespace
-                final String relatedPdfDocumentURL =
-                        cursor.getString(cursor.getColumnIndexOrThrow(
-                                DBContract.History.COL_HISTORY_DOCUMENT_URL)
-                        );
+                final String relatedPdfDocumentURL = cursor.getString(cursor.getColumnIndexOrThrow(
+                        DBContract.History.COL_HISTORY_DOCUMENT_URL));
                 startActivity(
-                        new Intent(Intent.ACTION_VIEW).setData(Uri.parse(relatedPdfDocumentURL))
-                );
+                        new Intent(Intent.ACTION_VIEW).setData(Uri.parse(relatedPdfDocumentURL)));
                 return true;
             case R.id.contextListHistoryDelete:
-                final String relatedAlertName =
-                        cursor.getString(cursor.getColumnIndexOrThrow(
-                                DBContract.History.COL_HISTORY_RELATED_ALERT_NAME)
-                        );
-                final String relatedDocumentName =
-                        cursor.getString(cursor.getColumnIndexOrThrow(
-                                DBContract.History.COL_HISTORY_DOCUMENT_NAME)
-                        );
-                final int deletedItems = MainActivity.deleteHistory(
-                        getContext(), relatedDocumentName, relatedAlertName);
+                final String relatedAlertName = cursor.getString(cursor.getColumnIndexOrThrow(
+                        DBContract.History.COL_HISTORY_RELATED_ALERT_NAME));
+                final String relatedDocumentName = cursor.getString(cursor.getColumnIndexOrThrow(
+                        DBContract.History.COL_HISTORY_DOCUMENT_NAME));
+                final int deletedItems = MainActivity.deleteHistory(getContext(),
+                        relatedDocumentName, relatedAlertName);
                 MainActivity.showSnackBar(listViewHistory, "Deleted " + deletedItems + " item(s).");
                 return true;
             default:

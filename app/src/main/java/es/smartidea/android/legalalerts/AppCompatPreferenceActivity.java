@@ -44,7 +44,7 @@ public abstract class AppCompatPreferenceActivity extends PreferenceActivity {
 
     // Added @NonNull annotation
     @Override
-    public @NonNull MenuInflater getMenuInflater() {
+    @NonNull public MenuInflater getMenuInflater() {
         return getDelegate().getMenuInflater();
     }
 

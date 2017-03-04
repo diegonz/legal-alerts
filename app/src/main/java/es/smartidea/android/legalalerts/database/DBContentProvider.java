@@ -10,6 +10,7 @@ import android.net.Uri;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Locale;
 
 import android.support.annotation.NonNull;
 
@@ -23,15 +24,16 @@ import android.support.annotation.NonNull;
 
 @SuppressWarnings("ConstantConditions")
 public class DBContentProvider extends ContentProvider {
-    private final static String AUTHORITY = "es.smartidea.legalalerts.dbContentProvider";
+    private static final String AUTHORITY = "es.smartidea.legalalerts.dbContentProvider";
     // Access URI to Alerts table
-    private final static int ALERTS_URI_INT = 10;
-    private final static String ALERTS_PATH = "alerts_table";
-    public final static Uri ALERTS_URI = Uri.parse("content://" + AUTHORITY + '/' + ALERTS_PATH);
+    private static final int ALERTS_URI_INT = 10;
+    private static final String ALERTS_PATH = "alerts_table";
+    public static final Uri ALERTS_URI = Uri.parse("content://" + AUTHORITY + '/' + ALERTS_PATH);
     // Access URI to History table
-    private final static int HISTORY_URI_INT = 20;
-    private final static String HISTORY_PATH = "history_table";
-    public final static Uri HISTORY_URI = Uri.parse("content://" + AUTHORITY + '/' + HISTORY_PATH);
+    private static final int HISTORY_URI_INT = 20;
+    private static final String HISTORY_PATH = "history_table";
+    private static final String WRONG_URI_MESSAGE = "ERROR - Wrong URI: ";
+    public static final Uri HISTORY_URI = Uri.parse("content://" + AUTHORITY + '/' + HISTORY_PATH);
 
     private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
@@ -66,7 +68,7 @@ public class DBContentProvider extends ContentProvider {
                 break;
 
             default:
-                throw new IllegalArgumentException("ERROR - Wrong URI: " + uri);
+                throw new IllegalArgumentException(String.format("%s%s", WRONG_URI_MESSAGE, uri));
         }
         getContext().getContentResolver().notifyChange(uri, null);
         return Uri.parse(path + '/' + id);
@@ -87,7 +89,7 @@ public class DBContentProvider extends ContentProvider {
                 queryBuilder.setTables(DBContract.History.TABLE_NAME);
                 break;
             default:
-                throw new IllegalArgumentException("ERROR - Wrong URI: " + uri);
+                throw new IllegalArgumentException(String.format("%s%s", WRONG_URI_MESSAGE, uri));
         }
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor =
@@ -112,7 +114,7 @@ public class DBContentProvider extends ContentProvider {
                         db.update(DBContract.History.TABLE_NAME, values, selection, selectionArgs);
                 break;
             default:
-                throw new IllegalArgumentException("ERROR - Wrong URI: " + uri);
+                throw new IllegalArgumentException(String.format("%s%s", WRONG_URI_MESSAGE, uri));
         }
         getContext().getContentResolver().notifyChange(uri, null);
         return rowsUpdated;
@@ -132,7 +134,7 @@ public class DBContentProvider extends ContentProvider {
                 rowsDeleted = db.delete(DBContract.History.TABLE_NAME, selection, selectionArgs);
                 break;
             default:
-                throw new IllegalArgumentException("ERROR - Wrong URI: " + uri);
+                throw new IllegalArgumentException(String.format("%s%s", WRONG_URI_MESSAGE, uri));
         }
         getContext().getContentResolver().notifyChange(uri, null);
         return rowsDeleted;
@@ -148,25 +150,21 @@ public class DBContentProvider extends ContentProvider {
      */
     public static void checkColumns(int uriType, @NonNull String... projection) {
 
-        HashSet<String> requested;
+        HashSet<String> requested = new HashSet<>(Arrays.asList(projection));
         HashSet<String> available;
         switch (uriType) {
             case ALERTS_URI_INT:
-                requested = new HashSet<>(Arrays.asList(projection));
                 available = new HashSet<>(Arrays.asList(DBContract.ALERTS_PROJECTION));
-                if (!available.containsAll(requested)) {
-                    throw new IllegalArgumentException("Invalid columns on projection");
-                }
                 break;
-
             case HISTORY_URI_INT:
-                requested = new HashSet<>(Arrays.asList(projection));
                 available = new HashSet<>(Arrays.asList(DBContract.HISTORY_PROJECTION));
-                if (!available.containsAll(requested)) {
-                    throw new IllegalArgumentException("Invalid columns on projection");
-                }
                 break;
+            default:
+                throw new IllegalArgumentException(
+                        String.format(Locale.getDefault(), "%s%d", WRONG_URI_MESSAGE, uriType));
         }
+        if (!available.containsAll(requested))
+            throw new IllegalArgumentException("Invalid columns on projection");
     }
 
     @Override

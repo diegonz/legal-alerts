@@ -8,7 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import es.smartidea.android.legalalerts.R;
 import es.smartidea.android.legalalerts.database.DBContract;
@@ -27,10 +27,10 @@ public class HistoryAdapter extends ResourceCursorAdapter {
      * ViewHolder static class to store associated Views
      */
     static class ViewHolder{
-        @Bind(R.id.historyItemRelatedAlert) TextView textViewHistoryItemRelatedAlert;
-        @Bind(R.id.historyItemDocID) TextView textViewHistoryItemDocName;
-        @Bind(R.id.historyItemDocDate) TextView textViewHistoryItemDocDate;
-        public ViewHolder(View view) {
+        @BindView(R.id.historyItemRelatedAlert) TextView textViewHistoryItemRelatedAlert;
+        @BindView(R.id.historyItemDocID) TextView textViewHistoryItemDocName;
+        @BindView(R.id.historyItemDocDate) TextView textViewHistoryItemDocDate;
+        ViewHolder(View view) {
             ButterKnife.bind(this, view);
         }
     }

@@ -19,13 +19,14 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.Unbinder;
 import es.smartidea.android.legalalerts.adapters.AlertsAdapter;
-import es.smartidea.android.legalalerts.services.AlertsService;
-import es.smartidea.android.legalalerts.services.ServiceStarter;
 import es.smartidea.android.legalalerts.database.DBContentProvider;
 import es.smartidea.android.legalalerts.database.DBContract;
+import es.smartidea.android.legalalerts.services.AlertsService;
+import es.smartidea.android.legalalerts.services.ServiceStarter;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -34,16 +35,17 @@ import es.smartidea.android.legalalerts.database.DBContract;
  */
 public class AlertsFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    private final static Uri ALERTS_URI = DBContentProvider.ALERTS_URI;
-    private final static String[] PROJECTION = DBContract.ALERTS_PROJECTION;
-    private final static String SELECTION_NOTNULL = "((" +
+    private static final Uri ALERTS_URI = DBContentProvider.ALERTS_URI;
+    private static final String[] PROJECTION = DBContract.ALERTS_PROJECTION;
+    private static final String SELECTION_NOTNULL = "((" +
             DBContract.Alerts.COL_ALERT_NAME + " NOTNULL) AND (" +
             DBContract.Alerts.COL_ALERT_NAME + " != '' ))";
-    private final static String ORDER_ASC_BY_NAME = DBContract.Alerts.COL_ALERT_NAME + " ASC";
-    private final static String DIALOG_TAG = "dialog_legal_alerts";
-    private final static int ALERTS_LOADER_ID = 1;
+    private static final String ORDER_ASC_BY_NAME = DBContract.Alerts.COL_ALERT_NAME + " ASC";
+    private static final String DIALOG_TAG = "dialog_legal_alerts";
+    private static final int ALERTS_LOADER_ID = 1;
     private AlertsAdapter alertsAdapter;
-    @Bind(R.id.listViewAlerts) ListView listViewAlerts;
+    @BindView(R.id.listViewAlerts) ListView listViewAlerts;
+    private Unbinder unbinder;
 
     public AlertsFragment() {}
 
@@ -72,7 +74,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         View view = inflater.inflate(R.layout.fragment_alerts, container, false);
-        ButterKnife.bind(this, view);
+        unbinder = ButterKnife.bind(this, view);
         return view;
     }
 
@@ -86,7 +88,7 @@ public class AlertsFragment extends Fragment implements LoaderManager.LoaderCall
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        ButterKnife.unbind(this);
+        unbinder.unbind();
         getActivity().getSupportLoaderManager().destroyLoader(ALERTS_LOADER_ID);
     }
 

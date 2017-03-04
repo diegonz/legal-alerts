@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import es.smartidea.android.legalalerts.R;
 import es.smartidea.android.legalalerts.database.DBContract;
@@ -28,10 +28,10 @@ public class AlertsAdapter extends ResourceCursorAdapter {
      * ViewHolder static class to store associated Views
      */
     static class ViewHolder {
-        @Bind(R.id.textViewAlertListItem) TextView textViewAlertListItem;
-        @Bind(R.id.imageAlertIsLiteralSearch) ImageView imageViewAlertListItemLiteral;
-        @Bind(R.id.textViewIsLiteralSearch) TextView textViewIsLiteralSearch;
-        public ViewHolder(View view) {
+        @BindView(R.id.textViewAlertListItem) TextView textViewAlertListItem;
+        @BindView(R.id.imageAlertIsLiteralSearch) ImageView imageViewAlertListItemLiteral;
+        @BindView(R.id.textViewIsLiteralSearch) TextView textViewIsLiteralSearch;
+        ViewHolder(View view) {
             ButterKnife.bind(this, view);
         }
     }

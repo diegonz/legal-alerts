@@ -8,10 +8,10 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 public class TextSearchUtils {
-    private final static String LOG_TAG = "TextSearchUtils";
+    private static final String LOG_TAG = "TextSearchUtils";
 
-    private final static Pattern NOT_ASCII_REGEXP = Pattern.compile("[^\\p{ASCII}]");
-    private final static Pattern SPACE_REGEXP = Pattern.compile("\\s");
+    private static final Pattern NOT_ASCII_REGEXP = Pattern.compile("[^\\p{ASCII}]");
+    private static final Pattern SPACE_REGEXP = Pattern.compile("\\s");
 
     private TextSearchUtils() {}
 

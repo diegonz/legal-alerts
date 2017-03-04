@@ -1,4 +1,4 @@
-package es.smartidea.android.legalalerts.services;
+package es.smartidea.android.legalalerts.services.builders;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -61,7 +61,8 @@ public class NotificationBuilder {
          * @return  NotificationBuilder object
          */
         public Builder setVibrate(final boolean vibrateON){
-            if (vibrateON) notification.setVibrate(new long[]{0L, 500L, 250L, 500L});
+            if (vibrateON)
+                notification.setVibrate(new long[]{0L, 500L, 250L, 500L});
             //else notification.setVibrate(new long[]{0L, 0L, 0L, 0L});
             return this;
         }
@@ -108,8 +109,10 @@ public class NotificationBuilder {
          */
         private void releaseReferences() {
             // Release already used references
-            if (this.context != null) this.context = null;
-            if (this.notification != null) this.notification = null;
+            if (this.context != null)
+                this.context = null;
+            if (this.notification != null)
+                this.notification = null;
         }
     }
 }

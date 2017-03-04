@@ -40,8 +40,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      */
     private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
         @Override
-        public boolean onPreferenceChange(Preference preference, Object value) {
-            String stringValue = value.toString();
+        public boolean onPreferenceChange(Preference preference, Object o) {
+            String stringValue = o.toString();
 
             if (preference instanceof ListPreference) {
                 // For list preferences, look up the correct display value in

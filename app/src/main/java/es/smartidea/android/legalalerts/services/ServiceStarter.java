@@ -9,13 +9,13 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.BatteryManager;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
 import android.widget.Toast;
 
 import es.smartidea.android.legalalerts.R;
 import es.smartidea.android.legalalerts.alarms.AlarmDelayer;
 import es.smartidea.android.legalalerts.receivers.AlarmReceiver;
 import es.smartidea.android.legalalerts.network.NetWorker;
+import es.smartidea.android.legalalerts.services.wakelock.AlertsWakeLock;
 import es.smartidea.android.legalalerts.utils.FileLogger;
 
 /**
@@ -26,11 +26,11 @@ import es.smartidea.android.legalalerts.utils.FileLogger;
  */
 public class ServiceStarter extends IntentService {
 
-    private final static String LOG_TAG = "ServiceLauncher";
+    private static final  String LOG_TAG = "ServiceLauncher";
 
-    public final static String ALARM_SYNC = "es.smartidea.legalalerts.ALARM_SYNC";
-    public final static String MANUAL_SYNC = "es.smartidea.legalalerts.MANUAL_SYNC";
-    public final static String MANUAL_SYNC_STRING = "MANUAL_SYNC";
+    public static final  String ALARM_SYNC = "es.smartidea.legalalerts.ALARM_SYNC";
+    public static final  String MANUAL_SYNC = "es.smartidea.legalalerts.MANUAL_SYNC";
+    public static final  String MANUAL_SYNC_STRING = "MANUAL_SYNC";
 
     public ServiceStarter() {
         super("ServiceStarter");
@@ -48,20 +48,19 @@ public class ServiceStarter extends IntentService {
         context.startService(intent);
     }
 
-    // Added @NonNull annotation to avoid inner if-else checking
     @Override
-    protected void onHandleIntent(@NonNull Intent intent) {
+    protected void onHandleIntent(Intent intent) {
+        if (intent == null)
+            return;
         // Acquire WakeLock at first, and assign to its
         // specific static reference holder class
         AlertsWakeLock.setWakeLock(this);
 
         switch (intent.getAction()) {
-            case ALARM_SYNC:
-                handleStartServiceDefault();
-                break;
             case MANUAL_SYNC:
                 handleStartServiceManual();
                 break;
+            case ALARM_SYNC:
             case AlarmReceiver.ALARM_SNOOZE:
                 handleStartServiceDefault();
                 break;
@@ -175,6 +174,6 @@ public class ServiceStarter extends IntentService {
         ConnectivityManager connectivityManager = (ConnectivityManager)
                 context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-        return (networkInfo != null && (networkInfo.getType() == ConnectivityManager.TYPE_WIFI));
+        return networkInfo != null && (networkInfo.getType() == ConnectivityManager.TYPE_WIFI);
     }
 }

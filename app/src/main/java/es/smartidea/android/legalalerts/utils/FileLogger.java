@@ -16,23 +16,17 @@ public class FileLogger {
 
     //private static final String LOG_TAG = "FileLogger";
 
-    private final static String SEPARATOR = File.separator;
-    private final static String LOG_FILE_NAME = "legalalerts-log.txt";
-    private final static String LOG_FOLDER_PATH = SEPARATOR + "LegalAlerts" + SEPARATOR + "log";
-    private final static String LOG_FULL_PATH = LOG_FOLDER_PATH + SEPARATOR + LOG_FILE_NAME;
+    private static final String SEPARATOR = File.separator;
+    private static final String LOG_FILE_NAME = "legalalerts-log.txt";
+    private static final String LOG_FOLDER_PATH = SEPARATOR + "LegalAlerts" + SEPARATOR + "log";
+    private static final String LOG_FULL_PATH = LOG_FOLDER_PATH + SEPARATOR + LOG_FILE_NAME;
     private static final String LOG_TAG = "FileLogger";
 
     @SuppressWarnings("unused")
     public static void logToInternalFile(final Context context, final String receivedLogText){
-        try {
+        try (FileWriter fileWriter = new FileWriter(new File(context.getFilesDir(), LOG_FILE_NAME), true)) {
             //BufferedWriter for performance, TRUE on FileWriter to set append to file flag
-            BufferedWriter bufferedWriter =
-                    new BufferedWriter(
-                            new FileWriter(
-                                    new File(context.getFilesDir(), LOG_FILE_NAME),
-                                    true
-                            )
-                    );
+            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
 
             bufferedWriter.append(
                     String.format(Locale.getDefault(), "Timestamp: %d", System.currentTimeMillis())
@@ -57,9 +51,9 @@ public class FileLogger {
      */
     public static void logToExternalFile(final String receivedLogText) {
         if (isExternalStorageWritable()){
-            try {
+            try (FileWriter fileWriter = new FileWriter(getExternalLogFile(), true)){
                 //BufferedWriter for performance, true to set append to file flag
-                BufferedWriter buf = new BufferedWriter(new FileWriter(getExternalLogFile(), true));
+                BufferedWriter buf = new BufferedWriter(fileWriter);
                 buf.append(
                         String.format(
                                 Locale.getDefault(),
@@ -87,7 +81,8 @@ public class FileLogger {
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private static File getExternalLogFile(){
         File logPath = new File(Environment.getExternalStorageDirectory().getPath() + LOG_FOLDER_PATH);
-        if (!logPath.exists()) logPath.mkdirs();
+        if (!logPath.exists())
+            logPath.mkdirs();
         File logFile = new File(Environment.getExternalStorageDirectory().getPath() + LOG_FULL_PATH);
         if (!logFile.exists()) {
             try {

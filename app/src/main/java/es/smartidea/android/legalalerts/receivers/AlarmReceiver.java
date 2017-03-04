@@ -11,13 +11,13 @@ import es.smartidea.android.legalalerts.utils.FileLogger;
 
 public class AlarmReceiver extends BroadcastReceiver {
 
-    private final static String LOG_TAG = "AlarmReceiver";
+    private static final String LOG_TAG = "AlarmReceiver";
 
     // ServiceLauncherReceiver related String Broadcast actions & extras
-    public final static String ALARM_SNOOZE = "es.smartidea.legalalerts.ALARM_SNOOZE";
-    public final static int DAILY_ALARM_ID = 0;
-    public final static int SNOOZE_ALARM_ID = 1;
-    private final static String START_ALERTS_SERVICE = ServiceStarter.ALARM_SYNC;
+    public static final String ALARM_SNOOZE = "es.smartidea.legalalerts.ALARM_SNOOZE";
+    public static final int DAILY_ALARM_ID = 0;
+    public static final int SNOOZE_ALARM_ID = 1;
+    private static final String START_ALERTS_SERVICE = ServiceStarter.ALARM_SYNC;
 
     public AlarmReceiver() {}
 
@@ -33,16 +33,16 @@ public class AlarmReceiver extends BroadcastReceiver {
         */
 
         // Get intent action or set to default for setup alarm (also BOOT_COMPLETED)
-        final String ALARM_TYPE = intent.getAction() != null
+        final String alarmType = intent.getAction() != null
                 ? intent.getAction()
                 : START_ALERTS_SERVICE;
 
-        if (ALARM_TYPE.equals(ALARM_SNOOZE)){
+        if (alarmType.equals(ALARM_SNOOZE)){
             // Create a snooze alarm passing correct alarm ID
-            new AlarmBuilder.Builder(context, ALARM_TYPE, SNOOZE_ALARM_ID).setRetryAlarm();
+            new AlarmBuilder.Builder(context, alarmType, SNOOZE_ALARM_ID).setRetryAlarm();
 
             // Log to file for debugging
-            FileLogger.logToExternalFile(LOG_TAG + " - CREATING " + ALARM_TYPE);
+            FileLogger.logToExternalFile(LOG_TAG + " - CREATING " + alarmType);
         } else {
             PendingIntent alarmIntent =
                     PendingIntent.getService(
@@ -58,10 +58,10 @@ public class AlarmReceiver extends BroadcastReceiver {
                 new AlarmBuilder.Builder(context, START_ALERTS_SERVICE, DAILY_ALARM_ID)
                         .setHour(9).setMinute(30).setDailyAlarm();
                 // Log to file for debugging
-                FileLogger.logToExternalFile(LOG_TAG + " - CREATING " + ALARM_TYPE);
+                FileLogger.logToExternalFile(LOG_TAG + " - CREATING " + alarmType);
             } else {
                 // Log to file for debugging
-                FileLogger.logToExternalFile(LOG_TAG + " -" + ALARM_TYPE + " already set SKIPPING.");
+                FileLogger.logToExternalFile(LOG_TAG + " -" + alarmType + " already set SKIPPING.");
             }
         }
     }
